@@ -1,10 +1,6 @@
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Bell, Search, TrendingUp, Calendar, DollarSign } from "lucide-react";
-import BottomNavigation from "../components/bottom-navigation";
-import BillItem from "../components/bill-item";
-import SummaryCard from "../components/summary-card";
-import QuickActions from "../components/quick-actions";
+import { Plus, Bell, Search, TrendingUp, Calendar, DollarSign, Home, CreditCard, Gift, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 // @ts-ignore
 import { auth } from "../../../lib/firebaseConfig.js";
@@ -143,19 +139,40 @@ export default function EnhancedDashboard() {
       {/* Content */}
       <div className="flex-1 p-4 pb-20 overflow-y-auto bg-gray-50">
         {/* Summary Cards */}
-        <div className="mb-6">
-          <SummaryCard
-            totalOutstanding={allBills.reduce((sum, bill) => sum + (bill.amount || 0), 0)}
-            priorityCounts={{
-              urgent: allBills.filter(bill => bill.priority === 'urgent').length,
-              medium: allBills.filter(bill => bill.priority === 'medium').length,
-              low: allBills.filter(bill => bill.priority === 'low').length
-            }}
-          />
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Total Bills</p>
+                <p className="text-2xl font-bold text-gray-900">{allBills.length}</p>
+              </div>
+              <Calendar className="w-8 h-8 text-blue-600" />
+            </div>
+          </div>
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Amount Due</p>
+                <p className="text-2xl font-bold text-green-600">
+                  ${allBills.reduce((sum, bill) => sum + (bill.amount || 0), 0).toFixed(2)}
+                </p>
+              </div>
+              <DollarSign className="w-8 h-8 text-green-600" />
+            </div>
+          </div>
         </div>
 
         {/* Quick Actions */}
-        <QuickActions />
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          <button className="bg-blue-600 text-white p-4 rounded-xl flex items-center justify-center space-x-2 shadow-sm hover:bg-blue-700 transition-colors">
+            <Plus className="w-5 h-5" />
+            <span className="font-medium">Add Bill</span>
+          </button>
+          <button className="bg-green-600 text-white p-4 rounded-xl flex items-center justify-center space-x-2 shadow-sm hover:bg-green-700 transition-colors">
+            <Search className="w-5 h-5" />
+            <span className="font-medium">Pay Bills</span>
+          </button>
+        </div>
 
         {/* Firebase Integration Section */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
@@ -230,7 +247,7 @@ export default function EnhancedDashboard() {
             </div>
           ) : postgresqlBills.length > 0 ? (
             <div className="space-y-3">
-              {postgresqlBills.slice(0, 5).map((bill) => (
+              {postgresqlBills.slice(0, 5).map((bill: any) => (
                 <BillItem key={bill.id} bill={bill} />
               ))}
             </div>

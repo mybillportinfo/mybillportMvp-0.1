@@ -19,7 +19,7 @@ import SimpleDashboard from "./pages/simple-dashboard";
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={SimpleDashboard} />
+      <Route path="/" component={EnhancedDashboard} />
       <Route path="/signup" component={Signup} />
       <Route path="/login" component={Login} />
       <Route path="/forgot-password" component={ForgotPassword} />
