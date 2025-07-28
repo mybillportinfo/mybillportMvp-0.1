@@ -1,4 +1,5 @@
 import { useState } from "react";
+// @ts-ignore
 import { registerUser } from "../../../services/auth.js";
 
 export default function Signup() {
@@ -9,7 +10,8 @@ export default function Signup() {
     try {
       await registerUser(email, password);
       alert("Account created! Now login.");
-    } catch (err) {
+      window.location.href = "/login";
+    } catch (err: any) {
       alert(err.message);
     }
   };

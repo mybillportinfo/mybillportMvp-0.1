@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+// @ts-ignore
 import { addBill, getBills, type FirestoreBill } from "../../../services/bills.ts";
 import BottomNavigation from "../components/bottom-navigation";
 

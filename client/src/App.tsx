@@ -12,14 +12,16 @@ import FirebaseTest from "./pages/firebase-test";
 import Signup from "./pages/signup";
 import Login from "./pages/login";
 import AuthDashboard from "./pages/auth-dashboard";
+import EnhancedDashboard from "./pages/enhanced-dashboard";
 
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={Dashboard} />
+      <Route path="/" component={EnhancedDashboard} />
       <Route path="/signup" component={Signup} />
       <Route path="/login" component={Login} />
       <Route path="/dashboard" component={AuthDashboard} />
+      <Route path="/enhanced-dashboard" component={EnhancedDashboard} />
       <Route path="/firebase-test" component={FirebaseTest} />
       <Route path="/payments" component={Payments} />
       <Route path="/rewards" component={Rewards} />

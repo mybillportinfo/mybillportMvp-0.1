@@ -1,4 +1,5 @@
 import { useState } from "react";
+// @ts-ignore
 import { loginUser } from "../../../services/auth.js";
 
 export default function Login() {
@@ -8,8 +9,8 @@ export default function Login() {
   const handleLogin = async () => {
     try {
       await loginUser(email, password);
-      window.location.href = "/dashboard";
-    } catch (err) {
+      window.location.href = "/";
+    } catch (err: any) {
       alert(err.message);
     }
   };

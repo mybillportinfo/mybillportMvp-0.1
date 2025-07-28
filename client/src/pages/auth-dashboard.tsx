@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
-import { auth } from "../../../lib/firebaseConfig";
+// @ts-ignore
+import { auth } from "../../../lib/firebaseConfig.js";
+// @ts-ignore
 import { logoutUser } from "../../../services/auth.js";
 
 export default function AuthDashboard() {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
     const unsub = auth.onAuthStateChanged(setUser);

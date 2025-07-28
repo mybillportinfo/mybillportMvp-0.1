@@ -47,6 +47,7 @@ export default function Profile() {
           {menuItems.map((item, index) => (
             <button
               key={index}
+              onClick={() => alert(`${item.label} - Feature coming soon!`)}
               className="w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
             >
               <div className="flex items-center space-x-3">
@@ -61,7 +62,13 @@ export default function Profile() {
         </div>
 
         {/* Logout Button */}
-        <button className="w-full mt-6 bg-red-50 text-red-600 rounded-2xl p-4 flex items-center justify-center space-x-2 hover:bg-red-100 transition-colors">
+        <button 
+          onClick={() => {
+            // Add logout functionality here
+            window.location.href = "/login";
+          }}
+          className="w-full mt-6 bg-red-50 text-red-600 rounded-2xl p-4 flex items-center justify-center space-x-2 hover:bg-red-100 transition-colors"
+        >
           <LogOut className="w-5 h-5" />
           <span className="font-medium">Sign Out</span>
         </button>
