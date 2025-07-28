@@ -7,6 +7,8 @@ import {
 } from "firebase/auth";
 
 export function registerUser(email, password) {
+  console.log("Attempting to register user with email:", email);
+  console.log("Auth object:", auth);
   return createUserWithEmailAndPassword(auth, email, password);
 }
 
