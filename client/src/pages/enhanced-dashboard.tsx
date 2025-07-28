@@ -248,7 +248,23 @@ export default function EnhancedDashboard() {
           ) : postgresqlBills.length > 0 ? (
             <div className="space-y-3">
               {postgresqlBills.slice(0, 5).map((bill: any) => (
-                <BillItem key={bill.id} bill={bill} />
+                <div key={bill.id} className="bg-gray-50 rounded-xl p-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="font-medium text-gray-800">{bill.name}</h4>
+                      <p className="text-sm text-gray-600">{bill.company}</p>
+                      <p className="text-sm text-gray-500">Due: {new Date(bill.dueDate).toLocaleDateString()}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-gray-800">${bill.amount}</p>
+                      <span className={`text-xs px-2 py-1 rounded-full ${
+                        bill.isPaid ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      }`}>
+                        {bill.isPaid ? 'Paid' : 'Pending'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
               ))}
             </div>
           ) : (
@@ -260,7 +276,27 @@ export default function EnhancedDashboard() {
         </div>
       </div>
 
-      <BottomNavigation activeTab="home" />
+      {/* Bottom Navigation */}
+      <nav className="fixed bottom-0 left-1/2 transform -translate-x-1/2 max-w-md w-full bg-white border-t border-gray-100 shadow-lg">
+        <div className="grid grid-cols-4 py-1">
+          <button className="flex flex-col items-center py-3 px-4 text-blue-600">
+            <Home className="w-5 h-5 mb-1" />
+            <span className="text-xs font-semibold">Home</span>
+          </button>
+          <button className="flex flex-col items-center py-3 px-4 text-gray-500 hover:text-blue-600">
+            <CreditCard className="w-5 h-5 mb-1" />
+            <span className="text-xs font-medium">Payments</span>
+          </button>
+          <button className="flex flex-col items-center py-3 px-4 text-gray-500 hover:text-blue-600">
+            <Gift className="w-5 h-5 mb-1" />
+            <span className="text-xs font-medium">Rewards</span>
+          </button>
+          <button className="flex flex-col items-center py-3 px-4 text-gray-500 hover:text-blue-600">
+            <User className="w-5 h-5 mb-1" />
+            <span className="text-xs font-medium">Profile</span>
+          </button>
+        </div>
+      </nav>
     </>
   );
 }
