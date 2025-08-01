@@ -4,6 +4,16 @@ import { storage } from "./storage";
 import { seedDatabase } from "./seed";
 import { insertBillSchema, insertPaymentSchema, insertRewardSchema } from "@shared/schema";
 import { z } from "zod";
+import { plaidClient, PLAID_PRODUCTS, PLAID_COUNTRY_CODES } from "./plaid";
+import { 
+  LinkTokenCreateRequest,
+  ItemPublicTokenExchangeRequest,
+  AccountsGetRequest,
+} from 'plaid';
+
+// Store access tokens in memory for demo purposes
+// In production, store these securely in your database
+const accessTokens = new Map<string, string>();
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Seed database and get demo user ID
@@ -133,6 +143,108 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }, 1000);
     } catch (error) {
       res.status(500).json({ message: "Bill scanning failed" });
+    }
+  });
+
+  // ========== PLAID INTEGRATION ENDPOINTS ==========
+
+  // Create Plaid Link Token
+  app.post("/api/create_link_token", async (req, res) => {
+    try {
+      const request: LinkTokenCreateRequest = {
+        user: {
+          client_user_id: DEMO_USER_ID.toString(),
+        },
+        client_name: "MyBillPort",
+        products: PLAID_PRODUCTS as any,
+        country_codes: PLAID_COUNTRY_CODES as any,
+        language: 'en',
+      };
+
+      const response = await plaidClient.linkTokenCreate(request);
+      res.json({ link_token: response.data.link_token });
+    } catch (error) {
+      console.error('Plaid Link Token Error:', error);
+      res.status(500).json({ 
+        error: "Unable to create link token",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Exchange public token for access token
+  app.post("/api/exchange_public_token", async (req, res) => {
+    try {
+      const { public_token } = req.body;
+      
+      if (!public_token) {
+        return res.status(400).json({ error: "public_token is required" });
+      }
+
+      const request: ItemPublicTokenExchangeRequest = {
+        public_token: public_token,
+      };
+
+      const response = await plaidClient.itemPublicTokenExchange(request);
+      const accessToken = response.data.access_token;
+      const itemId = response.data.item_id;
+
+      // Store access token (in production, store in database)
+      accessTokens.set(DEMO_USER_ID.toString(), accessToken);
+
+      res.json({ 
+        access_token: accessToken,
+        item_id: itemId,
+        message: "Bank account connected successfully"
+      });
+    } catch (error) {
+      console.error('Plaid Token Exchange Error:', error);
+      res.status(500).json({ 
+        error: "Unable to exchange public token",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Get account information and balances
+  app.get("/api/accounts", async (req, res) => {
+    try {
+      const accessToken = accessTokens.get(DEMO_USER_ID.toString());
+      
+      if (!accessToken) {
+        return res.status(400).json({ 
+          error: "No bank account connected. Please connect your bank account first." 
+        });
+      }
+
+      const request: AccountsGetRequest = {
+        access_token: accessToken,
+      };
+
+      const response = await plaidClient.accountsGet(request);
+      const accounts = response.data.accounts.map(account => ({
+        account_id: account.account_id,
+        name: account.name,
+        official_name: account.official_name,
+        type: account.type,
+        subtype: account.subtype,
+        balance: {
+          available: account.balances.available,
+          current: account.balances.current,
+          currency: account.balances.iso_currency_code
+        }
+      }));
+
+      res.json({ 
+        accounts: accounts,
+        institution: response.data.item.institution_id
+      });
+    } catch (error) {
+      console.error('Plaid Accounts Error:', error);
+      res.status(500).json({ 
+        error: "Unable to fetch accounts",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
     }
   });
 

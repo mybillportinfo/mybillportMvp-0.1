@@ -29,6 +29,7 @@ import AISuggestions from "./pages/ai-suggestions";
 import LiveChat from "./pages/live-chat";
 import AIReminders from "./pages/ai-reminders";
 import CreditReminders from "./pages/credit-reminders";
+import PlaidIntegration from "./pages/plaid-integration";
 
 function Router() {
   return (
@@ -56,6 +57,7 @@ function Router() {
       <Route path="/live-chat" component={LiveChat} />
       <Route path="/ai-reminders" component={AIReminders} />
       <Route path="/credit-reminders" component={CreditReminders} />
+      <Route path="/plaid" component={PlaidIntegration} />
       <Route component={NotFound} />
     </Switch>
   );
