@@ -378,11 +378,13 @@ export default function StableDashboard() {
                 <span>Pay Bills</span>
               </button>
               <button 
-                onClick={() => window.location.href = "/ai-reminders"}
-                className="flex items-center justify-center space-x-2 bg-purple-50 text-purple-700 py-3 px-4 rounded-xl font-medium hover:bg-purple-100 transition-colors"
+                onClick={() => window.location.href = "/credit-reminders"}
+                className="flex items-center justify-center space-x-2 bg-red-50 text-red-700 py-3 px-4 rounded-xl font-medium hover:bg-red-100 transition-colors"
               >
-                <Bell className="w-4 h-4" />
-                <span>AI Reminders</span>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="font-bold">Credit Due</span>
               </button>
               <button 
                 onClick={() => window.location.href = "/profile"}
