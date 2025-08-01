@@ -6,7 +6,7 @@ import { auth } from "../../../lib/firebaseConfig.js";
 // @ts-ignore
 import { logoutUser } from "../../../services/auth.js";
 
-export default function StableDashboard() {
+export default function EnhancedStableDashboard() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
