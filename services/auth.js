@@ -3,7 +3,9 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
-  sendPasswordResetEmail
+  sendPasswordResetEmail,
+  signInWithPopup,
+  GoogleAuthProvider
 } from "firebase/auth";
 
 export function registerUser(email, password) {
@@ -22,4 +24,9 @@ export function logoutUser() {
 
 export function resetPassword(email) {
   return sendPasswordResetEmail(auth, email);
+}
+
+export function signInWithGoogle() {
+  const provider = new GoogleAuthProvider();
+  return signInWithPopup(auth, provider);
 }

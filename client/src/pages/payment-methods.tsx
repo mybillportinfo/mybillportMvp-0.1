@@ -87,7 +87,7 @@ export default function PaymentMethods() {
         {/* Header */}
         <div className="bg-white shadow-sm">
           <div className="flex items-center space-x-4 p-4">
-            <button onClick={() => window.history.back()} className="p-1 text-gray-600 hover:text-blue-600">
+            <button onClick={() => window.location.href = "/"} className="p-1 text-gray-600 hover:text-blue-600">
               <ArrowLeft className="w-5 h-5" />
             </button>
             <img src="/logo.png" alt="MyBillPort Logo" className="w-8 h-8 object-contain" />
