@@ -201,7 +201,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Plaid Token Exchange Error:', error);
       res.status(500).json({ 
         error: "Unable to exchange public token",
-        details: error instanceof Error ? error.message : "Unknown error"
+        details: error instanceof Error ? error.message : "Unknown error",
+        debug: process.env.NODE_ENV === 'development' ? { 
+          public_token: req.body.public_token,
+          plaid_env: process.env.PLAID_ENV 
+        } : undefined
       });
     }
   });
