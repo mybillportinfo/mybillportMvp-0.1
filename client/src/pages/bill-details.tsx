@@ -1,11 +1,10 @@
 import { useState } from "react";
+import { useRoute } from "wouter";
 import { ArrowLeft, Calendar, DollarSign, Building, Phone, CreditCard, Zap, CheckCircle, AlertCircle, Clock } from "lucide-react";
 
-interface BillDetailsProps {
-  billId?: string;
-}
-
-export default function BillDetails({ billId }: BillDetailsProps) {
+export default function BillDetails() {
+  const [match, params] = useRoute("/bill-details/:id");
+  const billId = params?.id;
   // Mock bill data - in real app, this would come from props or API
   const [bill] = useState({
     id: 1,
