@@ -33,6 +33,7 @@ export default function PaymentMethods() {
   ];
 
   const handleAddPaymentMethod = (type: string) => {
+    console.log('Adding payment method:', type);
     if (type === 'crypto') {
       alert("Cryptocurrency payments coming soon!\n\nWe're working on integrating secure crypto payment options including Bitcoin, Ethereum, and other popular cryptocurrencies. This feature will be available in a future update.");
       return;
@@ -40,6 +41,7 @@ export default function PaymentMethods() {
 
     setSelectedType(type);
     setShowAddMethod(true);
+    console.log('Modal should show now:', { selectedType: type, showAddMethod: true });
   };
 
   const handleSavePaymentMethod = () => {
