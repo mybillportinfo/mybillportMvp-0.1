@@ -22,6 +22,8 @@ import PaymentMethods from "./pages/payment-methods";
 import Notifications from "./pages/notifications";
 import Security from "./pages/security";
 import AppSettings from "./pages/app-settings";
+import AddBill from "./pages/add-bill";
+import BillDetails from "./pages/bill-details";
 
 function Router() {
   return (
@@ -42,6 +44,8 @@ function Router() {
       <Route path="/notifications" component={Notifications} />
       <Route path="/security" component={Security} />
       <Route path="/app-settings" component={AppSettings} />
+      <Route path="/add-bill" component={AddBill} />
+      <Route path="/bill-details/:id" component={BillDetails} />
       <Route component={NotFound} />
     </Switch>
   );

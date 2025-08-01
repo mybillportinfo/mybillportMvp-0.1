@@ -222,7 +222,10 @@ export default function StableDashboard() {
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Bill Categories</h3>
             <div className="space-y-3">
               {/* Utilities */}
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+              <button 
+                onClick={() => window.location.href = "/add-bill?type=utility"}
+                className="w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow text-left"
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <div className="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center">
@@ -230,7 +233,7 @@ export default function StableDashboard() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-gray-800">Utilities</h4>
-                      <p className="text-sm text-gray-500">{getCountByCategory('utility')} bills</p>
+                      <p className="text-sm text-gray-500">{getCountByCategory('utility')} bills • Click to add more</p>
                     </div>
                   </div>
                   <div className="text-right">
@@ -238,10 +241,13 @@ export default function StableDashboard() {
                     <p className="text-sm text-gray-500">Electric & Water</p>
                   </div>
                 </div>
-              </div>
+              </button>
 
               {/* Phone & Internet */}
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+              <button 
+                onClick={() => window.location.href = "/add-bill?type=phone"}
+                className="w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow text-left"
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
@@ -249,7 +255,7 @@ export default function StableDashboard() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-gray-800">Phone & Internet</h4>
-                      <p className="text-sm text-gray-500">{getCountByCategory('phone')} bills</p>
+                      <p className="text-sm text-gray-500">{getCountByCategory('phone')} bills • Click to add more</p>
                     </div>
                   </div>
                   <div className="text-right">
@@ -257,10 +263,13 @@ export default function StableDashboard() {
                     <p className="text-sm text-gray-500">Mobile & Internet</p>
                   </div>
                 </div>
-              </div>
+              </button>
 
               {/* Credit Cards */}
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+              <button 
+                onClick={() => window.location.href = "/add-bill?type=credit_card"}
+                className="w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow text-left"
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
@@ -268,7 +277,7 @@ export default function StableDashboard() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-gray-800">Credit Cards</h4>
-                      <p className="text-sm text-gray-500">{getCountByCategory('credit_card')} bills</p>
+                      <p className="text-sm text-gray-500">{getCountByCategory('credit_card')} bills • Click to add more</p>
                     </div>
                   </div>
                   <div className="text-right">
@@ -276,7 +285,7 @@ export default function StableDashboard() {
                     <p className="text-sm text-gray-500">Credit Payments</p>
                   </div>
                 </div>
-              </div>
+              </button>
             </div>
           </div>
 
@@ -291,7 +300,11 @@ export default function StableDashboard() {
             
             <div className="space-y-3">
               {bills.slice(0, 3).map((bill) => (
-                <div key={bill.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+                <button
+                  key={bill.id}
+                  onClick={() => window.location.href = `/bill-details/${bill.id}`}
+                  className="w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow text-left"
+                >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <div className={`w-12 h-12 bg-${bill.color}-100 rounded-xl flex items-center justify-center`}>
@@ -314,7 +327,7 @@ export default function StableDashboard() {
                       </div>
                     </div>
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           </div>
@@ -323,7 +336,10 @@ export default function StableDashboard() {
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h3>
             <div className="grid grid-cols-2 gap-3">
-              <button className="flex items-center justify-center space-x-2 bg-blue-50 text-blue-700 py-3 px-4 rounded-xl font-medium hover:bg-blue-100 transition-colors">
+              <button 
+                onClick={() => window.location.href = "/add-bill"}
+                className="flex items-center justify-center space-x-2 bg-blue-50 text-blue-700 py-3 px-4 rounded-xl font-medium hover:bg-blue-100 transition-colors"
+              >
                 <Plus className="w-4 h-4" />
                 <span>Add Bill</span>
               </button>
