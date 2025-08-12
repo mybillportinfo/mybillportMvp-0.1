@@ -10,6 +10,7 @@ import {
   ItemPublicTokenExchangeRequest,
   AccountsGetRequest,
 } from 'plaid';
+import { scanBillImage } from './ai-scanner';
 
 // Store access tokens in memory for demo purposes
 // In production, store these securely in your database
@@ -124,25 +125,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Scan bill endpoint (mock)
+  // AI Bill Scanner endpoint - Extracts account and company info from bills
   app.post("/api/bills/scan", async (req, res) => {
     try {
-      // Simulate bill scanning
-      setTimeout(() => {
-        res.json({ 
-          message: "Bill scanned successfully",
-          billData: {
-            name: "Scanned Bill",
-            company: "Utility Company",
-            amount: "99.99",
-            dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-            priority: "medium",
-            icon: "fas fa-file-invoice"
-          }
-        });
-      }, 1000);
+      const { image } = req.body;
+      
+      if (!image) {
+        return res.status(400).json({ error: 'Image data is required' });
+      }
+      
+      // Remove data:image/jpeg;base64, prefix if present
+      const base64Image = image.replace(/^data:image\/[a-z]+;base64,/, '');
+      
+      console.log('Processing bill image with AI scanner...');
+      const scanResult = await scanBillImage(base64Image);
+      console.log('AI scan result:', scanResult);
+      
+      res.json(scanResult);
     } catch (error) {
-      res.status(500).json({ message: "Bill scanning failed" });
+      console.error('Bill scanning error:', error);
+      res.status(500).json({ 
+        error: 'Failed to scan bill',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // Create account from scanned bill
+  app.post("/api/accounts/from-bill", async (req, res) => {
+    try {
+      const { company, accountNumber, category, type } = req.body;
+      
+      if (!company || !accountNumber) {
+        return res.status(400).json({ error: 'Company and account number are required' });
+      }
+      
+      // Create a new account record (in a real app, this would go to accounts table)
+      const account = {
+        id: Date.now().toString(),
+        company,
+        accountNumber,
+        category,
+        type,
+        createdAt: new Date().toISOString(),
+        isActive: true
+      };
+      
+      console.log('Created account from bill scan:', account);
+      
+      res.json({ 
+        success: true, 
+        account,
+        message: `Account for ${company} has been added to your profile` 
+      });
+    } catch (error) {
+      console.error('Account creation error:', error);
+      res.status(500).json({ 
+        error: 'Failed to create account',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   });
 

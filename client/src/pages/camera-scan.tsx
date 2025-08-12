@@ -7,53 +7,139 @@ export default function CameraScan() {
   const [scanResult, setScanResult] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleCameraCapture = () => {
-    setIsScanning(true);
-    
-    // Simulate AI scanning process
-    setTimeout(() => {
-      const mockResult = {
-        type: "utility",
-        company: "Hydro One",
-        amount: 142.75,
-        dueDate: "2025-08-15",
-        accountNumber: "****-****-5678",
-        category: "Electricity",
-        confidence: 96,
-        extractedText: "HYDRO ONE\nAccount: ****-****-5678\nAmount Due: $142.75 CAD\nDue Date: August 15, 2025\nBilling Period: July 1-31, 2025"
-      };
-      setScanResult(mockResult);
-      setIsScanning(false);
-    }, 3000);
-  };
-
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
+  const handleCameraCapture = async () => {
+    try {
       setIsScanning(true);
       
-      // Simulate AI processing of uploaded image
-      setTimeout(() => {
-        const mockResult = {
-          type: "phone",
-          company: "Rogers Wireless",
-          amount: 89.99,
-          dueDate: "2025-08-12",
-          accountNumber: "****-****-9012",
-          category: "Mobile",
-          confidence: 94,
-          extractedText: "ROGERS WIRELESS\nAccount: ****-****-9012\nAmount Due: $89.99 CAD\nDue Date: August 12, 2025\nPlan: Infinite Essential"
-        };
-        setScanResult(mockResult);
+      // Access camera and capture image
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      const video = document.createElement('video');
+      video.srcObject = stream;
+      video.play();
+      
+      // Wait for video to load
+      video.onloadedmetadata = async () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(video, 0, 0);
+        
+        // Stop camera stream
+        stream.getTracks().forEach(track => track.stop());
+        
+        // Convert to base64
+        const imageData = canvas.toDataURL('image/jpeg', 0.8);
+        
+        // Send to AI scanner
+        const response = await fetch('/api/bills/scan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: imageData })
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          setScanResult(result);
+        } else {
+          const error = await response.json();
+          alert('Scanning failed: ' + (error.details || error.error));
+        }
         setIsScanning(false);
-      }, 2500);
+      };
+    } catch (error) {
+      console.error('Camera capture error:', error);
+      alert('Camera access failed. Please check permissions.');
+      setIsScanning(false);
     }
   };
 
-  const handleSaveBill = () => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      try {
+        setIsScanning(true);
+        
+        // Convert file to base64
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          const imageData = e.target?.result as string;
+          
+          try {
+            // Send to AI scanner
+            const response = await fetch('/api/bills/scan', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ image: imageData })
+            });
+            
+            if (response.ok) {
+              const result = await response.json();
+              setScanResult(result);
+            } else {
+              const error = await response.json();
+              alert('Scanning failed: ' + (error.details || error.error));
+            }
+          } catch (error) {
+            console.error('Upload scanning error:', error);
+            alert('Failed to process image. Please try again.');
+          }
+          setIsScanning(false);
+        };
+        
+        reader.readAsDataURL(file);
+      } catch (error) {
+        console.error('File upload error:', error);
+        alert('Failed to read file. Please try again.');
+        setIsScanning(false);
+      }
+    }
+  };
+
+  const handleSaveBill = async () => {
     if (scanResult) {
-      alert(`Bill automatically added to your dashboard!\n\nCompany: ${scanResult.company}\nAmount: $${scanResult.amount}\nDue Date: ${scanResult.dueDate}\n\nAI Confidence: ${scanResult.confidence}%`);
-      window.location.href = "/";
+      try {
+        // Save bill to database
+        const billResponse = await fetch('/api/bills', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: `${scanResult.company} Bill`,
+            company: scanResult.company,
+            amount: scanResult.amount.toString(),
+            dueDate: scanResult.dueDate,
+            priority: scanResult.amount > 200 ? 'urgent' : scanResult.amount > 100 ? 'medium' : 'low',
+            icon: scanResult.type === 'utility' ? 'fas fa-bolt' : 
+                  scanResult.type === 'phone' ? 'fas fa-phone' : 
+                  scanResult.type === 'credit_card' ? 'fas fa-credit-card' : 'fas fa-file-invoice'
+          })
+        });
+
+        // Create account from bill scan
+        const accountResponse = await fetch('/api/accounts/from-bill', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            company: scanResult.company,
+            accountNumber: scanResult.accountNumber,
+            category: scanResult.category,
+            type: scanResult.type
+          })
+        });
+
+        if (billResponse.ok && accountResponse.ok) {
+          const accountData = await accountResponse.json();
+          alert(`✅ Bill and Account successfully added!\n\n📄 Company: ${scanResult.company}\n💰 Amount: $${scanResult.amount}\n📅 Due Date: ${scanResult.dueDate}\n📱 Account: ${scanResult.accountNumber}\n📋 Category: ${scanResult.category}\n🤖 AI Confidence: ${scanResult.confidence}%\n\n${accountData.message}`);
+          window.location.href = "/";
+        } else {
+          const billError = billResponse.ok ? null : await billResponse.json();
+          const accountError = accountResponse.ok ? null : await accountResponse.json();
+          alert('Failed to save: ' + (billError?.message || accountError?.error || 'Unknown error'));
+        }
+      } catch (error) {
+        console.error('Save bill error:', error);
+        alert('Failed to save bill and account. Please try again.');
+      }
     }
   };
 
