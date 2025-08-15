@@ -32,6 +32,7 @@ import CreditReminders from "./pages/credit-reminders";
 import PlaidIntegration from "./pages/plaid-integration";
 import BillSplitting from "./pages/bill-splitting";
 import RequestMoney from "./pages/request-money";
+import PaymentPage from "./pages/payments";
 
 function Router() {
   return (
@@ -44,7 +45,7 @@ function Router() {
       <Route path="/dashboard" component={AuthDashboard} />
       <Route path="/enhanced-dashboard" component={EnhancedDashboard} />
       <Route path="/firebase-test" component={FirebaseTest} />
-      <Route path="/payments" component={Payments} />
+      <Route path="/payments" component={PaymentPage} />
       <Route path="/rewards" component={Rewards} />
       <Route path="/profile" component={Profile} />
       <Route path="/personal-info" component={PersonalInfo} />

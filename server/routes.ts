@@ -13,10 +13,23 @@ import {
 import { scanBillImage } from './ai-scanner';
 import nodemailer from 'nodemailer';
 import { sendPaymentRequestEmail } from '../services/email';
+import Stripe from "stripe";
+import express from "express";
 
 // Store access tokens in memory for demo purposes
 // In production, store these securely in your database
 const accessTokens = new Map<string, string>();
+
+// Initialize Stripe
+if (!process.env.STRIPE_SECRET_KEY) {
+  console.warn('STRIPE_SECRET_KEY not found. Stripe functionality will be disabled.');
+}
+
+const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: "2025-07-30.basil",
+}) : null;
+
+const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Import and register testing routes
@@ -584,6 +597,107 @@ export async function registerRoutes(app: Express): Promise<Server> {
         error: "Email test failed",
         details: error instanceof Error ? error.message : "Unknown error",
         statusCode: 500
+      });
+    }
+  });
+
+  // ========== STRIPE PAYMENT PROCESSING ENDPOINTS ==========
+  
+  // Stripe webhook endpoint - MUST be before JSON body parsing
+  app.post('/stripe/webhook', express.raw({type: 'application/json'}), (req, res) => {
+    if (!stripe || !endpointSecret) {
+      return res.status(400).send('Stripe not configured');
+    }
+
+    const sig = req.headers['stripe-signature'] as string;
+    let event;
+
+    try {
+      event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+    } catch (err: any) {
+      console.error('Webhook signature verification failed:', err.message);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    // Handle the event
+    switch (event.type) {
+      case 'payment_intent.succeeded':
+        const paymentIntent = event.data.object;
+        console.log('Payment successful:', paymentIntent.id);
+        
+        // Here you can update your database to mark bill as paid
+        if (paymentIntent.metadata?.billId) {
+          console.log(`Marking bill ${paymentIntent.metadata.billId} as paid`);
+        }
+        break;
+      
+      case 'payment_intent.payment_failed':
+        const failedPayment = event.data.object;
+        console.log('Payment failed:', failedPayment.id);
+        break;
+      
+      default:
+        console.log(`Unhandled event type ${event.type}`);
+    }
+
+    res.json({received: true});
+  });
+
+  // Create payment intent for bill payment
+  app.post('/api/create-payment-intent', async (req, res) => {
+    if (!stripe) {
+      return res.status(500).json({ error: 'Stripe not configured' });
+    }
+
+    try {
+      const { amount, billId, description } = req.body;
+      
+      if (!amount || amount <= 0) {
+        return res.status(400).json({ error: 'Valid amount is required' });
+      }
+
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(amount * 100), // Convert to cents
+        currency: 'cad', // Canadian dollars
+        description: description || 'Bill payment',
+        metadata: {
+          billId: billId || '',
+        },
+      });
+
+      res.json({ 
+        clientSecret: paymentIntent.client_secret,
+        paymentIntentId: paymentIntent.id 
+      });
+    } catch (error: any) {
+      console.error('Error creating payment intent:', error);
+      res.status(500).json({ 
+        error: 'Failed to create payment intent',
+        message: error.message 
+      });
+    }
+  });
+
+  // Get payment status
+  app.get('/api/payment-status/:paymentIntentId', async (req, res) => {
+    if (!stripe) {
+      return res.status(500).json({ error: 'Stripe not configured' });
+    }
+
+    try {
+      const { paymentIntentId } = req.params;
+      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+      
+      res.json({
+        status: paymentIntent.status,
+        amount: paymentIntent.amount / 100, // Convert back from cents
+        currency: paymentIntent.currency,
+      });
+    } catch (error: any) {
+      console.error('Error retrieving payment status:', error);
+      res.status(500).json({ 
+        error: 'Failed to retrieve payment status',
+        message: error.message 
       });
     }
   });

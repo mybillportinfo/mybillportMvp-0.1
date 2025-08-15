@@ -33,8 +33,12 @@ Preferred communication style: Simple, everyday language.
 
 ### Key Features
 - **User Management**: Authentication with email/password, biometric options (Face ID/Fingerprint), and profile management.
-- **Bill Management**: Add, track, categorize, and manage bills with company, amount, due date, and priority levels. Includes sorting by due date (Overdue, Due Soon, All Others).
-- **Payment Processing**: Manual payment method entry (debit, credit, gift cards), and streamlined Interac e-Transfer payment requests.
+- **Bill Management**: Add, track, categorize, and manage bills with company, amount, due date, and priority levels. Includes sorting by due date (Overdue, Due Soon, All Others) with instant updates.
+- **Payment Processing**: 
+  - Stripe integration for secure credit/debit card payments in CAD
+  - Webhook handling for payment_intent.succeeded events
+  - Manual payment method entry (debit, credit, gift cards)
+  - Streamlined Interac e-Transfer payment requests with email notifications
 - **AI Integration**: AI-powered bill scanning (Anthropic Claude Sonnet 4) for automatic data extraction (company, account, amount, due date) and categorization, optimized for Canadian bill formats. AI also provides intelligent bill reduction suggestions.
 - **Banking Integration**: Secure Plaid SDK integration for linking bank accounts, displaying balances, and supporting checking, savings, and credit card accounts.
 - **Reward System**: Points-based reward system for user engagement.
