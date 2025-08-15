@@ -252,7 +252,7 @@ export default function Profile() {
                     name="phoneNumber"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Phone Number (Optional)</FormLabel>
+                        <FormLabel>Phone Number</FormLabel>
                         <FormControl>
                           <Input 
                             {...field} 
@@ -327,7 +327,7 @@ export default function Profile() {
         </div>
       </div>
 
-      <BottomNavigation activeTab="profile" />
+      <BottomNavigation />
     </>
   );
 }
