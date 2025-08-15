@@ -202,8 +202,14 @@ The application follows modern web development best practices with a focus on ty
 - **Enhanced bill splitting feature with purple "Split Bills" button integrated in dashboard quick actions**
 - **Added profile access button in main dashboard header for easy navigation**
 - **Integrated React Hook Form with proper validation for all form fields and user data**
-- **Enhanced Interac e-Transfer payment method with two distinct options:**
+- **Enhanced Interac e-Transfer payment method simplified to focus only on payment requests:**
   - **Send Payment Requests: Users can request payments from others via email with security questions**
-  - **Unique Receiving Email: Users get dedicated email addresses (format: name.mybillport@interac.ca) for receiving payments**
+  - **Removed unique email feature per user request for cleaner interface**
+- **Implemented comprehensive notification system for profile updates:**
+  - **Email notifications sent to users when profile information is changed**
+  - **SMS notifications (simulated) for account security alerts**
+  - **Professional email templates with security notices and contact information**
+- **Updated all contact references to use mybillportinfo@gmail.com for consistency**
+- **Removed "(Optional)" designation from phone number field in profile**
 - **All profile and payment features fully integrated with Firebase authentication system**
 - **Mobile-optimized interface with proper form validation and user feedback**

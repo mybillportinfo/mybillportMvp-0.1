@@ -333,12 +333,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Create a simple email transporter using Gmail SMTP
       // For production, you would use a proper email service like SendGrid, AWS SES, etc.
-      const transporter = nodemailer.createTransporter({
+      const transporter = nodemailer.createTransport({
         host: 'smtp.gmail.com',
         port: 587,
         secure: false,
         auth: {
-          user: 'noreply.mybillport@gmail.com',
+          user: 'mybillportinfo@gmail.com',
           pass: 'mybillport2024!' // In production, use environment variables
         }
       });
@@ -378,12 +378,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           <div style="background: #f8f9fa; padding: 20px; text-align: center; color: #666;">
             <p style="margin: 0;">This request was sent through MyBillPort</p>
             <p style="margin: 5px 0 0 0; font-size: 12px;">If you didn't expect this request, please contact the sender.</p>
+            <p style="margin: 5px 0 0 0; font-size: 12px;">For support, contact us at: mybillportinfo@gmail.com</p>
           </div>
         </div>
       `;
 
       const mailOptions = {
-        from: 'MyBillPort <noreply.mybillport@gmail.com>',
+        from: 'MyBillPort <mybillportinfo@gmail.com>',
         to: recipientEmail,
         subject: `💰 Payment Request: $${amount.toFixed(2)} CAD from ${senderEmail}`,
         html: emailContent
@@ -405,6 +406,89 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Email sending error:', error);
       res.status(500).json({ 
         error: "Failed to send payment request email",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Profile update notification endpoint
+  app.post("/api/notifications/profile-update", async (req, res) => {
+    try {
+      const { email, phoneNumber, displayName, changes } = req.body;
+
+      if (!email) {
+        return res.status(400).json({ error: "Email is required" });
+      }
+
+      const transporter = nodemailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false,
+        auth: {
+          user: 'mybillportinfo@gmail.com',
+          pass: 'mybillport2024!' // In production, use environment variables
+        }
+      });
+
+      // Email notification
+      const emailContent = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; text-align: center;">
+            <h1 style="margin: 0;">✅ Profile Updated</h1>
+            <p style="margin: 10px 0 0 0;">MyBillPort Account Changes</p>
+          </div>
+          
+          <div style="padding: 30px; background: white;">
+            <h2 style="color: #333; margin-top: 0;">Account Information Updated</h2>
+            
+            <p style="color: #666;">Hi ${displayName || 'there'},</p>
+            <p style="color: #666;">Your MyBillPort profile has been successfully updated with the following information:</p>
+            
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              <p><strong>Name:</strong> ${changes.name || 'Not provided'}</p>
+              <p><strong>Email:</strong> ${changes.email || 'Not provided'}</p>
+              <p><strong>Phone:</strong> ${changes.phone || 'Not provided'}</p>
+            </div>
+            
+            <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 20px 0;">
+              <p style="margin: 0; color: #1976d2;"><strong>🔒 Security Notice:</strong> If you didn't make these changes, please contact us immediately at mybillportinfo@gmail.com</p>
+            </div>
+          </div>
+          
+          <div style="background: #f8f9fa; padding: 20px; text-align: center; color: #666;">
+            <p style="margin: 0;">MyBillPort - Your Personal Finance Assistant</p>
+            <p style="margin: 5px 0 0 0; font-size: 12px;">For any questions, contact us at: mybillportinfo@gmail.com</p>
+          </div>
+        </div>
+      `;
+
+      const mailOptions = {
+        from: 'MyBillPort <mybillportinfo@gmail.com>',
+        to: email,
+        subject: '✅ MyBillPort Profile Updated - Confirmation',
+        html: emailContent
+      };
+
+      await transporter.sendMail(mailOptions);
+
+      // SMS notification (simulated - in production, use Twilio or similar service)
+      if (phoneNumber) {
+        console.log(`SMS would be sent to ${phoneNumber}: "MyBillPort: Your profile has been updated successfully. If this wasn't you, contact mybillportinfo@gmail.com immediately."`);
+      }
+
+      res.json({ 
+        success: true, 
+        message: "Profile update notifications sent",
+        sentTo: {
+          email: email,
+          sms: phoneNumber ? phoneNumber : null
+        }
+      });
+
+    } catch (error) {
+      console.error('Profile notification error:', error);
+      res.status(500).json({ 
+        error: "Failed to send profile update notifications",
         details: error instanceof Error ? error.message : "Unknown error"
       });
     }

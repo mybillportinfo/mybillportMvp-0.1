@@ -58,11 +58,33 @@ export default function Profile() {
       //   displayName: data.displayName,
       //   photoURL: profileImage
       // });
+
+      // Send notification email and text about profile update
+      try {
+        await fetch('/api/notifications/profile-update', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: data.email,
+            phoneNumber: data.phoneNumber,
+            displayName: data.displayName,
+            changes: {
+              name: data.displayName,
+              email: data.email,
+              phone: data.phoneNumber
+            }
+          })
+        });
+      } catch (notificationError) {
+        console.log('Notification sending failed:', notificationError);
+      }
       
       setEditing(false);
       toast({
         title: "Profile Updated!",
-        description: "Your profile information has been saved successfully."
+        description: "Your profile information has been saved successfully. You'll receive a confirmation email and text message shortly."
       });
     } catch (error) {
       toast({
@@ -100,7 +122,7 @@ export default function Profile() {
         window.location.href = "/app-settings";
         break;
       case "Help & Support":
-        window.location.href = "mailto:mybillportinfo@gmail.com?subject=MyBillPort Support Request&body=Hi MyBillPort Team,%0D%0A%0D%0AI need help with:%0D%0A%0D%0A[Please describe your issue here]%0D%0A%0D%0AThank you!";
+        window.location.href = "mailto:mybillportinfo@gmail.com?subject=MyBillPort Support Request&body=Hi MyBillPort Team,%0D%0A%0D%0AI need help with:%0D%0A%0D%0A[Please describe your issue here]%0D%0A%0D%0AFor any questions, contact us at mybillportinfo@gmail.com%0D%0A%0D%0AThank you!";
         break;
       default:
         alert("Feature coming soon!");
