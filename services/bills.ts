@@ -25,15 +25,18 @@ export interface FirestoreBill extends Omit<BillData, 'createdAt'> {
 // Add a new bill to Firestore
 export async function addBill(billData: Omit<BillData, 'createdAt'>): Promise<string> {
   try {
+    const dueDate = typeof billData.dueDate === 'string' ? billData.dueDate : billData.dueDate.toISOString();
+    const amount = typeof billData.amount === 'string' ? parseFloat(billData.amount) : billData.amount;
+    
     const docRef = await addDoc(collection(db, "bills"), {
       userId: billData.userId,
       name: billData.name,
       accountNumber: billData.accountNumber,
-      amount: billData.amount,
-      dueDate: billData.dueDate.toISOString(),
+      amount: amount,
+      dueDate: dueDate,
       frequency: billData.frequency,
       leadDays: billData.leadDays,
-      paid: false,
+      paid: billData.paid || false,
       createdAt: serverTimestamp()
     });
     console.log('Bill added successfully with ID:', docRef.id);

@@ -41,9 +41,9 @@ export default function AddBillFixed() {
 
   // Add bill mutation
   const addBillMutation = useMutation({
-    mutationFn: async (billData: Omit<BillData, 'createdAt'>) => {
+    mutationFn: async (billData: any) => {
       if (!user) throw new Error("User not authenticated");
-      return addBill({ ...billData, userId: user.uid });
+      return addBill({ ...billData, userId: user.uid, paid: false });
     },
     onSuccess: (billId) => {
       // Invalidate and refetch bills for this user
@@ -141,11 +141,10 @@ export default function AddBillFixed() {
       await addBillMutation.mutateAsync({
         name: billData.name,
         accountNumber: billData.accountNumber,
-        amount: parseFloat(billData.amount),
-        dueDate: new Date(billData.dueDate),
+        amount: billData.amount,
+        dueDate: billData.dueDate,
         leadDays: billData.leadDays,
         frequency: billData.frequency,
-        paid: false,
         userId: user.uid
       });
     } catch (error) {

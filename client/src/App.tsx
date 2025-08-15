@@ -31,6 +31,7 @@ import AIReminders from "./pages/ai-reminders";
 import CreditReminders from "./pages/credit-reminders";
 import PlaidIntegration from "./pages/plaid-integration";
 import BillSplitting from "./pages/bill-splitting";
+import RequestMoney from "./pages/request-money";
 
 function Router() {
   return (
@@ -60,6 +61,7 @@ function Router() {
       <Route path="/credit-reminders" component={CreditReminders} />
       <Route path="/plaid" component={PlaidIntegration} />
       <Route path="/bill-splitting" component={BillSplitting} />
+      <Route path="/request-money" component={RequestMoney} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -12,6 +12,7 @@ import {
 } from 'plaid';
 import { scanBillImage } from './ai-scanner';
 import nodemailer from 'nodemailer';
+import { sendPaymentRequestEmail } from '../services/email';
 
 // Store access tokens in memory for demo purposes
 // In production, store these securely in your database
@@ -59,6 +60,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         res.status(500).json({ message: "Failed to create bill" });
       }
+    }
+  });
+
+  // Request Money API endpoint
+  app.post("/api/request-money", async (req, res) => {
+    try {
+      const { to, name, amount, note, fromUser } = req.body;
+
+      if (!to || !name || !amount || !note) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Missing required fields: to, name, amount, note" 
+        });
+      }
+
+      const result = await sendPaymentRequestEmail({
+        to,
+        name,
+        amount: parseFloat(amount),
+        note
+      });
+
+      if (result.success) {
+        res.json({
+          success: true,
+          message: `Payment request sent successfully to ${name} at ${to}`,
+          details: {
+            recipient: to,
+            amount: parseFloat(amount),
+            note
+          }
+        });
+      } else {
+        res.status(500).json({
+          success: false,
+          error: result.error || "Failed to send payment request email"
+        });
+      }
+    } catch (error: any) {
+      console.error('Request money error:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message || "Internal server error"
+      });
     }
   });
 

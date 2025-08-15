@@ -6,8 +6,8 @@ const mailerSend = new MailerSend({
 
 console.log('MailerSend API Key configured:', !!process.env.MAILERSEND_API_KEY);
 
-const fromEmail = 'mybillport@trial-351ndgwr0p8lzqx8.mlsender.net'; // Default MailerSend domain
-const fromName = 'MyBillPort';
+const fromEmail = process.env.FROM_EMAIL || 'mybillport@trial-351ndgwr0p8lzqx8.mlsender.net'; // Default MailerSend domain
+const fromName = process.env.FROM_NAME || 'MyBillPort';
 
 export async function sendPaymentRequestEmail({
   to,
