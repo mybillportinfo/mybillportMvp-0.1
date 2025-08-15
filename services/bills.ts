@@ -24,12 +24,24 @@ export interface FirestoreBill extends Omit<BillData, 'createdAt'> {
 
 // Add a new bill to Firestore
 export async function addBill(billData: Omit<BillData, 'createdAt'>): Promise<string> {
-  const docRef = await addDoc(collection(db, "bills"), {
-    ...billData,
-    dueDate: billData.dueDate.toISOString(),
-    createdAt: serverTimestamp()
-  });
-  return docRef.id;
+  try {
+    const docRef = await addDoc(collection(db, "bills"), {
+      userId: billData.userId,
+      name: billData.name,
+      accountNumber: billData.accountNumber,
+      amount: billData.amount,
+      dueDate: billData.dueDate.toISOString(),
+      frequency: billData.frequency,
+      leadDays: billData.leadDays,
+      paid: false,
+      createdAt: serverTimestamp()
+    });
+    console.log('Bill added successfully with ID:', docRef.id);
+    return docRef.id;
+  } catch (error) {
+    console.error('Error adding bill to Firestore:', error);
+    throw error;
+  }
 }
 
 // Get all bills from Firestore

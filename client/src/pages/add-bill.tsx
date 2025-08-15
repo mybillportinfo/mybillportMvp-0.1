@@ -1,31 +1,40 @@
-import { useState } from "react";
-import { ArrowLeft, CheckCircle, AlertCircle } from "lucide-react";
+import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { addBill, type BillData } from "../../../services/bills";
-import { useToast } from "../hooks/use-toast";
-import { getAuth } from "firebase/auth";
+import { ArrowLeft, AlertCircle, CheckCircle } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+// @ts-ignore
+import { auth } from "../../../lib/firebaseConfig.js";
+import { addBill } from "../../../services/bills";
 
-export default function AddBill() {
-  const { toast } = useToast();
+interface BillData {
+  name: string;
+  accountNumber: string;
+  amount: string;
+  dueDate: string;
+  frequency: string;
+  leadDays: number;
+}
+
+export default function AddBillFixed() {
+  const [user, setUser] = useState<any>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
   const queryClient = useQueryClient();
-  const auth = getAuth();
-  const user = auth.currentUser;
 
-  const [billData, setBillData] = useState({
+  const [billData, setBillData] = useState<BillData>({
+    name: "",
     accountNumber: "",
     amount: "",
     dueDate: "",
-    leadDays: 3 as 1 | 3 | 7,
-    frequency: "monthly" as "monthly" | "biweekly" | "weekly",
-    name: ""
+    frequency: "monthly",
+    leadDays: 3
   });
 
-  const [showSuccess, setShowSuccess] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
-  // Common Canadian providers for quick selection
+  // Common Canadian providers
   const commonProviders = [
-    "Rogers", "Bell Canada", "Telus", "Hydro One", "Enbridge", 
+    "Rogers", "Bell", "Telus", "Shaw", "Fido", "Koodo", "Virgin Mobile",
+    "Hydro One", "Toronto Hydro", "BC Hydro", "Enbridge Gas",
     "Netflix", "Spotify", "Amazon Prime", "TD Canada Trust", 
     "RBC Royal Bank", "Scotiabank", "CIBC"
   ];
@@ -37,59 +46,83 @@ export default function AddBill() {
       return addBill({ ...billData, userId: user.uid });
     },
     onSuccess: (billId) => {
-      queryClient.invalidateQueries({ queryKey: ["firebase-bills"] });
+      // Invalidate and refetch bills for this user
+      queryClient.invalidateQueries({ queryKey: ["firebase-bills", user?.uid] });
       setShowSuccess(true);
       
       toast({
-        title: "Bill Added",
-        description: `${billData.name} has been added successfully!`,
+        title: "Bill Added Successfully",
+        description: `${billData.name} has been added to your dashboard!`,
       });
       
-      // Auto-close modal after 2 seconds
+      // Auto-close modal after 2.5 seconds
       setTimeout(() => {
         setShowSuccess(false);
         window.history.back();
-      }, 2000);
+      }, 2500);
     },
     onError: (error: any) => {
       console.error('Add bill error:', error);
       toast({
-        title: "Error Adding Bill",
-        description: error.message || "Failed to add bill. Please try again.",
+        title: "Failed to Add Bill",
+        description: error.message || "Something went wrong. Please try again.",
         variant: "destructive",
       });
     },
   });
 
-  const validateForm = () => {
+  // Listen to auth state
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((currentUser: any) => {
+      if (currentUser) {
+        setUser(currentUser);
+      } else {
+        window.location.href = "/login";
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const handleInputChange = (field: keyof BillData, value: string | number) => {
+    setBillData(prev => ({ ...prev, [field]: value }));
+    // Clear validation error when user starts typing
+    if (validationErrors[field]) {
+      setValidationErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  };
+
+  const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
-    
+
+    if (!billData.name.trim()) {
+      errors.name = "Provider name is required";
+    }
+
     if (!billData.accountNumber.trim()) {
       errors.accountNumber = "Account number is required";
     }
-    
-    if (!billData.amount.trim()) {
-      errors.amount = "Amount is required";
-    } else {
-      const amount = parseFloat(billData.amount);
-      if (isNaN(amount) || amount <= 0) {
-        errors.amount = "Please enter a valid positive amount";
-      }
+
+    if (!billData.amount || parseFloat(billData.amount) <= 0) {
+      errors.amount = "Amount must be greater than 0";
     }
-    
+
     if (!billData.dueDate) {
       errors.dueDate = "Due date is required";
+    } else {
+      const selectedDate = new Date(billData.dueDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (selectedDate < today) {
+        errors.dueDate = "Due date cannot be in the past";
+      }
     }
-    
-    if (!billData.name.trim()) {
-      errors.name = "Bill name is required";
-    }
-    
+
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!validateForm()) {
       return;
     }
@@ -103,216 +136,212 @@ export default function AddBill() {
       return;
     }
 
-    // Submit the bill
-    addBillMutation.mutate({
-      name: billData.name,
-      accountNumber: billData.accountNumber,
-      amount: parseFloat(billData.amount),
-      dueDate: new Date(billData.dueDate),
-      leadDays: billData.leadDays,
-      frequency: billData.frequency,
-      paid: false,
-      userId: user.uid
-    });
-  };
-
-  const handleInputChange = (field: string, value: string | number) => {
-    setBillData(prev => ({ ...prev, [field]: value }));
-    
-    // Clear validation error when user starts typing
-    if (validationErrors[field]) {
-      setValidationErrors(prev => ({ ...prev, [field]: '' }));
+    try {
+      // Submit the bill with proper error handling
+      await addBillMutation.mutateAsync({
+        name: billData.name,
+        accountNumber: billData.accountNumber,
+        amount: parseFloat(billData.amount),
+        dueDate: new Date(billData.dueDate),
+        leadDays: billData.leadDays,
+        frequency: billData.frequency,
+        paid: false,
+        userId: user.uid
+      });
+    } catch (error) {
+      console.error('Error adding bill:', error);
+      // Error is already handled by the mutation onError callback
     }
   };
 
+  // Success modal
   if (showSuccess) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="bg-white rounded-2xl shadow-lg p-8 text-center max-w-sm mx-4">
-          <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-gray-800 mb-2">Bill Added!</h2>
-          <p className="text-gray-600">{billData.name} has been added to your dashboard.</p>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+        <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full text-center">
+          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <CheckCircle className="w-8 h-8 text-green-600" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Bill Added!</h2>
+          <p className="text-gray-600 mb-4">
+            {billData.name} has been successfully added to your dashboard.
+          </p>
+          <div className="animate-pulse text-sm text-gray-500">
+            Redirecting you back...
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-100">
-        <div className="max-w-md mx-auto px-4 py-4">
-          <div className="flex items-center space-x-3">
-            <button 
-              onClick={() => window.history.back()} 
-              className="p-1 text-gray-600 hover:text-blue-600"
-              data-testid="button-back"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <div>
-              <h1 className="text-xl font-bold text-gray-800">Add New Bill</h1>
-              <p className="text-sm text-gray-600">3 required + 2 optional fields</p>
-            </div>
+      <header className="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-10">
+        <div className="max-w-md mx-auto flex items-center p-4">
+          <button 
+            onClick={() => window.history.back()}
+            className="p-2 hover:bg-gray-100 rounded-xl transition-colors mr-3"
+            data-testid="button-back"
+          >
+            <ArrowLeft className="w-6 h-6 text-gray-700" />
+          </button>
+          <div>
+            <h1 className="text-xl font-bold text-gray-900">Add New Bill</h1>
+            <p className="text-sm text-gray-500">Enter your bill information</p>
           </div>
         </div>
       </header>
 
       {/* Content */}
       <div className="max-w-md mx-auto p-4 space-y-4">
-        {/* Bill Name */}
+        {/* Bill Provider Name */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Bill Name</h3>
-          <select
-            value={billData.name}
-            onChange={(e) => handleInputChange('name', e.target.value)}
-            className={`w-full px-4 py-3 border rounded-lg outline-none ${
-              validationErrors.name ? 'border-red-300 bg-red-50' : 'border-gray-200 focus:ring-2 focus:ring-blue-500'
-            }`}
-            data-testid="select-bill-name"
-          >
-            <option value="">Choose a provider...</option>
-            {commonProviders.map(provider => (
-              <option key={provider} value={provider}>{provider}</option>
-            ))}
-          </select>
-          
-          {billData.name === "" && (
-            <input
-              type="text"
-              placeholder="Enter custom provider name"
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">Bill Provider</h3>
+          <div className="space-y-3">
+            {/* Common providers dropdown */}
+            <select 
               value={billData.name}
               onChange={(e) => handleInputChange('name', e.target.value)}
-              className={`w-full px-4 py-3 border rounded-lg outline-none mt-3 ${
-                validationErrors.name ? 'border-red-300 bg-red-50' : 'border-gray-200 focus:ring-2 focus:ring-blue-500'
-              }`}
-              data-testid="input-custom-name"
-            />
-          )}
-          
-          {validationErrors.name && (
-            <div className="flex items-center mt-2 text-red-600 text-sm">
-              <AlertCircle className="w-4 h-4 mr-1" />
-              {validationErrors.name}
-            </div>
-          )}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              data-testid="select-provider"
+            >
+              <option value="">Select a provider...</option>
+              {commonProviders.map(provider => (
+                <option key={provider} value={provider}>{provider}</option>
+              ))}
+              <option value="custom">Other (type your own)</option>
+            </select>
+            
+            {/* Custom provider input */}
+            {(billData.name === 'custom' || !commonProviders.includes(billData.name)) && billData.name !== '' && (
+              <input
+                type="text"
+                placeholder="Enter provider name"
+                value={billData.name === 'custom' ? '' : billData.name}
+                onChange={(e) => handleInputChange('name', e.target.value)}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                data-testid="input-custom-provider"
+              />
+            )}
+            {validationErrors.name && (
+              <p className="text-red-600 text-sm">{validationErrors.name}</p>
+            )}
+          </div>
         </div>
 
-        {/* Required Fields */}
+        {/* Required Fields Section */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Required Information</h3>
-          
-          {/* Account Number */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Account Number *</label>
-            <input
-              type="text"
-              placeholder="Enter your account number"
-              value={billData.accountNumber}
-              onChange={(e) => handleInputChange('accountNumber', e.target.value)}
-              className={`w-full px-4 py-3 border rounded-lg outline-none ${
-                validationErrors.accountNumber ? 'border-red-300 bg-red-50' : 'border-gray-200 focus:ring-2 focus:ring-blue-500'
-              }`}
-              data-testid="input-account-number"
-            />
-            {validationErrors.accountNumber && (
-              <div className="flex items-center mt-1 text-red-600 text-sm">
-                <AlertCircle className="w-4 h-4 mr-1" />
-                {validationErrors.accountNumber}
-              </div>
-            )}
-          </div>
+          <div className="space-y-4">
+            {/* Account Number */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Account Number *</label>
+              <input
+                type="text"
+                placeholder="Enter account number"
+                value={billData.accountNumber}
+                onChange={(e) => handleInputChange('accountNumber', e.target.value)}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                data-testid="input-account-number"
+              />
+              {validationErrors.accountNumber && (
+                <p className="text-red-600 text-sm mt-1">{validationErrors.accountNumber}</p>
+              )}
+            </div>
 
-          {/* Monthly Amount */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Monthly Amount (CAD) *</label>
-            <div className="relative">
-              <span className="absolute left-3 top-3 text-gray-500">$</span>
+            {/* Amount */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Amount *</label>
               <input
                 type="number"
-                step="0.01"
                 placeholder="0.00"
+                step="0.01"
                 value={billData.amount}
                 onChange={(e) => handleInputChange('amount', e.target.value)}
-                className={`w-full pl-8 pr-4 py-3 border rounded-lg outline-none ${
-                  validationErrors.amount ? 'border-red-300 bg-red-50' : 'border-gray-200 focus:ring-2 focus:ring-blue-500'
-                }`}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 data-testid="input-amount"
               />
+              {validationErrors.amount && (
+                <p className="text-red-600 text-sm mt-1">{validationErrors.amount}</p>
+              )}
             </div>
-            {validationErrors.amount && (
-              <div className="flex items-center mt-1 text-red-600 text-sm">
-                <AlertCircle className="w-4 h-4 mr-1" />
-                {validationErrors.amount}
-              </div>
-            )}
-          </div>
 
-          {/* Due Date */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Due Date *</label>
-            <input
-              type="date"
-              value={billData.dueDate}
-              onChange={(e) => handleInputChange('dueDate', e.target.value)}
-              className={`w-full px-4 py-3 border rounded-lg outline-none ${
-                validationErrors.dueDate ? 'border-red-300 bg-red-50' : 'border-gray-200 focus:ring-2 focus:ring-blue-500'
-              }`}
-              data-testid="input-due-date"
-            />
-            {validationErrors.dueDate && (
-              <div className="flex items-center mt-1 text-red-600 text-sm">
-                <AlertCircle className="w-4 h-4 mr-1" />
-                {validationErrors.dueDate}
-              </div>
-            )}
+            {/* Due Date */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Due Date *</label>
+              <input
+                type="date"
+                value={billData.dueDate}
+                onChange={(e) => handleInputChange('dueDate', e.target.value)}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                data-testid="input-due-date"
+              />
+              {validationErrors.dueDate && (
+                <p className="text-red-600 text-sm mt-1">{validationErrors.dueDate}</p>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Optional Fields */}
+        {/* Optional Settings */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Optional Settings</h3>
-          
-          {/* Reminder Lead Time */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Reminder Lead Time</label>
-            <select
-              value={billData.leadDays}
-              onChange={(e) => handleInputChange('leadDays', parseInt(e.target.value) as 1 | 3 | 7)}
-              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              data-testid="select-lead-days"
-            >
-              <option value={1}>1 day before</option>
-              <option value={3}>3 days before (default)</option>
-              <option value={7}>7 days before</option>
-            </select>
-          </div>
+          <div className="space-y-4">
+            {/* Frequency */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Frequency</label>
+              <select
+                value={billData.frequency}
+                onChange={(e) => handleInputChange('frequency', e.target.value)}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                data-testid="select-frequency"
+              >
+                <option value="monthly">Monthly</option>
+                <option value="biweekly">Bi-weekly</option>
+                <option value="weekly">Weekly</option>
+              </select>
+            </div>
 
-          {/* Frequency */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Payment Frequency</label>
-            <select
-              value={billData.frequency}
-              onChange={(e) => handleInputChange('frequency', e.target.value as "monthly" | "biweekly" | "weekly")}
-              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              data-testid="select-frequency"
-            >
-              <option value="monthly">Monthly (default)</option>
-              <option value="biweekly">Bi-weekly</option>
-              <option value="weekly">Weekly</option>
-            </select>
+            {/* Lead Days */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Reminder Days</label>
+              <select
+                value={billData.leadDays}
+                onChange={(e) => handleInputChange('leadDays', parseInt(e.target.value))}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                data-testid="select-lead-days"
+              >
+                <option value={1}>1 day before</option>
+                <option value={3}>3 days before</option>
+                <option value={7}>7 days before</option>
+              </select>
+            </div>
           </div>
         </div>
 
         {/* Save Button */}
-        <button
-          onClick={handleSave}
-          disabled={addBillMutation.isPending}
-          className="w-full bg-blue-600 text-white py-4 rounded-xl font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          data-testid="button-save-bill"
-        >
-          {addBillMutation.isPending ? "Adding Bill..." : "Add Bill"}
-        </button>
+        <div className="sticky bottom-0 bg-white border-t border-gray-100 p-4">
+          <button
+            onClick={handleSave}
+            disabled={addBillMutation.isPending}
+            className={`w-full py-4 px-6 rounded-2xl font-semibold text-white transition-colors ${
+              addBillMutation.isPending 
+                ? 'bg-gray-400 cursor-not-allowed' 
+                : 'bg-blue-600 hover:bg-blue-700'
+            }`}
+            data-testid="button-save-bill"
+          >
+            {addBillMutation.isPending ? (
+              <div className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                Adding Bill...
+              </div>
+            ) : (
+              'Save Bill'
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );

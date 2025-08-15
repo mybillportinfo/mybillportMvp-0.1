@@ -4,6 +4,8 @@ const mailerSend = new MailerSend({
   apiKey: process.env.MAILERSEND_API_KEY || '',
 });
 
+console.log('MailerSend API Key configured:', !!process.env.MAILERSEND_API_KEY);
+
 const fromEmail = 'mybillport@trial-351ndgwr0p8lzqx8.mlsender.net'; // Default MailerSend domain
 const fromName = 'MyBillPort';
 

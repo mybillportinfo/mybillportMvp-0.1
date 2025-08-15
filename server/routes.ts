@@ -18,6 +18,14 @@ import nodemailer from 'nodemailer';
 const accessTokens = new Map<string, string>();
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Import and register testing routes
+  const { registerEmailTestRoutes } = await import('./routes/email-test');
+  const { registerAdminRoutes } = await import('./routes/admin-config');
+  
+  // Register testing and admin routes
+  registerEmailTestRoutes(app);
+  registerAdminRoutes(app);
+
   // Seed database and get demo user ID
   let DEMO_USER_ID = await seedDatabase();
   if (!DEMO_USER_ID) {

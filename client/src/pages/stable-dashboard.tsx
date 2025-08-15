@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import BottomNavigation from "../components/bottom-navigation";
@@ -45,21 +45,63 @@ export default function StableDashboard() {
     return 'upcoming';
   };
 
-  // Convert Firebase bills to display format
-  const bills = firebaseBills.map(bill => ({
-    id: bill.id,
-    company: bill.name,
-    icon: getBillIcon(bill.name),
-    amount: bill.amount,
-    dueDate: bill.dueDate.toISOString().split('T')[0],
-    status: getBillStatus(bill.dueDate, bill.paid),
-    category: bill.category || 'General',
-    color: bill.paid ? 'green' : getBillStatus(bill.dueDate, bill.paid) === 'due_soon' ? 'red' : 'blue',
-    accountNumber: bill.accountNumber,
-    frequency: bill.frequency,
-    leadDays: bill.leadDays,
-    paid: bill.paid
-  }));
+  // Convert Firebase bills to display format and sort them
+  const bills = useMemo(() => {
+    const convertedBills = firebaseBills.map(bill => ({
+      id: bill.id,
+      company: bill.name,
+      icon: getBillIcon(bill.name),
+      amount: bill.amount,
+      dueDate: bill.dueDate.toISOString().split('T')[0],
+      status: getBillStatus(bill.dueDate, bill.paid),
+      category: bill.category || 'General',
+      color: bill.paid ? 'green' : getBillStatus(bill.dueDate, bill.paid) === 'due_soon' ? 'red' : 'blue',
+      accountNumber: bill.accountNumber,
+      frequency: bill.frequency,
+      leadDays: bill.leadDays,
+      paid: bill.paid
+    }));
+
+    // Sort unpaid bills by soonest due date first
+    return convertedBills.sort((a, b) => {
+      // Paid bills go to bottom
+      if (a.paid && !b.paid) return 1;
+      if (!a.paid && b.paid) return -1;
+      
+      // For unpaid bills, sort by due date (soonest first)
+      if (!a.paid && !b.paid) {
+        const dateA = new Date(a.dueDate);
+        const dateB = new Date(b.dueDate);
+        return dateA.getTime() - dateB.getTime();
+      }
+      
+      return 0;
+    });
+  }, [firebaseBills]);
+
+  // Categorize bills for section display
+  const categorizedBills = useMemo(() => {
+    const now = new Date();
+    const sevenDaysFromNow = new Date();
+    sevenDaysFromNow.setDate(now.getDate() + 7);
+
+    const overdue: any[] = [];
+    const dueSoon: any[] = [];
+    const others: any[] = [];
+
+    bills.filter(bill => !bill.paid).forEach(bill => {
+      const dueDate = new Date(bill.dueDate);
+      if (dueDate < now) {
+        overdue.push(bill);
+      } else if (dueDate <= sevenDaysFromNow) {
+        dueSoon.push(bill);
+      } else {
+        others.push(bill);
+      }
+    });
+
+    return { overdue, dueSoon, others };
+  }, [bills]);
 
   useEffect(() => {
     let mounted = true;
