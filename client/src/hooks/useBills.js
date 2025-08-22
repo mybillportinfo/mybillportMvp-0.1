@@ -12,12 +12,12 @@ export function useBills() {
       const response = await apiRequest("GET", "/api/bills");
       return response.json();
     },
-    // Refetch every 30 seconds for near real-time updates
-    refetchInterval: 30000,
+    // Refetch every 60 seconds to reduce server load
+    refetchInterval: 60000,
     // Refetch when user focuses the window
     refetchOnWindowFocus: true,
-    // Keep data fresh
-    staleTime: 0
+    // Cache data for 30 seconds to improve performance
+    staleTime: 30000
   });
 
   // Filter unpaid bills and sort by due date (matching your Firestore query)
@@ -44,7 +44,7 @@ export function useBillsFiltered(filter = 'all') {
       const response = await apiRequest("GET", "/api/bills");
       return response.json();
     },
-    refetchInterval: 30000,
+    refetchInterval: 60000,
     refetchOnWindowFocus: true
   });
 
