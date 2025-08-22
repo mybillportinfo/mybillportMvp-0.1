@@ -7,6 +7,7 @@ import NotFound from "@/pages/not-found";
 import Dashboard from "./pages/dashboard";
 import FastDashboard from "./pages/fast-dashboard";
 import SimpleFastDashboard from "./pages/simple-fast-dashboard";
+import NoAuthDashboard from "./pages/no-auth-dashboard";
 import Payments from "./pages/payments";
 import Rewards from "./pages/rewards";
 import Profile from "./pages/profile";
@@ -41,7 +42,7 @@ import CheckoutPage from "./pages/checkout";
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={SimpleFastDashboard} />
+      <Route path="/" component={NoAuthDashboard} />
       <Route path="/test" component={TestDashboard} />
       <Route path="/signup" component={Signup} />
       <Route path="/login" component={Login} />
