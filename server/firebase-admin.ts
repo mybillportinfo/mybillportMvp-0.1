@@ -1,4 +1,4 @@
-import * as admin from 'firebase-admin';
+import admin from 'firebase-admin';
 
 let adminApp: any = null;
 let adminDb: any = null;
@@ -34,7 +34,7 @@ export function initializeFirebaseAdmin() {
 
         adminApp = admin.initializeApp({
           credential: admin.credential.cert(serviceAccount),
-          projectId: serviceAccount.project_id
+          projectId: serviceAccount.projectId || serviceAccount.project_id
         });
       }
     }

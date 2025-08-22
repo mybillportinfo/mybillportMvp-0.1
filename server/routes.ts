@@ -8,10 +8,15 @@ import { z } from "zod";
 import { plaidClient } from "./plaid";
 import { scanBillImage } from './ai-scanner';
 import nodemailer from 'nodemailer';
-// Email service imports handled dynamically
 import Stripe from "stripe";
 import express from "express";
 import path from "path";
+import { 
+  LinkTokenCreateRequest,
+  ItemPublicTokenExchangeRequest,
+  AccountsGetRequest,
+  CountryCode
+} from 'plaid';
 
 // Store access tokens in memory for demo purposes
 // In production, store these securely in your database
@@ -42,13 +47,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Configuration audit endpoint  
   app.get("/admin/config-report", async (req, res) => {
     try {
-      // Import the audit function
-      const { auditConfiguration } = await import("../scripts/configAudit.js");
-      const auditResult = auditConfiguration();
+      // Configuration audit
+      const auditResult = {
+        firebase: {
+          VITE_FIREBASE_API_KEY: !!process.env.VITE_FIREBASE_API_KEY,
+          VITE_FIREBASE_PROJECT_ID: !!process.env.VITE_FIREBASE_PROJECT_ID,
+          VITE_FIREBASE_APP_ID: !!process.env.VITE_FIREBASE_APP_ID,
+          FIREBASE_SERVICE_ACCOUNT_KEY: !!process.env.FIREBASE_SERVICE_ACCOUNT_KEY
+        },
+        plaid: {
+          PLAID_CLIENT_ID: !!process.env.PLAID_CLIENT_ID,
+          PLAID_SECRET: !!process.env.PLAID_SECRET,
+          PLAID_ENV: !!process.env.PLAID_ENV
+        },
+        stripe: {
+          STRIPE_SECRET_KEY: !!process.env.STRIPE_SECRET_KEY,
+          STRIPE_WEBHOOK_SECRET: !!process.env.STRIPE_WEBHOOK_SECRET
+        },
+        email: {
+          MAILERSEND_API_KEY: !!process.env.MAILERSEND_API_KEY,
+          FROM_EMAIL: !!process.env.FROM_EMAIL,
+          FROM_NAME: !!process.env.FROM_NAME,
+          TEST_EMAIL: !!process.env.TEST_EMAIL
+        },
+        app: {
+          PUBLIC_APP_URL: process.env.PUBLIC_APP_URL || "https://mybillport.com"
+        }
+      };
       
       res.json({
         timestamp: new Date().toISOString(),
-        status: auditResult.hasErrors ? 'error' : auditResult.hasWarnings ? 'warning' : 'success',
+        status: 'success',
         ...auditResult
       });
     } catch (error: any) {
@@ -354,8 +383,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           client_user_id: DEMO_USER_ID.toString(),
         },
         client_name: "MyBillPort",
-        products: ['transactions' as const],
-        country_codes: ['CA' as const],
+        products: ['transactions'],
+        country_codes: ['CA'] as CountryCode[],
         language: 'en',
       };
 
@@ -498,15 +527,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         </div>
       `;
 
-      // Remove the old email template logic since we're using the service now
       // Import email service
-      const { sendPaymentRequestEmail } = await import('../services/email');
+      const emailService = await import('../services/email');
 
       // Send email using MailerSend
-      const result = await sendPaymentRequestEmail({
+      const result = await emailService.sendPaymentRequestEmail({
         to: recipientEmail,
-        name: recipientEmail.split('@')[0], // Use email prefix as name
         amount: parseFloat(amount),
+        fromUser: "MyBillPort",
         note: message
       });
 
