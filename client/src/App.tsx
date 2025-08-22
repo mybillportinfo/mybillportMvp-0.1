@@ -39,7 +39,7 @@ import CheckoutPage from "./pages/checkout";
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={StableDashboard} />
+      <Route path="/" component={Dashboard} />
       <Route path="/test" component={TestDashboard} />
       <Route path="/signup" component={Signup} />
       <Route path="/login" component={Login} />
