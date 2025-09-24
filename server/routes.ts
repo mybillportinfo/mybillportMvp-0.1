@@ -590,8 +590,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         port: 587,
         secure: false,
         auth: {
-          user: 'mybillportinfo@gmail.com',
-          pass: 'mybillport2024!' // In production, use environment variables
+          user: process.env.FROM_EMAIL || 'noreply@example.com',
+          pass: process.env.SMTP_PASSWORD || 'CONFIGURE_SMTP_PASSWORD'
         }
       });
 
