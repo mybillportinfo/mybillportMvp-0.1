@@ -1,98 +1,113 @@
-import { db } from "./db";
-import { users, bills, rewards } from "@shared/schema";
+import { storage } from "./storage";
 
-export async function seedDatabase() {
-  // Check if data already exists
-  const existingUsers = await db.select().from(users).limit(1);
-  if (existingUsers.length > 0) {
-    console.log("Database already seeded, skipping...");
-    return;
-  }
+export async function seedDatabase(): Promise<string | null> {
+  try {
+    // Check if demo user already exists
+    const existingUser = await storage.getUserByUsername("johndoe");
+    if (existingUser) {
+      console.log("Database already seeded, skipping...");
+      return null;
+    }
 
-  console.log("Seeding database with demo data...");
+    console.log("Seeding database with demo data...");
 
-  // Create demo user
-  const [demoUser] = await db
-    .insert(users)
-    .values({
+    // Create demo user
+    const demoUser = await storage.createUser({
       username: "johndoe",
       password: "demo123",
       name: "John Doe"
-    })
-    .returning();
+    });
 
-  // Create demo bills
-  await db.insert(bills).values([
-    {
-      userId: demoUser.id,
-      name: "Electricity Bill",
-      company: "ConEd Energy",
-      amount: "247.80",
-      dueDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000), // tomorrow
-      priority: "urgent" as const,
+    const userId = demoUser.id;
+
+    // Create demo bills with Canadian utilities
+    await storage.createBill({
+      userId,
+      name: "Hydro One",
+      company: "Hydro One Networks",
+      amount: "187.45",
+      dueDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
+      priority: "urgent",
       icon: "fas fa-bolt",
       isPaid: 0,
-    },
-    {
-      userId: demoUser.id,
-      name: "Credit Card",
-      company: "Chase Sapphire",
-      amount: "1245.30",
-      dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // in 2 days
-      priority: "urgent" as const,
-      icon: "fas fa-credit-card",
+    });
+
+    await storage.createBill({
+      userId,
+      name: "Enbridge Gas",
+      company: "Enbridge Gas Distribution",
+      amount: "156.80",
+      dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
+      priority: "urgent",
+      icon: "fas fa-fire",
       isPaid: 0,
-    },
-    {
-      userId: demoUser.id,
-      name: "Internet Bill",
-      company: "Spectrum",
-      amount: "89.99",
-      dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // in 5 days
-      priority: "medium" as const,
-      icon: "fas fa-wifi",
-      isPaid: 0,
-    },
-    {
-      userId: demoUser.id,
-      name: "Phone Bill",
-      company: "Verizon",
+    });
+
+    await storage.createBill({
+      userId,
+      name: "Rogers Wireless",
+      company: "Rogers Communications",
       amount: "125.00",
-      dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // in 7 days
-      priority: "medium" as const,
+      dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+      priority: "medium",
       icon: "fas fa-phone",
       isPaid: 0,
-    },
-    {
-      userId: demoUser.id,
+    });
+
+    await storage.createBill({
+      userId,
+      name: "Bell Internet",
+      company: "Bell Canada",
+      amount: "99.99",
+      dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      priority: "medium",
+      icon: "fas fa-wifi",
+      isPaid: 0,
+    });
+
+    await storage.createBill({
+      userId,
       name: "Netflix",
-      company: "Streaming Service",
-      amount: "15.99",
-      dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // in 15 days
-      priority: "low" as const,
+      company: "Netflix Canada",
+      amount: "22.99",
+      dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
+      priority: "low",
       icon: "fas fa-tv",
       isPaid: 0,
-    }
-  ]);
+    });
 
-  // Create demo rewards
-  await db.insert(rewards).values([
-    {
-      userId: demoUser.id,
+    await storage.createBill({
+      userId,
+      name: "Toronto Hydro",
+      company: "Toronto Hydro Electric",
+      amount: "142.30",
+      dueDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
+      priority: "medium",
+      icon: "fas fa-bolt",
+      isPaid: 0,
+    });
+
+    // Create demo rewards
+    await storage.createReward({
+      userId,
       points: 250,
       title: "On-time Payment Bonus",
       description: "Earned for paying 5 bills on time",
       isRedeemed: 0,
-    },
-    {
-      userId: demoUser.id,
+    });
+
+    await storage.createReward({
+      userId,
       points: 100,
       title: "First Payment",
       description: "Welcome bonus for first payment",
       isRedeemed: 0,
-    }
-  ]);
+    });
 
-  console.log("Database seeded successfully!");
-  return demoUser.id;
+    console.log("Database seeded successfully with Canadian utilities!");
+    return userId;
+  } catch (error) {
+    console.error("Seeding error:", error);
+    return null;
+  }
 }

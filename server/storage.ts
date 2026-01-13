@@ -13,6 +13,7 @@ export interface IStorage {
   getBill(id: string): Promise<Bill | undefined>;
   createBill(bill: InsertBill): Promise<Bill>;
   updateBill(id: string, updates: Partial<Bill>): Promise<Bill | undefined>;
+  deleteBill(id: string): Promise<boolean>;
   markBillAsPaid(billId: string): Promise<Bill | undefined>;
   updateBillStatus(billId: string, status: 'paid' | 'pending' | 'overdue'): Promise<Bill | undefined>;
   
@@ -83,6 +84,11 @@ export class DatabaseStorage implements IStorage {
       .where(eq(bills.id, billId))
       .returning();
     return bill || undefined;
+  }
+
+  async deleteBill(id: string): Promise<boolean> {
+    const result = await db.delete(bills).where(eq(bills.id, id)).returning();
+    return result.length > 0;
   }
 
   async getPaymentsByUserId(userId: string): Promise<Payment[]> {
@@ -206,6 +212,18 @@ export class MemoryStorage implements IStorage {
 
   async markBillAsPaid(billId: string): Promise<Bill | undefined> {
     return this.updateBill(billId, { isPaid: 1 });
+  }
+
+  async deleteBill(id: string): Promise<boolean> {
+    const bill = this.billsById.get(id);
+    if (!bill) return false;
+    
+    this.billsById.delete(id);
+    const userBills = this.billsByUser.get(bill.userId) || [];
+    const filtered = userBills.filter(b => b.id !== id);
+    this.billsByUser.set(bill.userId, filtered);
+    
+    return true;
   }
 
   async getPaymentsByUserId(userId: string): Promise<Payment[]> {

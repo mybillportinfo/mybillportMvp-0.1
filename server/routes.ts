@@ -136,8 +136,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerEmailTestRoutes(app);
   registerAdminRoutes(app);
 
-  // Use fallback demo user ID initially - seeding moved to /api/seed endpoint
-  let DEMO_USER_ID: string = "demo-user-1";
+  // Demo user ID - will be set dynamically on seed or retrieved from existing data
+  let DEMO_USER_ID: string = "";
+  
+  // Try to load existing demo user on startup
+  (async () => {
+    try {
+      const existingUser = await storage.getUserByUsername("johndoe");
+      if (existingUser) {
+        DEMO_USER_ID = existingUser.id;
+        console.log("✅ Loaded existing demo user:", DEMO_USER_ID);
+      }
+    } catch (error) {
+      console.log("No existing demo user found, use /api/seed to create one");
+    }
+  })();
   
   // Optional seeding endpoint
   app.post("/api/seed", async (req, res) => {
@@ -147,7 +160,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         DEMO_USER_ID = userId;
         res.json({ success: true, message: "Database seeded successfully", userId });
       } else {
-        res.json({ success: true, message: "Database already seeded" });
+        // User exists, retrieve their ID
+        const existingUser = await storage.getUserByUsername("johndoe");
+        if (existingUser) {
+          DEMO_USER_ID = existingUser.id;
+          res.json({ success: true, message: "Database already seeded", userId: existingUser.id });
+        } else {
+          res.json({ success: true, message: "Database already seeded" });
+        }
       }
     } catch (error: any) {
       res.status(500).json({ success: false, error: error.message });
@@ -182,6 +202,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete a bill
+  app.delete("/api/bills/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const bill = await storage.getBill(id);
+      
+      if (!bill) {
+        return res.status(404).json({ message: "Bill not found" });
+      }
+
+      const deleted = await storage.deleteBill(id);
+      
+      if (deleted) {
+        res.json({ success: true, message: "Bill deleted successfully" });
+      } else {
+        res.status(500).json({ message: "Failed to delete bill" });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete bill" });
+    }
+  });
+
   // Request Money API endpoint
   app.post("/api/request-money", async (req, res) => {
     try {
@@ -196,9 +238,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const result = await sendPaymentRequestEmail({
         to,
-        name,
         amount: parseFloat(amount),
-        note
+        note,
+        fromUser: name
       });
 
       if (result.success) {
@@ -677,9 +719,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Send test email
       const result = await sendPaymentRequestEmail({
         to: process.env.TEST_EMAIL,
-        name: "Test User",
         amount: 25.00,
-        note: "This is a test email from MyBillPort email service"
+        note: "This is a test email from MyBillPort email service",
+        fromUser: "Test User"
       });
 
       if (result.success) {
@@ -1020,13 +1062,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = "demo-user-1"; // In production, get from authenticated session
 
-      const request = {
+      const request: LinkTokenCreateRequest = {
         user: {
           client_user_id: userId,
         },
         client_name: "MyBillPort",
-        products: ['transactions' as const],
-        country_codes: ['CA' as const],
+        products: [Products.Transactions],
+        country_codes: [CountryCode.Ca],
         language: 'en',
       };
 
