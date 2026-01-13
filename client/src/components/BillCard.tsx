@@ -1,6 +1,6 @@
 import { Link } from "wouter";
 import { Zap, Phone, Wifi, CreditCard, Home, Droplets, Tv, Shield, Car, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useState, type MouseEvent } from "react";
 
 interface BillCardProps {
   id: string;
@@ -94,13 +94,13 @@ export default function BillCard({
     upcoming: 'text-gray-600'
   };
 
-  const handleDeleteClick = (e: React.MouseEvent) => {
+  const handleDeleteClick = (e: MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setShowConfirm(true);
   };
 
-  const handleConfirmDelete = (e: React.MouseEvent) => {
+  const handleConfirmDelete = (e: MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (onDelete) {
@@ -109,7 +109,7 @@ export default function BillCard({
     setShowConfirm(false);
   };
 
-  const handleCancelDelete = (e: React.MouseEvent) => {
+  const handleCancelDelete = (e: MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setShowConfirm(false);
