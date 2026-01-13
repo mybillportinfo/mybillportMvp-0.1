@@ -66,7 +66,7 @@ export default function LandingPage() {
           <div className="hidden md:flex items-center gap-6">
             <a href="#how-it-works" className="text-slate-600 hover:text-blue-600 transition-colors">How It Works</a>
             <a href="#features" className="text-slate-600 hover:text-blue-600 transition-colors">Features</a>
-            <Link href="/dashboard">
+            <Link href="/app">
               <Button variant="outline" className="rounded-full">Sign In</Button>
             </Link>
           </div>
@@ -92,13 +92,15 @@ export default function LandingPage() {
                 Track, scan, and manage every bill in one place — without stress.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                <Button 
-                  size="lg" 
-                  className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-full px-8 py-6 text-lg shadow-lg shadow-blue-200"
-                >
-                  Get Early Access
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </Button>
+                <Link href="/app">
+                  <Button 
+                    size="lg" 
+                    className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-full px-8 py-6 text-lg shadow-lg shadow-blue-200"
+                  >
+                    Get Early Access
+                    <ArrowRight className="ml-2 w-5 h-5" />
+                  </Button>
+                </Link>
                 <Button 
                   variant="outline" 
                   size="lg"
