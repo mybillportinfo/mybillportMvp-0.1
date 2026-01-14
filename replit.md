@@ -7,8 +7,10 @@ This project is a modern, mobile-first Progressive Web App (PWA) built with Reac
 Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (January 14, 2026)
+- ✅ Added Gmail Email Bills feature - scans inbox for bill-related emails
+- ✅ New /email-bills page to view and import bills found in emails
+- ✅ Dashboard quick actions updated to 5-button layout (Add Bill, Scan, Bank, Auto, Email)
 - ✅ Added Auto-Detect Bills feature - analyzes bank transactions to find recurring bills
-- ✅ Dashboard quick actions updated to 4-column layout with Auto Find button
 - ✅ New /auto-detect page for viewing and importing detected recurring bills
 
 ## Previous Changes (August 22, 2025)
