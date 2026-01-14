@@ -1,10 +1,16 @@
 import { PlaidApi, Configuration, PlaidEnvironments } from 'plaid';
 
+// Determine Plaid environment - normalize the value
+const plaidEnvRaw = (process.env.PLAID_ENV || '').toLowerCase().trim();
+const plaidEnv = plaidEnvRaw === 'sandbox' || plaidEnvRaw === 'production' || plaidEnvRaw === 'development' 
+  ? plaidEnvRaw 
+  : 'sandbox'; // Default to sandbox if invalid value
+
 // Plaid configuration
 const configuration = new Configuration({
-  basePath: process.env.PLAID_ENV === 'sandbox' 
+  basePath: plaidEnv === 'sandbox' 
     ? PlaidEnvironments.sandbox 
-    : process.env.PLAID_ENV === 'production' 
+    : plaidEnv === 'production' 
     ? PlaidEnvironments.production 
     : PlaidEnvironments.development,
   baseOptions: {
@@ -17,6 +23,7 @@ const configuration = new Configuration({
 
 export const plaidClient = new PlaidApi(configuration);
 
-console.log('Plaid client configured for environment:', process.env.PLAID_ENV || 'development');
+console.log('Plaid environment (raw):', process.env.PLAID_ENV);
+console.log('Plaid environment (used):', plaidEnv);
 console.log('Plaid client ID configured:', !!process.env.PLAID_CLIENT_ID);
 console.log('Plaid secret configured:', !!process.env.PLAID_SECRET);
