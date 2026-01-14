@@ -6,7 +6,12 @@ This project is a modern, mobile-first Progressive Web App (PWA) built with Reac
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
-## Recent Changes (August 22, 2025)
+## Recent Changes (January 14, 2026)
+- ✅ Added Auto-Detect Bills feature - analyzes bank transactions to find recurring bills
+- ✅ Dashboard quick actions updated to 4-column layout with Auto Find button
+- ✅ New /auto-detect page for viewing and importing detected recurring bills
+
+## Previous Changes (August 22, 2025)
 - ✅ Fixed all TypeScript compilation errors
 - ✅ Implemented comprehensive config audit system  
 - ✅ Email service fully operational with MailerSend
