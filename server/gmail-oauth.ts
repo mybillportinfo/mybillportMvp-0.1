@@ -2,11 +2,14 @@ import { google } from 'googleapis';
 import { db } from './db';
 import { gmailTokens } from '@shared/schema';
 import { eq } from 'drizzle-orm';
+import crypto from 'crypto';
 
 const GMAIL_SCOPES = [
   'https://www.googleapis.com/auth/gmail.readonly',
   'https://www.googleapis.com/auth/userinfo.email'
 ];
+
+const oauthStates = new Map<string, { timestamp: number }>();
 
 function getOAuth2Client() {
   const clientId = process.env.GMAIL_CLIENT_ID;
@@ -30,14 +33,31 @@ function getBaseUrl(): string {
   return 'http://localhost:5000';
 }
 
-export function getAuthUrl(): string {
+export function getAuthUrl(): { authUrl: string; state: string } {
   const oauth2Client = getOAuth2Client();
   
-  return oauth2Client.generateAuthUrl({
+  const state = crypto.randomBytes(16).toString('hex');
+  oauthStates.set(state, { timestamp: Date.now() });
+  
+  setTimeout(() => oauthStates.delete(state), 10 * 60 * 1000);
+  
+  const authUrl = oauth2Client.generateAuthUrl({
     access_type: 'offline',
     scope: GMAIL_SCOPES,
-    prompt: 'consent'
+    prompt: 'consent',
+    state
   });
+  
+  return { authUrl, state };
+}
+
+export function validateState(state: string): boolean {
+  if (!state || !oauthStates.has(state)) {
+    return false;
+  }
+  const stateData = oauthStates.get(state)!;
+  oauthStates.delete(state);
+  return Date.now() - stateData.timestamp < 10 * 60 * 1000;
 }
 
 export async function handleCallback(code: string): Promise<{ email: string; success: boolean }> {

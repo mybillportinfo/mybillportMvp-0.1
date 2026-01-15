@@ -7,7 +7,7 @@ import { insertBillSchema, insertPaymentSchema, insertRewardSchema } from "@shar
 import { z } from "zod";
 import { plaidClient } from "./plaid";
 import { scanBillImage } from './ai-scanner';
-import { getAuthUrl, handleCallback, getConnectionStatus, disconnectGmail, scanEmailsForBillsOAuth } from './gmail-oauth';
+import { getAuthUrl, handleCallback, getConnectionStatus, disconnectGmail, scanEmailsForBillsOAuth, validateState } from './gmail-oauth';
 import { sendPaymentRequestEmail } from '../services/email';
 import nodemailer from 'nodemailer';
 import Stripe from "stripe";
@@ -1237,7 +1237,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/gmail/connect", async (req, res) => {
     try {
-      const authUrl = getAuthUrl();
+      const { authUrl } = getAuthUrl();
       res.json({ authUrl });
     } catch (error: any) {
       console.error('Gmail connect error:', error);
@@ -1251,8 +1251,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/gmail/callback", async (req, res) => {
     try {
       const code = req.query.code as string;
+      const state = req.query.state as string;
+      
       if (!code) {
         return res.redirect('/email-bills?error=no_code');
+      }
+      
+      if (!validateState(state)) {
+        return res.redirect('/email-bills?error=invalid_state');
       }
 
       const result = await handleCallback(code);

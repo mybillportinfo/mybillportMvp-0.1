@@ -77,6 +77,7 @@ function Router() {
       <Route path="/bill-splitting" component={BillSplitting} />
       <Route path="/request-money" component={RequestMoney} />
       <Route path="/bills-dashboard" component={BillsDashboard} />
+      <Route path="/bills" component={BillsDashboard} />
       <Route path="/checkout" component={CheckoutPage} />
       <Route component={NotFound} />
     </Switch>
