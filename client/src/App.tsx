@@ -43,6 +43,8 @@ import RequestMoney from "./pages/request-money";
 import PaymentPage from "./pages/payments";
 import BillsDashboard from "./pages/bills-dashboard";
 import CheckoutPage from "./pages/checkout";
+import Privacy from "./pages/privacy";
+import Terms from "./pages/terms";
 
 function Router() {
   return (
@@ -79,6 +81,8 @@ function Router() {
       <Route path="/bills-dashboard" component={BillsDashboard} />
       <Route path="/bills" component={BillsDashboard} />
       <Route path="/checkout" component={CheckoutPage} />
+      <Route path="/privacy" component={Privacy} />
+      <Route path="/terms" component={Terms} />
       <Route component={NotFound} />
     </Switch>
   );
