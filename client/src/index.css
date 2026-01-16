@@ -3,57 +3,35 @@
 @tailwind utilities;
 
 :root {
-  --background: hsl(0, 0%, 100%);
-  --foreground: hsl(20, 14.3%, 4.1%);
-  --muted: hsl(60, 4.8%, 95.9%);
-  --muted-foreground: hsl(25, 5.3%, 44.7%);
-  --popover: hsl(0, 0%, 100%);
-  --popover-foreground: hsl(20, 14.3%, 4.1%);
+  --background: hsl(222, 47%, 11%);
+  --foreground: hsl(210, 40%, 98%);
+  --muted: hsl(217, 33%, 17%);
+  --muted-foreground: hsl(215, 20%, 65%);
+  --popover: hsl(222, 47%, 11%);
+  --popover-foreground: hsl(210, 40%, 98%);
   --card: hsl(0, 0%, 100%);
-  --card-foreground: hsl(20, 14.3%, 4.1%);
-  --border: hsl(20, 5.9%, 90%);
-  --input: hsl(20, 5.9%, 90%);
-  --primary: hsl(207, 90%, 54%);
-  --primary-foreground: hsl(211, 100%, 99%);
-  --secondary: hsl(60, 4.8%, 95.9%);
-  --secondary-foreground: hsl(24, 9.8%, 10%);
-  --accent: hsl(60, 4.8%, 95.9%);
-  --accent-foreground: hsl(24, 9.8%, 10%);
+  --card-foreground: hsl(222, 47%, 11%);
+  --border: hsl(217, 33%, 25%);
+  --input: hsl(217, 33%, 17%);
+  --primary: hsl(160, 84%, 39%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(217, 33%, 17%);
+  --secondary-foreground: hsl(210, 40%, 98%);
+  --accent: hsl(160, 84%, 39%);
+  --accent-foreground: hsl(0, 0%, 100%);
   --destructive: hsl(0, 84.2%, 60.2%);
-  --destructive-foreground: hsl(60, 9.1%, 97.8%);
-  --ring: hsl(20, 14.3%, 4.1%);
-  --radius: 0.5rem;
+  --destructive-foreground: hsl(0, 0%, 100%);
+  --ring: hsl(160, 84%, 39%);
+  --radius: 0.75rem;
   
-  /* Financial app specific colors */
-  --primary-blue: hsl(207, 90%, 54%);
-  --secondary-gray: hsl(210, 10%, 23%);
-  --success-green: hsl(120, 61%, 34%);
-  --warning-orange: hsl(36, 100%, 50%);
-  --danger-red: hsl(350, 89%, 47%);
-  --surface-white: hsl(0, 0%, 100%);
-  --background-gray: hsl(210, 17%, 98%);
-}
-
-.dark {
-  --background: hsl(240, 10%, 3.9%);
-  --foreground: hsl(0, 0%, 98%);
-  --muted: hsl(240, 3.7%, 15.9%);
-  --muted-foreground: hsl(240, 5%, 64.9%);
-  --popover: hsl(240, 10%, 3.9%);
-  --popover-foreground: hsl(0, 0%, 98%);
-  --card: hsl(240, 10%, 3.9%);
-  --card-foreground: hsl(0, 0%, 98%);
-  --border: hsl(240, 3.7%, 15.9%);
-  --input: hsl(240, 3.7%, 15.9%);
-  --primary: hsl(207, 90%, 54%);
-  --primary-foreground: hsl(211, 100%, 99%);
-  --secondary: hsl(240, 3.7%, 15.9%);
-  --secondary-foreground: hsl(0, 0%, 98%);
-  --accent: hsl(240, 3.7%, 15.9%);
-  --accent-foreground: hsl(0, 0%, 98%);
-  --destructive: hsl(0, 62.8%, 30.6%);
-  --destructive-foreground: hsl(0, 0%, 98%);
-  --ring: hsl(240, 4.9%, 83.9%);
+  --emerald: hsl(160, 84%, 39%);
+  --emerald-light: hsl(160, 84%, 45%);
+  --navy: hsl(222, 47%, 11%);
+  --navy-light: hsl(217, 33%, 17%);
+  --charcoal: hsl(220, 13%, 18%);
+  --success: hsl(142, 76%, 36%);
+  --warning: hsl(38, 92%, 50%);
+  --danger: hsl(0, 84%, 60%);
 }
 
 @layer base {
@@ -61,50 +39,74 @@
     @apply border-border;
   }
 
+  html {
+    background: hsl(222, 47%, 11%);
+  }
+
   body {
-    @apply font-sans antialiased bg-background text-foreground;
-    font-family: 'Inter', sans-serif;
+    @apply font-sans antialiased;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: linear-gradient(180deg, hsl(222, 47%, 11%) 0%, hsl(220, 40%, 13%) 100%);
+    min-height: 100vh;
+    color: hsl(210, 40%, 98%);
   }
 }
 
 @layer utilities {
-  .financial-primary {
-    @apply bg-blue-600 text-white;
+  .card-premium {
+    @apply bg-white rounded-2xl shadow-lg border-0;
   }
   
-  .financial-danger {
-    @apply bg-red-600 text-white;
+  .card-dark {
+    @apply bg-slate-800/50 rounded-2xl border border-slate-700/50 backdrop-blur-sm;
+  }
+
+  .status-upcoming {
+    @apply bg-emerald-500/20 text-emerald-400 border border-emerald-500/30;
   }
   
-  .financial-warning {
-    @apply bg-orange-500 text-white;
+  .status-due-soon {
+    @apply bg-amber-500/20 text-amber-400 border border-amber-500/30;
   }
   
-  .financial-success {
-    @apply bg-green-600 text-white;
+  .status-overdue {
+    @apply bg-red-500/20 text-red-400 border border-red-500/30;
   }
 
-  .priority-urgent {
-    @apply border-l-red-600;
+  .btn-primary {
+    @apply bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-xl transition-all duration-200;
   }
 
-  .priority-medium {
-    @apply border-l-orange-500;
+  .btn-secondary {
+    @apply bg-slate-700 hover:bg-slate-600 text-white font-medium rounded-xl transition-all duration-200;
   }
 
-  .priority-low {
-    @apply border-l-green-600;
+  .summary-card {
+    @apply bg-gradient-to-br from-slate-800/80 to-slate-800/40 rounded-2xl p-5 border border-slate-700/50;
   }
 
-  .icon-urgent {
-    @apply bg-red-50 text-red-600;
+  .nav-item {
+    @apply flex flex-col items-center gap-1 text-slate-400 hover:text-emerald-400 transition-colors;
   }
 
-  .icon-medium {
-    @apply bg-orange-50 text-orange-600;
+  .nav-item-active {
+    @apply text-emerald-400;
   }
+}
 
-  .icon-low {
-    @apply bg-green-50 text-green-600;
-  }
+.glass-effect {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.gradient-emerald {
+  background: linear-gradient(135deg, hsl(160, 84%, 39%) 0%, hsl(172, 66%, 50%) 100%);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, hsl(160, 84%, 45%) 0%, hsl(172, 66%, 55%) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
