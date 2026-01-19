@@ -6,7 +6,17 @@ MyBillPort is a modern Bill Management OS for people living in Canada to track r
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
-## Recent Changes (January 16, 2026)
+## Recent Changes (January 19, 2026)
+- ✅ Full authentication system with Firebase Auth
+- ✅ Sign up / Sign in with email/password
+- ✅ Google Sign-In integration
+- ✅ Apple Sign-In integration  
+- ✅ AuthContext for app-wide user state management
+- ✅ Improved login/signup pages with error handling and loading states
+- ✅ Settings page shows real user info and proper logout
+- ✅ Password validation with visual requirements indicator
+
+## Previous Changes (January 16, 2026)
 - ✅ Complete UI redesign with premium dark theme (navy/charcoal + emerald)
 - ✅ New dashboard with personalized greeting and summary cards (Total, Due Soon, Overdue)
 - ✅ Settings page with profile, free plan indicator, and integration placeholders
@@ -15,7 +25,7 @@ Preferred communication style: Simple, everyday language.
 - ✅ Simplified bottom navigation (Home, Add Bill, Settings)
 - ✅ Updated landing page with dark theme and phone mockup
 
-## Previous Changes (January 14, 2026)
+## Changes (January 14, 2026)
 - ✅ MVP pivot: removed non-core features (AI scanning, Plaid, camera scan)
 - ✅ Tiered email reminder system (7 days, 2 days, due day, overdue)
 - ✅ Bill type categorization (hydro, internet, phone, subscription, other)
@@ -37,9 +47,11 @@ Preferred communication style: Simple, everyday language.
 
 ### Core Pages
 - `/` - Landing page with dark theme
+- `/login` - Sign in with email/password, Google, or Apple
+- `/signup` - Create account with email/password, Google, or Apple
 - `/app` - Dashboard with greeting, summary cards, bill list
 - `/add-bill` - Add bill form with category selection
-- `/settings` - Profile, plan, connected accounts placeholders
+- `/settings` - Profile (real user info), plan, connected accounts, logout
 
 ### Backend Architecture
 - **Runtime**: Node.js with Express.js
