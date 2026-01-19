@@ -3,6 +3,7 @@ import {
   signInWithEmailAndPassword,
   signOut,
   sendPasswordResetEmail,
+  sendEmailVerification,
   signInWithPopup,
   GoogleAuthProvider,
   OAuthProvider,
@@ -37,6 +38,11 @@ export async function registerUser(email: string, password: string): Promise<Use
     console.log("Attempting to register user:", email);
     const result = await createUserWithEmailAndPassword(auth, email, password);
     console.log("Registration successful:", result.user.uid);
+    
+    // Send verification email to confirm the user's email address
+    await sendEmailVerification(result.user);
+    console.log("Verification email sent to:", email);
+    
     return result;
   } catch (error: any) {
     console.error("Registration error:", error.code, error.message);

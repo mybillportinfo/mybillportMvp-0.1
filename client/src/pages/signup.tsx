@@ -59,7 +59,7 @@ export default function Signup() {
       await registerUser(email, password);
       toast({
         title: "Account Created!",
-        description: "Welcome to MyBillPort. Redirecting to your dashboard...",
+        description: "A verification email has been sent to your inbox. Please check your email to confirm your account.",
       });
       setLocation("/app");
     } catch (err: any) {
