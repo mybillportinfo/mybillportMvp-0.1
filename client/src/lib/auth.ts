@@ -27,6 +27,7 @@ export function getFirebaseErrorMessage(errorCode: string): string {
     "auth/operation-not-allowed": "This sign-in method is not enabled. Please contact support.",
     "auth/unauthorized-domain": "This domain is not authorized for sign-in. Please contact support.",
     "auth/user-disabled": "This account has been disabled. Please contact support.",
+    "auth/firebase-app-check-token-is-invalid": "Authentication service configuration error. Please try again later or contact support.",
   };
   return errorMessages[errorCode] || `Authentication error: ${errorCode}`;
 }
