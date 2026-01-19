@@ -152,6 +152,8 @@ export async function sendWelcomeEmail(
 ): Promise<{ success: boolean; messageId?: string; error?: string }> {
   try {
     const apiKey = process.env.MAILERSEND_API_KEY;
+    console.log(`🔍 MailerSend API key check: exists=${!!apiKey}, starts_with_mlsn=${apiKey?.startsWith('mlsn.')}, length=${apiKey?.length || 0}`);
+    
     if (!apiKey || !apiKey.startsWith('mlsn.')) {
       console.log('⚠️ MailerSend API key not configured - Demo mode');
       console.log(`Welcome email would be sent to: ${to}`);
