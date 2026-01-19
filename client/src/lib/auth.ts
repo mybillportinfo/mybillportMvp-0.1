@@ -3,7 +3,6 @@ import {
   signInWithEmailAndPassword,
   signOut,
   sendPasswordResetEmail,
-  sendEmailVerification,
   signInWithPopup,
   GoogleAuthProvider,
   OAuthProvider,
@@ -39,9 +38,25 @@ export async function registerUser(email: string, password: string): Promise<Use
     const result = await createUserWithEmailAndPassword(auth, email, password);
     console.log("Registration successful:", result.user.uid);
     
-    // Send verification email to confirm the user's email address
-    await sendEmailVerification(result.user);
-    console.log("Verification email sent to:", email);
+    // Send branded welcome email via our backend (using MailerSend)
+    try {
+      const response = await fetch('/api/auth/welcome-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          email, 
+          displayName: result.user.displayName || undefined 
+        })
+      });
+      const emailResult = await response.json();
+      if (emailResult.success) {
+        console.log("Welcome email sent to:", email);
+      } else {
+        console.warn("Welcome email failed:", emailResult.error);
+      }
+    } catch (emailError) {
+      console.warn("Failed to send welcome email:", emailError);
+    }
     
     return result;
   } catch (error: any) {

@@ -146,6 +146,103 @@ export async function sendBillReminderEmail(
   }
 }
 
+export async function sendWelcomeEmail(
+  to: string,
+  userName?: string
+): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  try {
+    const apiKey = process.env.MAILERSEND_API_KEY;
+    if (!apiKey || !apiKey.startsWith('mlsn.')) {
+      console.log('⚠️ MailerSend API key not configured - Demo mode');
+      console.log(`Welcome email would be sent to: ${to}`);
+      return { success: true, messageId: 'demo-welcome' };
+    }
+
+    const sentFrom = new Sender(fromEmail, fromName);
+    const recipients = [new Recipient(to, userName)];
+    const displayName = userName || 'there';
+
+    const emailParams = new EmailParams()
+      .setFrom(sentFrom)
+      .setTo(recipients)
+      .setSubject('Welcome to MyBillPort! 🎉')
+      .setHtml(`
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #0d9488 0%, #059669 100%); color: white; padding: 30px; text-align: center;">
+            <div style="width: 60px; height: 60px; background: rgba(255,255,255,0.2); border-radius: 12px; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center;">
+              <span style="font-size: 28px; font-weight: bold;">M</span>
+            </div>
+            <h1 style="margin: 0; font-size: 28px;">Welcome to MyBillPort!</h1>
+            <p style="margin: 10px 0 0 0; opacity: 0.9;">Your personal bill management assistant</p>
+          </div>
+          
+          <div style="padding: 30px; background: white;">
+            <h2 style="color: #1f2937; margin-top: 0;">Hi ${displayName}! 👋</h2>
+            
+            <p style="color: #374151; font-size: 16px; line-height: 1.6;">
+              Thank you for joining MyBillPort! We're excited to help you take control of your bills and never miss a payment again.
+            </p>
+            
+            <div style="background: #f0fdf4; border-left: 4px solid #10b981; padding: 20px; margin: 25px 0; border-radius: 0 8px 8px 0;">
+              <h3 style="margin: 0 0 15px 0; color: #065f46;">Here's what you can do:</h3>
+              <ul style="margin: 0; padding-left: 20px; color: #374151;">
+                <li style="margin-bottom: 8px;">📋 Track all your recurring bills in one place</li>
+                <li style="margin-bottom: 8px;">🔔 Get email reminders before bills are due</li>
+                <li style="margin-bottom: 8px;">📊 See your bill overview at a glance</li>
+                <li style="margin-bottom: 8px;">✅ Mark bills as paid to stay organized</li>
+              </ul>
+            </div>
+            
+            <div style="margin: 30px 0; text-align: center;">
+              <a href="https://mybillport.com/app" style="background: #0d9488; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 16px;">
+                Start Managing Your Bills
+              </a>
+            </div>
+            
+            <p style="color: #6b7280; font-size: 14px; line-height: 1.5;">
+              If you have any questions, just reply to this email. We're here to help!
+            </p>
+          </div>
+          
+          <div style="background: #f3f4f6; padding: 20px; text-align: center; font-size: 12px; color: #6b7280;">
+            <p style="margin: 0 0 10px 0;">MyBillPort - Never miss a bill payment</p>
+            <p style="margin: 0;">
+              <a href="https://mybillport.com" style="color: #0d9488; text-decoration: none;">mybillport.com</a>
+            </p>
+          </div>
+        </div>
+      `)
+      .setText(`
+Welcome to MyBillPort!
+
+Hi ${displayName}!
+
+Thank you for joining MyBillPort! We're excited to help you take control of your bills and never miss a payment again.
+
+Here's what you can do:
+- Track all your recurring bills in one place
+- Get email reminders before bills are due
+- See your bill overview at a glance
+- Mark bills as paid to stay organized
+
+Start managing your bills: https://mybillport.com/app
+
+If you have any questions, just reply to this email. We're here to help!
+
+MyBillPort - Never miss a bill payment
+https://mybillport.com
+      `);
+
+    const response = await mailerSend.email.send(emailParams);
+    console.log(`✅ Welcome email sent to ${to}`);
+    return { success: true, messageId: response.body?.message_id };
+
+  } catch (error: any) {
+    console.error('Welcome email failed:', error);
+    return { success: false, error: error.message };
+  }
+}
+
 export async function sendPaymentRequestEmail({
   to,
   amount,

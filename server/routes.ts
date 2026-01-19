@@ -8,7 +8,7 @@ import { z } from "zod";
 import { plaidClient } from "./plaid";
 import { scanBillImage } from './ai-scanner';
 import { getAuthUrl, handleCallback, getConnectionStatus, disconnectGmail, scanEmailsForBillsOAuth, validateState } from './gmail-oauth';
-import { sendPaymentRequestEmail } from '../services/email';
+import { sendPaymentRequestEmail, sendWelcomeEmail } from '../services/email';
 import nodemailer from 'nodemailer';
 import Stripe from "stripe";
 import express from "express";
@@ -48,6 +48,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
       version: "1.0.0",
       env: process.env.NODE_ENV || "development"
     });
+  });
+
+  // Send welcome email to new users
+  app.post("/api/auth/welcome-email", async (req, res) => {
+    try {
+      const { email, displayName } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ error: "Email is required" });
+      }
+
+      const result = await sendWelcomeEmail(email, displayName);
+      
+      if (result.success) {
+        res.json({ 
+          success: true, 
+          message: "Welcome email sent successfully",
+          messageId: result.messageId
+        });
+      } else {
+        res.status(500).json({ 
+          success: false, 
+          error: result.error || "Failed to send welcome email"
+        });
+      }
+    } catch (error: any) {
+      console.error("Welcome email endpoint error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error.message || "Internal server error"
+      });
+    }
   });
 
   // Configuration audit endpoint  
