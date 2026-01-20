@@ -3,13 +3,31 @@ import {
   signInWithEmailAndPassword,
   signOut,
   sendPasswordResetEmail,
-  signInWithRedirect,
-  getRedirectResult,
+  signInWithCredential,
   GoogleAuthProvider,
   OAuthProvider,
   UserCredential,
 } from "firebase/auth";
 import { auth } from "./firebaseClient";
+
+// Declare google global for TypeScript
+declare global {
+  interface Window {
+    google?: {
+      accounts: {
+        id: {
+          initialize: (config: any) => void;
+          prompt: (callback?: (notification: any) => void) => void;
+          renderButton: (element: HTMLElement, config: any) => void;
+        };
+        oauth2: {
+          initCodeClient: (config: any) => any;
+          initTokenClient: (config: any) => any;
+        };
+      };
+    };
+  }
+}
 
 export function getFirebaseErrorMessage(errorCode: string): string {
   const errorMessages: Record<string, string> = {
@@ -87,58 +105,74 @@ export async function resetPassword(email: string): Promise<void> {
   return sendPasswordResetEmail(auth, email);
 }
 
-export async function signInWithGoogle(): Promise<void> {
-  try {
-    console.log("Attempting Google sign-in with redirect");
-    const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({
-      prompt: 'select_account'
-    });
-    
-    // Use redirect instead of popup to avoid storage-partitioned browser issues
-    await signInWithRedirect(auth, provider);
-    // Note: This function doesn't return - the page redirects to Google
-  } catch (error: any) {
-    console.error("Google sign-in error:", error.code, error.message);
-    throw error;
-  }
-}
+// Google Client ID from Firebase config
+const GOOGLE_CLIENT_ID = "533323027657-9auu1cjf8kc3bnl6kvq3pq91r4h9pq8a.apps.googleusercontent.com";
 
-// Call this on app startup to handle Google sign-in redirect result
-export async function handleGoogleRedirectResult(): Promise<UserCredential | null> {
-  try {
-    const result = await getRedirectResult(auth);
-    if (result) {
-      console.log("Google sign-in successful:", result.user.uid);
-      
-      // Check if this is a new user (first sign-in)
-      const isNewUser = result.user.metadata.creationTime === result.user.metadata.lastSignInTime;
-      if (isNewUser && result.user.email) {
-        try {
-          const response = await fetch('/api/auth/welcome-email', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-              email: result.user.email, 
-              displayName: result.user.displayName || undefined 
-            })
-          });
-          const emailResult = await response.json();
-          if (emailResult.success) {
-            console.log("Welcome email sent to:", result.user.email);
-          }
-        } catch (emailError) {
-          console.warn("Failed to send welcome email:", emailError);
-        }
-      }
-      
-      return result;
+export function signInWithGoogle(): Promise<UserCredential> {
+  return new Promise((resolve, reject) => {
+    console.log("Attempting Google sign-in with GIS");
+    
+    if (!window.google) {
+      reject(new Error("Google Sign-In not loaded. Please refresh the page."));
+      return;
     }
-    return null;
-  } catch (error: any) {
-    console.error("Google redirect result error:", error.code, error.message);
-    throw error;
-  }
+
+    // Use Google Identity Services token client
+    const client = window.google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_CLIENT_ID,
+      scope: 'email profile',
+      callback: async (response: any) => {
+        if (response.error) {
+          console.error("Google OAuth error:", response.error);
+          reject(new Error(response.error));
+          return;
+        }
+
+        try {
+          // Get user info from Google using the access token
+          const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+            headers: { Authorization: `Bearer ${response.access_token}` }
+          });
+          const userInfo = await userInfoResponse.json();
+          
+          // Create Firebase credential using the access token
+          const credential = GoogleAuthProvider.credential(null, response.access_token);
+          const result = await signInWithCredential(auth, credential);
+          
+          console.log("Google sign-in successful:", result.user.uid);
+          
+          // Check if this is a new user (first sign-in)
+          const isNewUser = result.user.metadata.creationTime === result.user.metadata.lastSignInTime;
+          if (isNewUser && result.user.email) {
+            try {
+              const emailResponse = await fetch('/api/auth/welcome-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                  email: result.user.email, 
+                  displayName: result.user.displayName || userInfo.name || undefined 
+                })
+              });
+              const emailResult = await emailResponse.json();
+              if (emailResult.success) {
+                console.log("Welcome email sent to:", result.user.email);
+              }
+            } catch (emailError) {
+              console.warn("Failed to send welcome email:", emailError);
+            }
+          }
+          
+          resolve(result);
+        } catch (error: any) {
+          console.error("Firebase credential error:", error);
+          reject(error);
+        }
+      },
+    });
+
+    // Request the access token - this opens the Google popup
+    client.requestAccessToken();
+  });
 }
 
 export async function signInWithApple(): Promise<UserCredential> {

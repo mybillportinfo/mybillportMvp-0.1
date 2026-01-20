@@ -50,15 +50,20 @@ export default function Login() {
   const handleGoogleSignIn = async () => {
     try {
       setGoogleLoading(true);
-      // This redirects to Google - page will reload after sign-in
       await signInWithGoogle();
+      toast({
+        title: "Welcome!",
+        description: "Signed in with Google successfully.",
+      });
+      setLocation("/app");
     } catch (err: any) {
       console.error("Google sign-in error:", err.code, err.message);
       toast({
         title: "Google Sign-In Failed",
-        description: getFirebaseErrorMessage(err.code),
+        description: err.message || getFirebaseErrorMessage(err.code),
         variant: "destructive",
       });
+    } finally {
       setGoogleLoading(false);
     }
   };

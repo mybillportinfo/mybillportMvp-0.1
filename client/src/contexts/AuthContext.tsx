@@ -1,7 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { User, onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebaseClient";
-import { handleGoogleRedirectResult } from "@/lib/auth";
 
 interface AuthContextType {
   user: User | null;
@@ -20,11 +19,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Handle Google sign-in redirect result on app startup
-    handleGoogleRedirectResult().catch((error) => {
-      console.error("Error handling Google redirect:", error);
-    });
-
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
       setLoading(false);
