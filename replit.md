@@ -6,7 +6,13 @@ MyBillPort is a modern Bill Management OS for people living in Canada to track r
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
-## Recent Changes (January 19, 2026)
+## Recent Changes (January 20, 2026)
+- ✅ Branded welcome emails from info@mybillport.com via MailerSend
+- ✅ Custom welcome email with MyBillPort branding, emerald colors, and CTA button
+- ✅ Welcome email automatically sent after successful signup
+- ✅ MailerSend domain verification complete (mybillport.com)
+
+## Previous Changes (January 19, 2026)
 - ✅ Full authentication system with Firebase Auth
 - ✅ Sign up / Sign in with email/password
 - ✅ Google Sign-In integration (OAuth configured for production domains)
