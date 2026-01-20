@@ -1,21 +1,35 @@
 import { MailerSend, EmailParams, Sender, Recipient } from 'mailersend';
 
-const mailerSend = new MailerSend({
-  apiKey: process.env.MAILERSEND_API_KEY || '',
-});
+// Helper to clean API key in case it has extra prefix characters
+function getCleanApiKey(): string {
+  let apiKey = process.env.MAILERSEND_API_KEY?.trim() || '';
+  if (apiKey.includes('mlsn.')) {
+    const mlsnIndex = apiKey.indexOf('mlsn.');
+    if (mlsnIndex > 0) {
+      apiKey = apiKey.substring(mlsnIndex);
+    }
+  }
+  return apiKey;
+}
 
 // Use verified MailerSend trial domain to avoid 401 errors
 const fromEmail = 'mybillport@trial-351ndgwr0p8lzqx8.mlsender.net'; // MailerSend verified domain
 const fromName = process.env.FROM_NAME || 'MyBillPort';
 
+// Create MailerSend client with cleaned API key
+function getMailerSendClient(): MailerSend {
+  return new MailerSend({ apiKey: getCleanApiKey() });
+}
+
 export async function sendTestEmail(to: string): Promise<{ success: boolean; messageId?: string; error?: string }> {
   try {
-    const apiKey = process.env.MAILERSEND_API_KEY;
+    const apiKey = getCleanApiKey();
     if (!apiKey || !apiKey.startsWith('mlsn.')) {
       console.log('⚠️ MailerSend API key not configured - Demo mode');
       return { success: true, messageId: 'demo-test-email' };
     }
 
+    const mailerSend = getMailerSendClient();
     const sentFrom = new Sender(fromEmail, fromName);
     const recipients = [new Recipient(to)];
 
@@ -86,13 +100,14 @@ export async function sendBillReminderEmail(
   reminderType: ReminderType = '2-days'
 ): Promise<{ success: boolean; messageId?: string; error?: string }> {
   try {
-    const apiKey = process.env.MAILERSEND_API_KEY;
+    const apiKey = getCleanApiKey();
     if (!apiKey || !apiKey.startsWith('mlsn.')) {
       console.log('⚠️ MailerSend API key not configured - Demo mode');
       console.log(`Bill reminder (${reminderType}) would be sent to: ${to} for bill: ${bill.name}`);
       return { success: true, messageId: 'demo-reminder' };
     }
 
+    const mailerSend = getMailerSendClient();
     const config = getReminderConfig(reminderType);
     const sentFrom = new Sender(fromEmail, fromName);
     const recipients = [new Recipient(to)];
@@ -151,7 +166,7 @@ export async function sendWelcomeEmail(
   userName?: string
 ): Promise<{ success: boolean; messageId?: string; error?: string }> {
   try {
-    const apiKey = process.env.MAILERSEND_API_KEY;
+    const apiKey = getCleanApiKey();
     console.log(`🔍 MailerSend API key check: exists=${!!apiKey}, starts_with_mlsn=${apiKey?.startsWith('mlsn.')}, length=${apiKey?.length || 0}`);
     
     if (!apiKey || !apiKey.startsWith('mlsn.')) {
@@ -160,6 +175,7 @@ export async function sendWelcomeEmail(
       return { success: true, messageId: 'demo-welcome' };
     }
 
+    const mailerSend = getMailerSendClient();
     const sentFrom = new Sender(fromEmail, fromName);
     const recipients = [new Recipient(to, userName)];
     const displayName = userName || 'there';
@@ -257,7 +273,7 @@ export async function sendPaymentRequestEmail({
   fromUser: string;
 }): Promise<{ success: boolean; messageId?: string; error?: string }> {
   try {
-    const apiKey = process.env.MAILERSEND_API_KEY;
+    const apiKey = getCleanApiKey();
     if (!apiKey || !apiKey.startsWith('mlsn.')) {
       console.log('⚠️ MailerSend API key not configured - Demo mode');
       console.log(`Payment request would be sent to: ${to} from: ${fromUser}`);
@@ -265,6 +281,7 @@ export async function sendPaymentRequestEmail({
       return { success: true, messageId: 'demo-payment-request' };
     }
 
+    const mailerSend = getMailerSendClient();
     const sentFrom = new Sender(fromEmail, fromName);
     const recipients = [new Recipient(to)];
 
