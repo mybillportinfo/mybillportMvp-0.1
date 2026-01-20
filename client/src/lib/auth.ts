@@ -105,8 +105,8 @@ export async function resetPassword(email: string): Promise<void> {
   return sendPasswordResetEmail(auth, email);
 }
 
-// Google Client ID from Firebase config
-const GOOGLE_CLIENT_ID = "533323027657-9auu1cjf8kc3bnl6kvq3pq91r4h9pq8a.apps.googleusercontent.com";
+// Google Client ID - loaded from environment variable
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
 export function signInWithGoogle(): Promise<UserCredential> {
   return new Promise((resolve, reject) => {
