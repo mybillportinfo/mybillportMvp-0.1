@@ -65,6 +65,7 @@ npm start
 VITE_FIREBASE_API_KEY=your_firebase_api_key
 VITE_FIREBASE_PROJECT_ID=your_project_id
 VITE_FIREBASE_APP_ID=your_app_id
+VITE_GOOGLE_CLIENT_ID=your_google_oauth_client_id.apps.googleusercontent.com
 FIREBASE_SERVICE_ACCOUNT_KEY={"type":"service_account",...}
 ```
 
@@ -272,27 +273,50 @@ curl -X POST http://localhost:5000/api/create_link_token
 
 ## 🚢 Deployment
 
-### Replit Deployment (Recommended)
+### Standard Node.js Deployment
 
 ```bash
-# Environment is already configured
-# Just click "Deploy" in Replit interface
-# Domain will be: mybillport-repl.repl.co
+# Build the application
+npm run build
+
+# Start production server
+npm start
 ```
 
 ### Custom Domain Setup
 
-1. **DNS Configuration**
-   ```
-   CNAME: mybillport.com → your-repl.repl.co
-   ```
+1. **Configure your hosting provider** (Vercel, Railway, Render, etc.)
 
-2. **SSL Certificate** - Automatically provided by Replit
+2. **Set all required environment variables** in your hosting dashboard
 
-3. **Environment Variables** - Update PUBLIC_APP_URL
+3. **Update PUBLIC_APP_URL**
    ```env
-   PUBLIC_APP_URL=https://mybillport.com
+   PUBLIC_APP_URL=https://yourdomain.com
    ```
+
+## 📦 GitHub Migration Notes
+
+After downloading from Replit, remove these files/dependencies:
+
+### Files to Delete
+- `.replit`
+- `replit.nix`
+- `replit.md`
+
+### Update vite.config.ts
+Remove Replit-specific plugins:
+```typescript
+// Remove these imports and usages:
+import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
+// and the cartographer plugin conditional
+```
+
+### Update package.json devDependencies
+Remove:
+```json
+"@replit/vite-plugin-cartographer": "...",
+"@replit/vite-plugin-runtime-error-modal": "..."
+```
 
 ## 🤝 Contributing
 
