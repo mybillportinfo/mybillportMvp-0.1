@@ -12,7 +12,7 @@ export default function BottomNavigation() {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-lg z-50">
+    <div className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-sm border-t border-slate-800 z-50">
       <div className="max-w-md mx-auto">
         <div className="flex justify-around items-center py-3 px-2">
           {navItems.map((item) => {
@@ -24,16 +24,16 @@ export default function BottomNavigation() {
                 href={item.path}
                 className={`flex flex-col items-center py-2 px-4 rounded-xl transition-all ${
                   isActive
-                    ? "text-teal-600"
-                    : "text-gray-400 hover:text-gray-600"
+                    ? "text-white"
+                    : "text-slate-400 hover:text-slate-300"
                 }`}
               >
                 <div className={`p-2 rounded-xl mb-1 transition-colors ${
-                  isActive ? "bg-teal-50" : ""
+                  isActive ? "bg-slate-700" : ""
                 }`}>
-                  <item.icon className={`w-5 h-5 ${isActive ? "text-teal-600" : ""}`} />
+                  <item.icon className={`w-5 h-5 ${isActive ? "text-white" : ""}`} />
                 </div>
-                <span className={`text-xs font-medium ${isActive ? "text-teal-600" : ""}`}>
+                <span className={`text-xs font-medium ${isActive ? "text-white" : ""}`}>
                   {item.label}
                 </span>
               </Link>

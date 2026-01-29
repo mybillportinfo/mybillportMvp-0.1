@@ -92,7 +92,7 @@ export default function AddBill() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g., Toronto Hydro"
-              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               required
             />
           </div>
@@ -113,14 +113,14 @@ export default function AddBill() {
                     onClick={() => setBillType(cat.id)}
                     className={`p-3 rounded-xl flex flex-col items-center transition-all ${
                       isSelected 
-                        ? "bg-emerald-100 border-2 border-emerald-500" 
+                        ? "bg-slate-100 border-2 border-primary" 
                         : "bg-slate-50 border-2 border-transparent hover:border-slate-200"
                     }`}
                   >
                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-1.5 ${cat.color}`}>
                       <Icon className="w-5 h-5" />
                     </div>
-                    <span className={`text-xs font-medium ${isSelected ? "text-emerald-700" : "text-slate-600"}`}>
+                    <span className={`text-xs font-medium ${isSelected ? "text-primary" : "text-slate-600"}`}>
                       {cat.label}
                     </span>
                   </button>
@@ -144,7 +144,7 @@ export default function AddBill() {
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="0.00"
-                  className="w-full pl-8 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                  className="w-full pl-8 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                   required
                 />
               </div>
@@ -163,7 +163,7 @@ export default function AddBill() {
                   value={dueDay}
                   onChange={(e) => setDueDay(e.target.value)}
                   placeholder="15"
-                  className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                   required
                 />
               </div>

@@ -129,7 +129,7 @@ export default function MVPDashboard() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-emerald-400" />
+        <Loader2 className="w-8 h-8 animate-spin text-accent" />
       </div>
     );
   }
@@ -141,7 +141,7 @@ export default function MVPDashboard() {
         <div className="pt-12 pb-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 gradient-emerald rounded-xl flex items-center justify-center">
+              <div className="w-10 h-10 gradient-navy rounded-xl flex items-center justify-center border border-slate-600">
                 <span className="text-white font-bold text-lg">M</span>
               </div>
               <span className="text-xl font-bold text-white">MyBillPort</span>
@@ -196,7 +196,7 @@ export default function MVPDashboard() {
 
         {sortedBills.length === 0 ? (
           <div className="card-premium p-8 text-center">
-            <CheckCircle className="w-14 h-14 text-emerald-500 mx-auto mb-4" />
+            <CheckCircle className="w-14 h-14 text-accent mx-auto mb-4" />
             <h3 className="font-semibold text-slate-900 text-lg mb-2">All caught up!</h3>
             <p className="text-slate-500 mb-6">No bills pending. Add a new bill to get started.</p>
             <Link href="/add-bill">
@@ -216,7 +216,7 @@ export default function MVPDashboard() {
                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center mr-4 ${
                     status === "overdue" ? "bg-red-100 text-red-600" :
                     status === "due-soon" ? "bg-amber-100 text-amber-600" :
-                    "bg-emerald-100 text-emerald-600"
+                    "bg-teal-50 text-teal-700"
                   }`}>
                     {getBillIcon(bill.billType)}
                   </div>
@@ -245,7 +245,7 @@ export default function MVPDashboard() {
                   
                   <button
                     onClick={() => handleMarkPaid(bill.id)}
-                    className="p-2.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all"
+                    className="p-2.5 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-xl transition-all"
                     title="Mark as paid"
                   >
                     <CheckCircle className="w-6 h-6" />
@@ -270,7 +270,7 @@ export default function MVPDashboard() {
                     <p className="font-medium text-slate-400">{bill.name}</p>
                   </div>
                   <p className="font-medium text-slate-500">${Number(bill.amount).toFixed(2)}</p>
-                  <CheckCircle className="w-5 h-5 text-emerald-500 ml-3" />
+                  <CheckCircle className="w-5 h-5 text-accent ml-3" />
                 </div>
               ))}
             </div>

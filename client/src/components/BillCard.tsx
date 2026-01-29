@@ -88,7 +88,7 @@ export default function BillCard({
   const colors = getColorsForBill(company, category);
   
   const statusColors = {
-    paid: 'text-emerald-600',
+    paid: 'text-teal-700',
     due_soon: 'text-amber-600',
     overdue: 'text-red-600',
     upcoming: 'text-gray-600'

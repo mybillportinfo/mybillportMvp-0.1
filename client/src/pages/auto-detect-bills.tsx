@@ -156,7 +156,7 @@ export default function AutoDetectBills() {
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
       <div className="max-w-md mx-auto">
-        <div className="bg-gradient-to-r from-teal-500 to-emerald-500 px-4 py-6">
+        <div className="bg-gradient-to-r from-slate-800 to-slate-900 px-4 py-6">
           <div className="flex items-center space-x-4 mb-4">
             <Link href="/app">
               <button className="p-2 bg-white/20 rounded-lg hover:bg-white/30 transition-colors">

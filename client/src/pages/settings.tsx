@@ -34,7 +34,7 @@ export default function Settings() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
+        <Loader2 className="w-8 h-8 animate-spin text-accent" />
       </div>
     );
   }
@@ -49,7 +49,7 @@ export default function Settings() {
       <div className="max-w-md mx-auto px-4">
         <div className="pt-12 pb-6">
           <div className="flex items-center space-x-3 mb-6">
-            <div className="w-10 h-10 gradient-emerald rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 gradient-navy rounded-xl flex items-center justify-center border border-slate-600">
               <span className="text-white font-bold text-lg">M</span>
             </div>
             <span className="text-xl font-bold text-white">MyBillPort</span>
@@ -66,8 +66,8 @@ export default function Settings() {
                 className="w-14 h-14 rounded-full mr-4 object-cover"
               />
             ) : (
-              <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center mr-4">
-                <span className="text-emerald-600 font-bold text-xl">{userInitial}</span>
+              <div className="w-14 h-14 bg-slate-100 rounded-full flex items-center justify-center mr-4">
+                <span className="text-slate-700 font-bold text-xl">{userInitial}</span>
               </div>
             )}
             <div className="flex-1">
@@ -76,7 +76,7 @@ export default function Settings() {
             </div>
             {!isAuthenticated && (
               <Link href="/login">
-                <button className="px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-colors">
+                <button className="px-4 py-2 bg-primary text-white rounded-xl text-sm font-medium hover:bg-primary/85 transition-colors">
                   Sign In
                 </button>
               </Link>
@@ -84,18 +84,18 @@ export default function Settings() {
           </div>
         </div>
 
-        <div className="card-premium p-5 mb-6 border-2 border-emerald-500/30">
+        <div className="card-premium p-5 mb-6 border-2 border-slate-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center mr-3">
-                <Crown className="w-5 h-5 text-emerald-600" />
+              <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center mr-3">
+                <Crown className="w-5 h-5 text-slate-600" />
               </div>
               <div>
                 <p className="font-semibold text-slate-900">Free Plan</p>
                 <p className="text-sm text-slate-500">Up to 5 bills</p>
               </div>
             </div>
-            <span className="px-3 py-1 bg-emerald-100 text-emerald-700 text-sm font-medium rounded-full">
+            <span className="px-3 py-1 bg-teal-50 text-teal-700 text-sm font-medium rounded-full">
               Active
             </span>
           </div>

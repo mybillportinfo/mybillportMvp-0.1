@@ -50,14 +50,14 @@ export default function LandingPage() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-slate-900/80 backdrop-blur-md border-b border-slate-800">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-10 h-10 gradient-emerald rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 gradient-navy rounded-xl flex items-center justify-center border border-slate-600">
               <span className="text-white font-bold text-lg">M</span>
             </div>
             <span className="font-semibold text-xl text-white">MyBillPort</span>
           </div>
           <div className="flex items-center gap-4">
             <Link href="/app">
-              <Button className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-full px-6">
+              <Button variant="accent" className="rounded-full px-6">
                 Open App
               </Button>
             </Link>
@@ -69,8 +69,8 @@ export default function LandingPage() {
       <section className="pt-32 pb-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <FadeIn>
-            <div className="inline-flex items-center gap-2 bg-emerald-500/10 text-emerald-400 px-4 py-2 rounded-full text-sm font-medium mb-6 border border-emerald-500/20">
-              <Sparkles className="w-4 h-4" />
+            <div className="inline-flex items-center gap-2 bg-slate-700/50 text-slate-300 px-4 py-2 rounded-full text-sm font-medium mb-6 border border-slate-600">
+              <Sparkles className="w-4 h-4 text-accent" />
               Built for Canadians
             </div>
             
@@ -90,7 +90,8 @@ export default function LandingPage() {
               <Link href="/app">
                 <Button 
                   size="lg" 
-                  className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-full px-8 py-6 text-lg shadow-lg shadow-emerald-500/25"
+                  variant="accent"
+                  className="rounded-full px-8 py-6 text-lg shadow-lg"
                 >
                   Get Started Free
                   <ArrowRight className="ml-2 w-5 h-5" />
@@ -109,14 +110,14 @@ export default function LandingPage() {
                     <span className="text-xs text-slate-500">9:41</span>
                     <div className="flex gap-1">
                       <div className="w-4 h-2 bg-slate-600 rounded-sm"></div>
-                      <div className="w-6 h-3 bg-emerald-500 rounded-sm"></div>
+                      <div className="w-6 h-3 bg-accent rounded-sm"></div>
                     </div>
                   </div>
                   
                   {/* App Header */}
                   <div className="px-5 py-4">
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="w-8 h-8 gradient-emerald rounded-lg flex items-center justify-center">
+                      <div className="w-8 h-8 gradient-navy rounded-lg flex items-center justify-center border border-slate-600">
                         <span className="text-white font-bold text-sm">M</span>
                       </div>
                       <span className="text-white font-semibold">MyBillPort</span>
@@ -160,7 +161,7 @@ export default function LandingPage() {
                       </div>
                       <div className="flex-1">
                         <p className="font-medium text-slate-800 text-sm">Rogers Internet</p>
-                        <p className="text-xs text-emerald-500">Due in 8 days</p>
+                        <p className="text-xs text-teal-600">Due in 8 days</p>
                       </div>
                       <p className="font-semibold text-slate-800 text-sm">$89.99</p>
                     </div>
@@ -171,8 +172,8 @@ export default function LandingPage() {
               {/* Floating notification */}
               <div className="absolute -right-4 top-32 bg-white rounded-xl p-3 shadow-lg animate-pulse">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
-                    <Bell className="w-4 h-4 text-emerald-600" />
+                  <div className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center">
+                    <Bell className="w-4 h-4 text-slate-700" />
                   </div>
                   <div>
                     <p className="text-xs font-medium text-slate-800">Reminder</p>
@@ -209,10 +210,10 @@ export default function LandingPage() {
               <FadeIn
                 key={index}
                 delay={index * 0.05}
-                className="card-dark p-6 hover:border-emerald-500/30 transition-all group"
+                className="card-dark p-6 hover:border-slate-500/40 transition-all group"
               >
-                <div className="w-12 h-12 bg-emerald-500/10 group-hover:bg-emerald-500/20 rounded-xl flex items-center justify-center mb-4 transition-colors">
-                  <feature.icon className="w-6 h-6 text-emerald-400" />
+                <div className="w-12 h-12 bg-slate-700/50 group-hover:bg-slate-700/80 rounded-xl flex items-center justify-center mb-4 transition-colors">
+                  <feature.icon className="w-6 h-6 text-slate-300" />
                 </div>
                 <h3 className="text-lg font-semibold text-white mb-2">{feature.title}</h3>
                 <p className="text-slate-400 text-sm">{feature.description}</p>
@@ -234,8 +235,8 @@ export default function LandingPage() {
             </p>
 
             {isSubmitted ? (
-              <div className="bg-emerald-500/10 backdrop-blur rounded-2xl p-6 max-w-md mx-auto border border-emerald-500/20">
-                <div className="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="bg-accent/10 backdrop-blur rounded-2xl p-6 max-w-md mx-auto border border-accent/20">
+                <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center mx-auto mb-4">
                   <CheckCircle className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="text-xl font-semibold text-white mb-2">You're on the list!</h3>
@@ -246,7 +247,8 @@ export default function LandingPage() {
                 <Link href="/app">
                   <Button 
                     size="lg"
-                    className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-full px-10 py-6 text-lg font-semibold"
+                    variant="accent"
+                    className="rounded-full px-10 py-6 text-lg font-semibold"
                   >
                     Open App
                     <ArrowRight className="ml-2 w-5 h-5" />
@@ -285,7 +287,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex items-center gap-2">
-              <div className="w-10 h-10 gradient-emerald rounded-xl flex items-center justify-center">
+              <div className="w-10 h-10 gradient-navy rounded-xl flex items-center justify-center border border-slate-600">
                 <span className="text-white font-bold text-lg">M</span>
               </div>
               <span className="font-semibold text-xl text-white">MyBillPort</span>

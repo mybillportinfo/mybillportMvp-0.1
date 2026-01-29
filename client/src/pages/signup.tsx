@@ -109,7 +109,7 @@ export default function Signup() {
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-2xl flex items-center justify-center">
+            <div className="w-16 h-16 bg-gradient-to-br from-slate-700 to-slate-900 rounded-2xl flex items-center justify-center border border-slate-600">
               <span className="text-white font-bold text-2xl">M</span>
             </div>
           </div>
@@ -146,10 +146,10 @@ export default function Signup() {
               <div className="mt-2 space-y-1">
                 {passwordRequirements.map((req, index) => (
                   <div key={index} className="flex items-center text-sm">
-                    <div className={`w-4 h-4 rounded-full mr-2 flex items-center justify-center ${req.met ? 'bg-emerald-500' : 'bg-gray-200'}`}>
+                    <div className={`w-4 h-4 rounded-full mr-2 flex items-center justify-center ${req.met ? 'bg-accent' : 'bg-gray-200'}`}>
                       {req.met && <Check className="w-3 h-3 text-white" />}
                     </div>
-                    <span className={req.met ? 'text-emerald-600' : 'text-gray-500'}>{req.label}</span>
+                    <span className={req.met ? 'text-teal-700' : 'text-gray-500'}>{req.label}</span>
                   </div>
                 ))}
               </div>
@@ -175,7 +175,7 @@ export default function Signup() {
           <Button
             type="submit"
             disabled={isAnyLoading || !allRequirementsMet || password !== confirmPassword}
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-medium"
+            className="w-full bg-primary hover:bg-primary/85 text-white py-3 rounded-xl font-medium"
           >
             {loading ? (
               <>
@@ -239,7 +239,7 @@ export default function Signup() {
         <div className="text-center mt-8">
           <p className="text-gray-600">
             Already have an account?{" "}
-            <Link href="/login" className="text-emerald-600 font-medium hover:text-emerald-700">
+            <Link href="/login" className="text-primary font-medium hover:text-primary/80">
               Sign in
             </Link>
           </p>
@@ -247,9 +247,9 @@ export default function Signup() {
 
         <p className="text-xs text-gray-500 text-center mt-6">
           By creating an account, you agree to our{" "}
-          <Link href="/terms" className="text-emerald-600 hover:underline">Terms of Service</Link>
+          <Link href="/terms" className="text-primary hover:underline">Terms of Service</Link>
           {" "}and{" "}
-          <Link href="/privacy" className="text-emerald-600 hover:underline">Privacy Policy</Link>
+          <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
         </p>
       </div>
     </div>

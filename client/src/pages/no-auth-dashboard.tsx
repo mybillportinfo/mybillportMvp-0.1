@@ -129,7 +129,7 @@ export default function NoAuthDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-teal-400 via-teal-500 to-emerald-500 pb-24">
+    <div className="min-h-screen bg-gradient-to-b from-slate-800 via-slate-800 to-slate-900 pb-24">
       <div className="max-w-md mx-auto">
         {/* Header */}
         <div className="px-6 pt-12 pb-6">
@@ -139,7 +139,7 @@ export default function NoAuthDashboard() {
                 <span className="text-teal-600 font-bold text-lg">M</span>
               </div>
               <span className="text-xl font-bold text-white">
-                MyBill<span className="text-emerald-100">Port</span>
+                MyBill<span className="text-slate-400">Port</span>
               </span>
             </div>
             <Link href="/camera-scan">
@@ -213,7 +213,7 @@ export default function NoAuthDashboard() {
               </button>
             </Link>
             <Link href="/camera-scan">
-              <button className="flex flex-col items-center justify-center space-y-1 bg-emerald-50 text-emerald-700 py-3 px-1 rounded-xl font-medium hover:bg-emerald-100 transition-colors w-full">
+              <button className="flex flex-col items-center justify-center space-y-1 bg-slate-100 text-slate-700 py-3 px-1 rounded-xl font-medium hover:bg-slate-200 transition-colors w-full">
                 <Camera className="w-5 h-5" />
                 <span className="text-[9px]">Scan</span>
               </button>

@@ -64,7 +64,7 @@ export default function AddBillSimple() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-md mx-auto">
         {/* Header */}
-        <div className="bg-gradient-to-br from-teal-500 to-emerald-600 px-6 pt-12 pb-8">
+        <div className="bg-gradient-to-br from-slate-800 to-slate-900 px-6 pt-12 pb-8">
           <button onClick={() => setLocation("/app")} className="text-white mb-4 flex items-center">
             <ArrowLeft className="w-5 h-5 mr-2" /> Back
           </button>

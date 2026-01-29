@@ -223,7 +223,7 @@ export default function EmailBills() {
 
   if (statusLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-emerald-50 pb-24">
+      <div className="min-h-screen bg-gradient-to-br from-slate-100 via-white to-slate-100 pb-24">
         <div className="max-w-md mx-auto p-4">
           <div className="flex items-center gap-3 mb-6">
             <Link href="/app">
@@ -247,7 +247,7 @@ export default function EmailBills() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-emerald-50 pb-24">
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-white to-slate-100 pb-24">
       <div className="max-w-md mx-auto p-4">
         <div className="flex items-center gap-3 mb-6">
           <Link href="/app">
@@ -256,7 +256,7 @@ export default function EmailBills() {
             </Button>
           </Link>
           <div className="flex items-center gap-2">
-            <Mail className="w-6 h-6 text-teal-600" />
+            <Mail className="w-6 h-6 text-slate-700" />
             <h1 className="text-xl font-bold text-gray-900">Email Bills</h1>
           </div>
         </div>

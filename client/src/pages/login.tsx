@@ -114,7 +114,7 @@ export default function Login() {
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-2xl flex items-center justify-center">
+            <div className="w-16 h-16 bg-gradient-to-br from-slate-700 to-slate-900 rounded-2xl flex items-center justify-center border border-slate-600">
               <span className="text-white font-bold text-2xl">M</span>
             </div>
           </div>
@@ -154,7 +154,7 @@ export default function Login() {
               type="button"
               onClick={handleForgotPassword}
               disabled={resetLoading || isAnyLoading}
-              className="text-emerald-600 hover:text-emerald-700 text-sm font-medium disabled:opacity-50"
+              className="text-primary hover:text-primary/80 text-sm font-medium disabled:opacity-50"
             >
               {resetLoading ? "Sending..." : "Forgot password?"}
             </button>
@@ -163,7 +163,7 @@ export default function Login() {
           <Button
             type="submit"
             disabled={isAnyLoading}
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-medium"
+            className="w-full bg-primary hover:bg-primary/85 text-white py-3 rounded-xl font-medium"
           >
             {loading ? (
               <>
@@ -227,7 +227,7 @@ export default function Login() {
         <div className="text-center mt-8">
           <p className="text-gray-600">
             Don't have an account?{" "}
-            <Link href="/signup" className="text-emerald-600 font-medium hover:text-emerald-700">
+            <Link href="/signup" className="text-primary font-medium hover:text-primary/80">
               Sign up
             </Link>
           </p>
