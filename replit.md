@@ -1,14 +1,21 @@
 # MyBillPort - Bill Management MVP (Canada)
 
 ## Overview
-MyBillPort is a modern Bill Management OS for people living in Canada to track recurring utility and subscription bills, see due dates clearly, and receive reminders. The app features a premium dark theme with navy/charcoal base and emerald accent colors, designed to feel as essential as a banking app with calm, trustworthy UX.
+MyBillPort is a modern Bill Management OS for people living in Canada to track recurring utility and subscription bills, see due dates clearly, and receive reminders. The app features a premium fintech color scheme with navy/slate base and muted teal accent colors, designed to feel as essential as a banking app with calm, trustworthy UX.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
-## Recent Changes (January 20, 2026)
+## Recent Changes (January 29, 2026)
+- ✅ Premium fintech color palette redesign (navy/slate/muted teal)
+- ✅ Replaced all emerald references with new professional color scheme
+- ✅ Updated buttons with navy primary, slate secondary/outline variants
+- ✅ Refined page backgrounds with calm slate gradients
+- ✅ All pages updated: landing, dashboard, settings, login, signup, add-bill
+
+## Previous Changes (January 20, 2026)
 - ✅ Branded welcome emails via MailerSend (displays as "MyBillPort")
-- ✅ Custom welcome email with MyBillPort branding, emerald colors, and CTA button
+- ✅ Custom welcome email with MyBillPort branding
 - ✅ Welcome email automatically sent after successful signup
 - ✅ Using MailerSend verified test domain for sending
 
@@ -46,10 +53,11 @@ Preferred communication style: Simple, everyday language.
 - **Routing**: Wouter
 - **Styling**: Tailwind CSS with custom CSS variables (dark theme)
 - **Build Tool**: Vite
-- **Design System**: Premium dark theme with:
-  - Navy/charcoal background (hsl(222, 47%, 11%))
+- **Design System**: Premium fintech theme with:
+  - Primary: Navy (hsl(220, 40%, 20%)) for main buttons and headers
+  - Secondary: Slate (hsl(220, 15%, 35%)) for secondary elements
+  - Accent: Muted teal (hsl(168, 55%, 42%)) for success states and CTAs
   - White cards with soft shadows
-  - Emerald accent (hsl(160, 84%, 39%))
   - Mobile-first (max-w-md container)
   - Bottom navigation with 3 sections
 
