@@ -293,8 +293,8 @@ export default function LandingPage() {
               <span className="font-semibold text-xl text-white">MyBillPort</span>
             </div>
             <div className="flex gap-6 text-slate-400 text-sm">
-              <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
-              <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
+              <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+              <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
             </div>
             <p className="text-slate-500 text-sm">
               Made with care in Canada

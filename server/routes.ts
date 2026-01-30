@@ -13,6 +13,7 @@ import nodemailer from 'nodemailer';
 import Stripe from "stripe";
 import express from "express";
 import path from "path";
+import fs from "fs";
 import { 
   LinkTokenCreateRequest,
   ItemPublicTokenExchangeRequest,
@@ -1392,6 +1393,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
         error: error.message || 'Failed to scan emails'
       });
     }
+  });
+
+  // Serve static HTML files for SEO/crawler compliance (privacy, terms)
+  // These must be served as static HTML for Google OAuth verification
+  const publicDir = path.resolve(process.cwd(), "client", "public");
+  
+  app.get("/privacy", (req, res) => {
+    const privacyPath = path.join(publicDir, "privacy.html");
+    if (fs.existsSync(privacyPath)) {
+      res.sendFile(privacyPath);
+    } else {
+      res.status(404).send('Privacy page not found');
+    }
+  });
+  
+  app.get("/privacy.html", (req, res) => {
+    res.redirect("/privacy");
+  });
+  
+  app.get("/terms", (req, res) => {
+    const termsPath = path.join(publicDir, "terms.html");
+    if (fs.existsSync(termsPath)) {
+      res.sendFile(termsPath);
+    } else {
+      res.status(404).send('Terms page not found');
+    }
+  });
+  
+  app.get("/terms.html", (req, res) => {
+    res.redirect("/terms");
   });
 
   // Note: Catch-all route handled by Vite middleware in development mode
