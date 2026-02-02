@@ -1,0 +1,130 @@
+
+~/workspace$ git rm -r --cached attached_assets/
+rm 'attached_assets/0889B332-ABDC-4A7D-9AFD-365979FFFBD9_1753672819100.PNG'
+rm 'attached_assets/5bde0248-ad38-482d-8df4-62b2dbe59430_1753672831846.JPG'
+rm 'attached_assets/5bde0248-ad38-482d-8df4-62b2dbe59430_1768343564971.JPG'
+rm 'attached_assets/CF63E950-88B6-44F4-B28F-A16CA4CA79E7_1753672809335.PNG'
+rm 'attached_assets/CF63E950-88B6-44F4-B28F-A16CA4CA79E7_1754006458943.PNG'
+rm 'attached_assets/E8669C0F-2C83-4E02-B72D-9070D2E7E487_1768343594319.PNG'
+rm 'attached_assets/E8669C0F-2C83-4E02-B72D-9070D2E7E487_1768356856772.PNG'
+rm 'attached_assets/Pasted--MASTER-PROMPT-Fix-Ship-MyBillPort-Goal-Diagnose-and-fix-all-issues-so-the-app-opens-on-mybi-1755892504080_1755892504081.txt'
+rm 'attached_assets/Pasted--MASTER-PROMPT-Fix-Ship-MyBillPort-Goal-Diagnose-and-fix-all-issues-so-the-app-opens-on-mybi-1755893704066_1755893704180.txt'
+rm 'attached_assets/Pasted--Name-Web-client-auto-created-by-Google-Service-The-nam_1768846410351.txt'
+rm 'attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735747417_1753735747487.txt'
+rm 'attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735748556_1753735748556.txt'
+rm 'attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735748573_1753735748573.txt'
+rm 'attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735748583_1753735748583.txt'
+rm 'attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735748598_1753735748598.txt'
+rm 'attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735748612_1753735748612.txt'
+rm 'attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735748651_1753735748651.txt'
+rm 'attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735748703_1753735748703.txt'
+rm 'attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735748756_1753735748756.txt'
+rm 'attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735748768_1753735748768.txt'
+rm 'attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735748808_1753735748809.txt'
+rm 'attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735748915_1753735748915.txt'
+rm 'attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735748965_1753735748965.txt'
+rm 'attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735748981_1753735748981.txt'
+rm 'attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735749020_1753735749021.txt'
+rm 'attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735749051_1753735749051.txt'
+rm 'attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735749084_1753735749084.txt'
+rm 'attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735749185_1753735749185.txt'
+rm 'attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735749235_1753735749235.txt'
+rm 'attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735749250_1753735749250.txt'
+rm 'attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735789106_1753735789106.txt'
+rm 'attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735823007_1753735823008.txt'
+rm 'attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735823503_1753735823503.txt'
+rm 'attached_assets/Pasted--Replit-Agent-Prompt-paste-this-Project-mybillport-Goal-Fix-email-billing-bugs-simplif-1755229748696_1755229748696.txt'
+rm 'attached_assets/Pasted--type-service-account-project-id-mybillport-8e05a-priva_1768347313798.txt'
+rm 'attached_assets/Pasted-Great-I-ll-write-a-single-master-prompt-you-can-paste-i_1768343531530.txt'
+rm 'attached_assets/Pasted-I-need-you-to-fully-fix-and-finalize-my-MyBillPort-app-Right-now-the-app-does-not-open-links-are-b-1755894118282_1755894118283.txt'
+rm 'attached_assets/Pasted-Master-Prompt-Milestones-for-Replit-Agent-Project-mybillport-Goal-Finish-MVP-features-with-stab-1755242752847_1755242752847.txt'
+rm 'attached_assets/Pasted-MyBillPort-High-End-MVP-Canada-ROLE-You-are-a-senior-fu_1768523694027.txt'
+rm 'attached_assets/Pasted-MyBillPort-MVP-Execution-Prompt-ROLE-You-are-a-senior-f_1768515631145.txt'
+rm 'attached_assets/Pasted-MyBillPort-Master-progress-proportional-roadmap-deep-sc_1768346106200.txt'
+rm 'attached_assets/Pasted-You-are-my-senior-full-stack-engineer-Continue-building_1765515997266.txt'
+rm 'attached_assets/content-1755231539782.md'
+rm 'attached_assets/content-1755231554796.md'
+rm 'attached_assets/logo.png'
+~/workspace$ git commit -m "Remove attached_assets with secrets"
+[main d79565f] Remove attached_assets with secrets
+ 45 files changed, 4586 deletions(-)
+ delete mode 100644 attached_assets/0889B332-ABDC-4A7D-9AFD-365979FFFBD9_1753672819100.PNG
+ delete mode 100644 attached_assets/5bde0248-ad38-482d-8df4-62b2dbe59430_1753672831846.JPG
+ delete mode 100644 attached_assets/5bde0248-ad38-482d-8df4-62b2dbe59430_1768343564971.JPG
+ delete mode 100644 attached_assets/CF63E950-88B6-44F4-B28F-A16CA4CA79E7_1753672809335.PNG
+ delete mode 100644 attached_assets/CF63E950-88B6-44F4-B28F-A16CA4CA79E7_1754006458943.PNG
+ delete mode 100644 attached_assets/E8669C0F-2C83-4E02-B72D-9070D2E7E487_1768343594319.PNG
+ delete mode 100644 attached_assets/E8669C0F-2C83-4E02-B72D-9070D2E7E487_1768356856772.PNG
+ delete mode 100644 attached_assets/Pasted--MASTER-PROMPT-Fix-Ship-MyBillPort-Goal-Diagnose-and-fix-all-issues-so-the-app-opens-on-mybi-1755892504080_1755892504081.txt
+ delete mode 100644 attached_assets/Pasted--MASTER-PROMPT-Fix-Ship-MyBillPort-Goal-Diagnose-and-fix-all-issues-so-the-app-opens-on-mybi-1755893704066_1755893704180.txt
+ delete mode 100644 attached_assets/Pasted--Name-Web-client-auto-created-by-Google-Service-The-nam_1768846410351.txt
+ delete mode 100644 attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735747417_1753735747487.txt
+ delete mode 100644 attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735748556_1753735748556.txt
+ delete mode 100644 attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735748573_1753735748573.txt
+ delete mode 100644 attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735748583_1753735748583.txt
+ delete mode 100644 attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735748598_1753735748598.txt
+ delete mode 100644 attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735748612_1753735748612.txt
+ delete mode 100644 attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735748651_1753735748651.txt
+ delete mode 100644 attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735748703_1753735748703.txt
+ delete mode 100644 attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735748756_1753735748756.txt
+ delete mode 100644 attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735748768_1753735748768.txt
+ delete mode 100644 attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735748808_1753735748809.txt
+ delete mode 100644 attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735748915_1753735748915.txt
+ delete mode 100644 attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735748965_1753735748965.txt
+ delete mode 100644 attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735748981_1753735748981.txt
+ delete mode 100644 attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735749020_1753735749021.txt
+ delete mode 100644 attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735749051_1753735749051.txt
+ delete mode 100644 attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735749084_1753735749084.txt
+ delete mode 100644 attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735749185_1753735749185.txt
+ delete mode 100644 attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735749235_1753735749235.txt
+ delete mode 100644 attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735749250_1753735749250.txt
+ delete mode 100644 attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735789106_1753735789106.txt
+ delete mode 100644 attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735823007_1753735823008.txt
+ delete mode 100644 attached_assets/Pasted--Next-Step-Add-Login-Signup-System-Firebase-Auth-We-ll-now-create-1-Signup-jsx-2-Login-1753735823503_1753735823503.txt
+ delete mode 100644 attached_assets/Pasted--Replit-Agent-Prompt-paste-this-Project-mybillport-Goal-Fix-email-billing-bugs-simplif-1755229748696_1755229748696.txt
+ delete mode 100644 attached_assets/Pasted--type-service-account-project-id-mybillport-8e05a-priva_1768347313798.txt
+ delete mode 100644 attached_assets/Pasted-Great-I-ll-write-a-single-master-prompt-you-can-paste-i_1768343531530.txt
+ delete mode 100644 attached_assets/Pasted-I-need-you-to-fully-fix-and-finalize-my-MyBillPort-app-Right-now-the-app-does-not-open-links-are-b-1755894118282_1755894118283.txt
+ delete mode 100644 attached_assets/Pasted-Master-Prompt-Milestones-for-Replit-Agent-Project-mybillport-Goal-Finish-MVP-features-with-stab-1755242752847_1755242752847.txt
+ delete mode 100644 attached_assets/Pasted-MyBillPort-High-End-MVP-Canada-ROLE-You-are-a-senior-fu_1768523694027.txt
+ delete mode 100644 attached_assets/Pasted-MyBillPort-MVP-Execution-Prompt-ROLE-You-are-a-senior-f_1768515631145.txt
+ delete mode 100644 attached_assets/Pasted-MyBillPort-Master-progress-proportional-roadmap-deep-sc_1768346106200.txt
+ delete mode 100644 attached_assets/Pasted-You-are-my-senior-full-stack-engineer-Continue-building_1765515997266.txt
+ delete mode 100644 attached_assets/content-1755231539782.md
+ delete mode 100644 attached_assets/content-1755231554796.md
+ delete mode 100644 attached_assets/logo.png
+~/workspace$ git push --force origin main
+Enumerating objects: 1220, done.
+Counting objects: 100% (1220/1220), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (1204/1204), done.
+Writing objects: 100% (1220/1220), 37.64 MiB | 5.50 MiB/s, done.
+Total 1220 (delta 908), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (908/908), done.
+remote: error: GH013: Repository rule violations found for refs/heads/main.
+remote: 
+remote: - GITHUB PUSH PROTECTION
+remote:   —————————————————————————————————————————
+remote:     Resolve the following violations before pushing again
+remote: 
+remote:     - Push cannot contain secrets
+remote: 
+remote:     
+remote:      (?) Learn how to resolve a blocked push
+remote:      https://docs.github.com/code-security/secret-scanning/working-with-secret-scanning-and-push-protection/working-with-push-protection-from-the-command-line#resolving-a-blocked-push
+remote:     
+remote:     
+remote:       —— Google Cloud Service Account Credentials ——————————
+remote:        locations:
+remote:          - commit: cf86c9e77ad9ac3478abd56d70e3adf8a84f44cf
+remote:            path: attached_assets/Pasted--type-service-account-project-id-mybillport-8e05a-priva_1768347313798.txt:1
+remote:     
+remote:        (?) To push, remove secret from commit(s) or follow this URL to allow the secret.
+remote:        https://github.com/mybillportinfo/mybillportMvp-0.1/security/secret-scanning/unblock-secret/396HlvJNCettyNK0ekT7c8hVx3P
+remote:     
+remote: 
+remote: 
+To https://github.com/mybillportinfo/mybillportMvp-0.1
+ ! [remote rejected] main -> main (push declined due to repository rule violations)
+error: failed to push some refs to 'https://github.com/mybillportinfo/mybillportMvp-0.1'
+~/workspace$ 
