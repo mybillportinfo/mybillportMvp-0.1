@@ -2,8 +2,8 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 export const metadata = {
-  title: 'Terms of Service - MyBillPort',
-  description: 'Terms and conditions for using MyBillPort bill management service.',
+  title: 'Terms of Service - BillPort',
+  description: 'Terms and conditions for using BillPort bill management service.',
 };
 
 export default function Terms() {
@@ -23,12 +23,12 @@ export default function Terms() {
         <div className="space-y-6 text-gray-700">
           <section>
             <h2 className="text-xl font-semibold text-gray-900 mb-3">1. Acceptance of Terms</h2>
-            <p>By accessing or using MyBillPort, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our service.</p>
+            <p>By accessing or using BillPort, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our service.</p>
           </section>
 
           <section>
             <h2 className="text-xl font-semibold text-gray-900 mb-3">2. Description of Service</h2>
-            <p>MyBillPort is a bill management application that helps you:</p>
+            <p>BillPort is a bill management application that helps you:</p>
             <ul className="list-disc ml-6 mt-2 space-y-1">
               <li>Track and organize your bills</li>
               <li>Receive payment reminders</li>
@@ -61,7 +61,7 @@ export default function Terms() {
 
           <section>
             <h2 className="text-xl font-semibold text-gray-900 mb-3">6. Limitation of Liability</h2>
-            <p>MyBillPort is provided &quot;as is&quot; without warranties of any kind. We are not liable for any missed payments, late fees, or other damages resulting from use of our service. Users are responsible for ensuring their bills are paid on time.</p>
+            <p>BillPort is provided &quot;as is&quot; without warranties of any kind. We are not liable for any missed payments, late fees, or other damages resulting from use of our service. Users are responsible for ensuring their bills are paid on time.</p>
           </section>
 
           <section>

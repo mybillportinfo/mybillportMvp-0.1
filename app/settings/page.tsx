@@ -98,7 +98,7 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="font-semibold text-slate-800">Free Plan</p>
-              <p className="text-sm text-slate-500">Up to 5 bills</p>
+              <p className="text-sm text-slate-500">Up to 3 bills</p>
             </div>
             <span className="px-3 py-1 bg-teal-100 text-teal-700 text-sm font-medium rounded-full">
               Active
@@ -151,7 +151,7 @@ export default function SettingsPage() {
         </button>
 
         <p className="text-center text-slate-600 text-xs pt-2">
-          MyBillPort v0.1 MVP
+          BillPort v0.1 MVP
         </p>
       </div>
 

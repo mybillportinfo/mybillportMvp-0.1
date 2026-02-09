@@ -2,8 +2,8 @@ import { ArrowLeft, Shield } from "lucide-react";
 import Link from "next/link";
 
 export const metadata = {
-  title: 'Privacy Policy - MyBillPort',
-  description: 'Learn how MyBillPort protects your personal information and data.',
+  title: 'Privacy Policy - BillPort',
+  description: 'Learn how BillPort protects your personal information and data.',
 };
 
 export default function Privacy() {
@@ -23,7 +23,7 @@ export default function Privacy() {
           </div>
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Privacy Policy</h1>
-            <p className="text-gray-500">MyBillPort Inc.</p>
+            <p className="text-gray-500">BillPort Inc.</p>
           </div>
         </div>
         
@@ -32,7 +32,7 @@ export default function Privacy() {
         <div className="space-y-8 text-gray-700 leading-relaxed">
           <section>
             <h2 className="text-xl font-semibold text-gray-900 mb-3">Introduction</h2>
-            <p>MyBillPort (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our bill management application and website (collectively, the &quot;Service&quot;). Please read this privacy policy carefully. By using the Service, you consent to the practices described in this policy.</p>
+            <p>BillPort (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our bill management application and website (collectively, the &quot;Service&quot;). Please read this privacy policy carefully. By using the Service, you consent to the practices described in this policy.</p>
           </section>
 
           <section>
@@ -61,7 +61,7 @@ export default function Privacy() {
 
           <section>
             <h2 className="text-xl font-semibold text-gray-900 mb-3">3. Google API Services Disclosure</h2>
-            <p className="mb-3">MyBillPort&apos;s use and transfer of information received from Google APIs adheres to the <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Google API Services User Data Policy</a>, including the Limited Use requirements.</p>
+            <p className="mb-3">BillPort&apos;s use and transfer of information received from Google APIs adheres to the <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Google API Services User Data Policy</a>, including the Limited Use requirements.</p>
             <p className="mb-3">When you sign in with Google:</p>
             <ul className="list-disc ml-6 space-y-2">
               <li>We only access basic profile information (name, email, profile picture)</li>
@@ -89,7 +89,7 @@ export default function Privacy() {
             <ul className="list-disc ml-6 space-y-2">
               <li><strong>Service Providers:</strong> With trusted third-party service providers who assist us in operating our Service (e.g., email delivery, hosting)</li>
               <li><strong>Legal Requirements:</strong> When required by law or to respond to legal process</li>
-              <li><strong>Protection of Rights:</strong> To protect the rights, property, or safety of MyBillPort, our users, or others</li>
+              <li><strong>Protection of Rights:</strong> To protect the rights, property, or safety of BillPort, our users, or others</li>
               <li><strong>Business Transfers:</strong> In connection with a merger, acquisition, or sale of assets</li>
             </ul>
           </section>
@@ -119,7 +119,7 @@ export default function Privacy() {
 
           <section>
             <h2 className="text-xl font-semibold text-gray-900 mb-3">9. International Users</h2>
-            <p>MyBillPort is based in Canada. If you are accessing our Service from outside Canada, please be aware that your information may be transferred to, stored, and processed in Canada. By using our Service, you consent to such transfer.</p>
+            <p>BillPort is based in Canada. If you are accessing our Service from outside Canada, please be aware that your information may be transferred to, stored, and processed in Canada. By using our Service, you consent to such transfer.</p>
           </section>
 
           <section>
@@ -131,7 +131,7 @@ export default function Privacy() {
             <h2 className="text-xl font-semibold text-gray-900 mb-3">11. Contact Us</h2>
             <p className="mb-3">If you have questions about this Privacy Policy or our privacy practices, please contact us:</p>
             <div className="bg-gray-50 rounded-lg p-4">
-              <p><strong>MyBillPort Inc.</strong></p>
+              <p><strong>BillPort Inc.</strong></p>
               <p>Email: mybillportinfo@gmail.com</p>
               <p>Website: www.mybillport.com</p>
             </div>

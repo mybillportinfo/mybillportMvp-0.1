@@ -52,7 +52,7 @@ export default function LandingPage() {
             <div className="w-10 h-10 gradient-navy rounded-xl flex items-center justify-center border border-slate-600">
               <span className="text-white font-bold text-lg">M</span>
             </div>
-            <span className="font-semibold text-xl text-white">MyBillPort</span>
+            <span className="font-semibold text-xl text-white">BillPort</span>
           </div>
           <div className="flex items-center gap-4">
             <Link href="/app">
@@ -115,7 +115,7 @@ export default function LandingPage() {
                       <div className="w-8 h-8 gradient-navy rounded-lg flex items-center justify-center border border-slate-600">
                         <span className="text-white font-bold text-sm">M</span>
                       </div>
-                      <span className="text-white font-semibold">MyBillPort</span>
+                      <span className="text-white font-semibold">BillPort</span>
                     </div>
                     <p className="text-slate-400 text-sm">Good morning</p>
                     <p className="text-white text-xl font-semibold">Here&apos;s your overview</p>
@@ -281,7 +281,7 @@ export default function LandingPage() {
               <div className="w-10 h-10 gradient-navy rounded-xl flex items-center justify-center border border-slate-600">
                 <span className="text-white font-bold text-lg">M</span>
               </div>
-              <span className="font-semibold text-xl text-white">MyBillPort</span>
+              <span className="font-semibold text-xl text-white">BillPort</span>
             </div>
             <div className="flex gap-6 text-slate-400 text-sm">
               <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>

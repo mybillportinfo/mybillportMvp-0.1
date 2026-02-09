@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Home, Plus, Settings, Bell, Check, CheckCheck, Loader2, AlertTriangle, Clock, CalendarClock } from "lucide-react";
+import { ArrowLeft, Home, Plus, Settings, Bell, Check, CheckCheck, Loader2, AlertTriangle, Clock, CalendarClock, DollarSign } from "lucide-react";
 import { useAuth } from '../contexts/AuthContext';
 import { fetchNotifications, markNotificationRead, markAllNotificationsRead, AppNotification, NotificationType } from '../lib/firebase';
 
@@ -12,6 +12,7 @@ const typeConfig: Record<NotificationType, { label: string; color: string; bgCol
   due_soon: { label: 'Due Soon', color: 'text-amber-600', bgColor: 'bg-amber-50' },
   due_today: { label: 'Due Today', color: 'text-orange-600', bgColor: 'bg-orange-50' },
   overdue: { label: 'Overdue', color: 'text-red-600', bgColor: 'bg-red-50' },
+  payment_success: { label: 'Paid', color: 'text-green-600', bgColor: 'bg-green-50' },
 };
 
 export default function NotificationsPage() {
@@ -95,6 +96,7 @@ export default function NotificationsPage() {
       case 'due_soon': return <CalendarClock className="w-5 h-5" />;
       case 'due_today': return <Clock className="w-5 h-5" />;
       case 'overdue': return <AlertTriangle className="w-5 h-5" />;
+      case 'payment_success': return <DollarSign className="w-5 h-5" />;
       default: return <Bell className="w-5 h-5" />;
     }
   };

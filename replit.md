@@ -1,30 +1,26 @@
-# MyBillPort - Bill Management MVP (Canada)
+# BillPort - Bill Management MVP (Canada)
 
 ## Overview
-MyBillPort is a modern Bill Management OS for people living in Canada to track recurring utility and subscription bills, see due dates clearly, and receive reminders. The app features a premium fintech color scheme with navy/slate base and muted teal accent colors, designed to feel as essential as a banking app with calm, trustworthy UX.
+BillPort is a production-ready Canadian bill management web app to track recurring utility, telecom, credit card and subscription bills, see due dates, and pay them via Stripe. Features Firebase Auth (email/password + Google OAuth), Firestore database, Stripe real payments (CAD), in-app notifications, and a premium fintech UI (navy/slate/muted-teal).
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (February 9, 2026)
-- ✅ FULL SCHEMA REBUILD: Bill model now uses billName, provider, category, isPaid, updatedAt
-- ✅ Edit bill: inline modal with full form (name, provider, category, amount, due date)
-- ✅ Mark as paid/unpaid: toggle button on each bill card
-- ✅ Delete bill: confirmation dialog before removing
-- ✅ Notification types: bill_added, due_soon, due_today, overdue with visual badges
-- ✅ Deduplication: notifications check for recent duplicates before creating
-- ✅ Due date triggers: 3 days, 1 day, today, overdue (skips paid bills)
-- ✅ Settings cleaned up: only in-app toggle (persisted), removed non-functional placeholders
-- ✅ Add bill validation: future date required, amount > 0, billName required
-- ✅ Backward-compatible fetchBills: reads old providerName/billType fields from existing data
+- ✅ Stripe integration: Real payments via Stripe Checkout (CAD), Pay Full / Pay Half buttons
+- ✅ Bill schema updated: companyName, accountNumber fields, free limit changed to 3 bills
+- ✅ Canadian billers autocomplete: 90+ billers (utilities, mobile, internet, credit cards, subscriptions)
+- ✅ Payment logging: payments collection in Firestore with userId, billId, amountPaid, timestamp
+- ✅ Payment notifications: payment_success notification type added
+- ✅ /api/checkout route: Server-side Stripe session creation (secret key stays server-side)
+- ✅ Dashboard rebuilt: Pay Full / Pay Half buttons, account number display, payment success handling
 
 ## Previous Changes
-- ✅ In-app notification system with Firestore backend
-- ✅ Notifications page with mark-as-read, mark-all-read
+- ✅ In-app notification system with Firestore backend (bill_added, due_soon, due_today, overdue, payment_success)
+- ✅ Notifications page with mark-as-read, mark-all-read, type-specific badges
 - ✅ Bell icon with unread badge on dashboard
 - ✅ Auth: Email/password + Google Sign-In only (no phone, no Apple)
 - ✅ Forgot Password flow
-- ✅ Free plan limit: max 5 bills enforced
 - ✅ Firestore rules: per-user data isolation
 
 ## System Architecture
@@ -40,8 +36,8 @@ Preferred communication style: Simple, everyday language.
 - `/login` - Sign in with email/password or Google
 - `/signup` - Create account with email/password or Google
 - `/forgot-password` - Password reset via email
-- `/app` - Dashboard: summary cards, bill list with edit/paid/delete actions, bell icon
-- `/add-bill` - Add bill form with billName, provider, category, amount, due date
+- `/app` - Dashboard: bill list with Pay Full/Pay Half, account numbers, delete
+- `/add-bill` - Add bill with company autocomplete (90+ Canadian billers), account number
 - `/notifications` - Notification list with type badges, mark read/mark all read
 - `/settings` - Profile, plan, notifications toggle, privacy/security modals, legal links
 - `/privacy` - Full privacy policy page
@@ -52,33 +48,51 @@ Preferred communication style: Simple, everyday language.
 - **Language**: TypeScript
 - **Database**: Firebase Firestore (NoSQL, per-user data isolation)
 - **Authentication**: Firebase Auth (email/password, Google OAuth)
+- **Payments**: Stripe Checkout (CAD currency, server-side session creation)
+
+### API Routes
+- `POST /api/checkout` - Creates Stripe Checkout session (billId, amount, companyName, userId)
+- `GET /api/stripe-key` - Returns Stripe publishable key (for future client-side use)
 
 ### Firestore Collections
-- `bills` - userId, billName, provider, amount, category, dueDate, isPaid, createdAt, updatedAt
-- `notifications` - userId, title, message, type (bill_added|due_soon|due_today|overdue), relatedBillId, isRead, createdAt
+- `bills` - userId, companyName, accountNumber, amount, category, dueDate, isPaid, createdAt, updatedAt
+- `notifications` - userId, title, message, type (bill_added|due_soon|due_today|overdue|payment_success), relatedBillId, isRead, createdAt
+- `payments` - userId, billId, amountPaid, stripeSessionId, timestamp
 - `userPreferences` - inAppReminders (boolean)
 
 ### Key Features (MVP)
-- **Bill CRUD**: Add, edit, delete, mark paid/unpaid
-- **Free Plan Limit**: Maximum 5 bills per user
+- **Bill CRUD**: Add (with autocomplete), delete
+- **Free Plan Limit**: Maximum 3 bills per user
+- **Real Payments**: Stripe Checkout (Pay Full / Pay Half), CAD currency
+- **Payment Logging**: All payments logged to Firestore with Stripe session ID
+- **Canadian Billers**: 90+ pre-loaded billers (utilities, telecom, credit cards, subscriptions, insurance)
 - **Status Indicators**: Auto-calculated (green=paid, teal=upcoming, amber=due soon, red=overdue)
 - **In-App Notifications**: Bell icon with unread count, type-specific badges
-- **Notification Triggers**: Bill added, 3 days before, 1 day before, due today, overdue
+- **Notification Triggers**: Bill added, 3 days before, 1 day before, due today, overdue, payment success
 - **Deduplication**: No duplicate notifications within 24 hours per bill+type
 - **Settings**: In-app reminders toggle (persisted to Firestore)
 - **Auth**: Email/password + Google Sign-In + Forgot Password
+- **isPro Logic**: Prepared for future upgrade (remove bill limit when isPro === true)
 
 ### Features NOT Included (MVP Scope)
 - SMS notifications, Email reminders, Push notifications (FCM)
 - Gmail API bill ingestion
-- Payment processing, Subscription plans
+- Subscription UI (Pro plan upgrade flow)
+- Edit bill (removed in favor of Pay buttons)
 
 ## External Dependencies
 - **firebase**: Firebase SDK (Auth + Firestore)
 - **next**: Next.js framework with App Router
 - **lucide-react**: Icon library
+- **stripe**: Stripe SDK for payment processing
 
 ## Firebase Configuration
 - **Project ID**: mybillport-8e05a
 - **Auth Methods**: Email/password, Google OAuth
 - **Environment Variables**: NEXT_PUBLIC_FIREBASE_API_KEY, NEXT_PUBLIC_FIREBASE_PROJECT_ID, NEXT_PUBLIC_FIREBASE_APP_ID
+
+## Stripe Configuration
+- **Integration**: Replit Stripe Connector (manages API keys automatically)
+- **Currency**: CAD
+- **Mode**: payment (one-off, not subscription)
+- **Checkout Flow**: Server creates session → redirect to Stripe → return to /app with success params

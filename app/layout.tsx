@@ -6,7 +6,7 @@ import { Providers } from './providers';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'MyBillPort - Bill Management for Canadians',
+  title: 'BillPort - Bill Management for Canadians',
   description: 'Track recurring utility and subscription bills, see due dates clearly, and receive reminders. Premium fintech app designed for Canadians.',
   keywords: 'bill management, utility bills, subscription tracking, Canada, fintech',
 };

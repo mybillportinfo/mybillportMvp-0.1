@@ -98,8 +98,8 @@ function getFirebaseAuth(): Auth | null {
 export interface Bill {
   id?: string;
   userId: string;
-  billName: string;
-  provider: string;
+  companyName: string;
+  accountNumber: string;
   amount: number;
   category: string;
   dueDate: Date;
@@ -108,7 +108,7 @@ export interface Bill {
   updatedAt: Date;
 }
 
-export type NotificationType = "bill_added" | "due_soon" | "due_today" | "overdue";
+export type NotificationType = "bill_added" | "due_soon" | "due_today" | "overdue" | "payment_success";
 
 export interface AppNotification {
   id?: string;
@@ -119,6 +119,15 @@ export interface AppNotification {
   relatedBillId?: string;
   isRead: boolean;
   createdAt: Date;
+}
+
+export interface Payment {
+  id?: string;
+  userId: string;
+  billId: string;
+  amountPaid: number;
+  timestamp: Date;
+  stripeSessionId?: string;
 }
 
 export interface UserPreferences {
@@ -170,8 +179,8 @@ export async function addBill(userId: string, bill: Omit<Bill, 'id' | 'userId' |
   const now = Timestamp.now();
   const docRef = await addDoc(collection(db, "bills"), {
     userId,
-    billName: bill.billName,
-    provider: bill.provider,
+    companyName: bill.companyName,
+    accountNumber: bill.accountNumber,
     amount: bill.amount,
     category: bill.category,
     dueDate: Timestamp.fromDate(new Date(bill.dueDate)),
@@ -206,8 +215,8 @@ export async function fetchBills(userId: string): Promise<Bill[]> {
       return {
         id: d.id,
         userId: data.userId,
-        billName: data.billName || data.providerName || '',
-        provider: data.provider || '',
+        companyName: data.companyName || data.billName || data.providerName || '',
+        accountNumber: data.accountNumber || '',
         category: data.category || data.billType || 'other',
         amount: data.amount || 0,
         dueDate: data.dueDate?.toDate() || new Date(),
@@ -237,8 +246,8 @@ export async function updateBill(billId: string, updates: Partial<Omit<Bill, 'id
 
   const updateData: { [x: string]: string | number | boolean | Timestamp } = { updatedAt: Timestamp.now() };
 
-  if (updates.billName !== undefined) updateData.billName = updates.billName;
-  if (updates.provider !== undefined) updateData.provider = updates.provider;
+  if (updates.companyName !== undefined) updateData.companyName = updates.companyName;
+  if (updates.accountNumber !== undefined) updateData.accountNumber = updates.accountNumber;
   if (updates.amount !== undefined) updateData.amount = updates.amount;
   if (updates.category !== undefined) updateData.category = updates.category;
   if (updates.dueDate !== undefined) updateData.dueDate = Timestamp.fromDate(new Date(updates.dueDate));
@@ -259,6 +268,26 @@ export async function deleteBill(billId: string) {
   const db = getFirebaseDb();
   if (!db) throw new Error('Firebase not available');
   await deleteDoc(doc(db, "bills", billId));
+}
+
+export async function logPayment(userId: string, billId: string, amountPaid: number, stripeSessionId?: string) {
+  const auth = getFirebaseAuth();
+  if (!auth) throw new Error('Firebase not available');
+  const currentUser = auth.currentUser;
+  if (!currentUser) throw new Error('User must be authenticated');
+
+  await currentUser.getIdToken(true);
+  const db = getFirebaseDb();
+  if (!db) throw new Error('Firebase not available');
+
+  const docRef = await addDoc(collection(db, "payments"), {
+    userId,
+    billId,
+    amountPaid,
+    stripeSessionId: stripeSessionId || null,
+    timestamp: Timestamp.now(),
+  });
+  return docRef.id;
 }
 
 export async function addNotification(userId: string, notification: Omit<AppNotification, 'id' | 'userId' | 'createdAt'>) {
@@ -383,14 +412,27 @@ export async function setUserPreferences(userId: string, prefs: UserPreferences)
   await setDoc(doc(db, "userPreferences", userId), prefs, { merge: true });
 }
 
-export async function createBillAddedNotification(userId: string, billName: string, billId: string) {
+export async function createBillAddedNotification(userId: string, companyName: string, billId: string) {
   const prefs = await getUserPreferences(userId);
   if (!prefs.inAppReminders) return;
 
   await addNotification(userId, {
     title: "Bill Added",
-    message: `Your bill "${billName}" was added successfully.`,
+    message: `Your bill for "${companyName}" was added successfully.`,
     type: "bill_added",
+    relatedBillId: billId,
+    isRead: false,
+  });
+}
+
+export async function createPaymentNotification(userId: string, companyName: string, amountPaid: number, billId: string) {
+  const prefs = await getUserPreferences(userId);
+  if (!prefs.inAppReminders) return;
+
+  await addNotification(userId, {
+    title: "Payment Successful",
+    message: `Payment of $${amountPaid.toFixed(2)} for "${companyName}" was processed successfully.`,
+    type: "payment_success",
     relatedBillId: billId,
     isRead: false,
   });
@@ -443,19 +485,19 @@ export async function checkAndCreateDueDateNotifications(userId: string, bills: 
     if (daysUntil < 0) {
       type = "overdue";
       title = "Bill Overdue";
-      message = `"${bill.billName}" ($${bill.amount.toFixed(2)}) is ${Math.abs(daysUntil)} day${Math.abs(daysUntil) === 1 ? '' : 's'} overdue.`;
+      message = `"${bill.companyName}" ($${bill.amount.toFixed(2)}) is ${Math.abs(daysUntil)} day${Math.abs(daysUntil) === 1 ? '' : 's'} overdue.`;
     } else if (daysUntil === 0) {
       type = "due_today";
       title = "Bill Due Today";
-      message = `"${bill.billName}" ($${bill.amount.toFixed(2)}) is due today.`;
+      message = `"${bill.companyName}" ($${bill.amount.toFixed(2)}) is due today.`;
     } else if (daysUntil === 1) {
       type = "due_soon";
       title = "Bill Due Tomorrow";
-      message = `"${bill.billName}" ($${bill.amount.toFixed(2)}) is due tomorrow.`;
+      message = `"${bill.companyName}" ($${bill.amount.toFixed(2)}) is due tomorrow.`;
     } else if (daysUntil === 3) {
       type = "due_soon";
       title = "Bill Due Soon";
-      message = `"${bill.billName}" ($${bill.amount.toFixed(2)}) is due in 3 days.`;
+      message = `"${bill.companyName}" ($${bill.amount.toFixed(2)}) is due in 3 days.`;
     }
 
     if (type && bill.id) {

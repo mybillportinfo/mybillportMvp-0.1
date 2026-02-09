@@ -2,24 +2,17 @@
 
 import { useEffect, useState } from 'react';
 import Link from "next/link";
-import { useRouter } from 'next/navigation';
-import { Home, Plus, Settings, Zap, Wifi, CreditCard, Phone, MoreHorizontal, Loader2, Trash2, AlertTriangle, Bell, CheckCircle, Circle, Pencil, X } from "lucide-react";
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Home, Plus, Settings, Loader2, Trash2, AlertTriangle, Bell, DollarSign, CreditCard, Zap, Wifi, Phone, MoreHorizontal, CheckCircle } from "lucide-react";
 import { useAuth } from '../contexts/AuthContext';
-import { fetchBills, deleteBill, updateBill, fetchNotifications, checkAndCreateDueDateNotifications, Bill } from '../lib/firebase';
+import { fetchBills, deleteBill, fetchNotifications, checkAndCreateDueDateNotifications, logPayment, createPaymentNotification, Bill } from '../lib/firebase';
 
-const FREE_PLAN_LIMIT = 5;
-
-const billCategories = [
-  { id: "hydro", label: "Hydro", icon: Zap, color: "bg-yellow-100 text-yellow-600" },
-  { id: "internet", label: "Internet", icon: Wifi, color: "bg-blue-100 text-blue-600" },
-  { id: "phone", label: "Phone", icon: Phone, color: "bg-green-100 text-green-600" },
-  { id: "subscription", label: "Subscription", icon: CreditCard, color: "bg-purple-100 text-purple-600" },
-  { id: "other", label: "Other", icon: MoreHorizontal, color: "bg-gray-100 text-gray-600" },
-];
+const FREE_PLAN_LIMIT = 3;
 
 export default function Dashboard() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [bills, setBills] = useState<Bill[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -27,17 +20,59 @@ export default function Dashboard() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [unreadNotifCount, setUnreadNotifCount] = useState(0);
   const [dueSoonChecked, setDueSoonChecked] = useState(false);
-  const [togglingPaidId, setTogglingPaidId] = useState<string | null>(null);
-  const [editingBill, setEditingBill] = useState<Bill | null>(null);
-  const [editForm, setEditForm] = useState({ billName: '', provider: '', amount: '', category: '', dueDate: '' });
-  const [editSaving, setEditSaving] = useState(false);
-  const [editError, setEditError] = useState<string | null>(null);
+  const [payingBillId, setPayingBillId] = useState<string | null>(null);
+  const [paymentSuccess, setPaymentSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
       router.push('/login');
     }
   }, [user, authLoading, router]);
+
+  useEffect(() => {
+    const payment = searchParams.get('payment');
+    const sessionId = searchParams.get('session_id');
+
+    if (payment === 'success' && sessionId && user) {
+      verifyAndLogPayment(sessionId);
+      window.history.replaceState({}, '', '/app');
+    } else if (payment === 'cancelled') {
+      setError('Payment was cancelled.');
+      window.history.replaceState({}, '', '/app');
+    }
+  }, [searchParams, user]);
+
+  const verifyAndLogPayment = async (sessionId: string) => {
+    if (!user) return;
+    try {
+      const res = await fetch('/api/verify-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId }),
+      });
+      const data = await res.json();
+
+      if (!data.verified) {
+        setError('Payment could not be verified. Please contact support if you were charged.');
+        return;
+      }
+
+      if (data.userId !== user.uid) {
+        setError('Payment verification mismatch.');
+        return;
+      }
+
+      await logPayment(user.uid, data.billId, data.amountPaid, sessionId);
+      await createPaymentNotification(user.uid, data.companyName, data.amountPaid, data.billId).catch(console.error);
+
+      setPaymentSuccess(`Payment of $${data.amountPaid.toFixed(2)} for "${data.companyName}" processed successfully!`);
+      setTimeout(() => setPaymentSuccess(null), 5000);
+      loadBills();
+    } catch (err) {
+      console.error('Failed to verify payment:', err);
+      setError('Failed to verify payment. Please check your Stripe account.');
+    }
+  };
 
   useEffect(() => {
     if (user) {
@@ -82,68 +117,40 @@ export default function Dashboard() {
     }
   };
 
-  const handleTogglePaid = async (bill: Bill) => {
-    if (!bill.id) return;
-    setTogglingPaidId(bill.id);
+  const handlePay = async (bill: Bill, payType: 'full' | 'half') => {
+    if (!bill.id || !user) return;
+    setPayingBillId(bill.id);
+    setError(null);
+
+    const amount = payType === 'full' ? bill.amount : Math.round(bill.amount * 50) / 100;
+
     try {
-      const newPaidStatus = !bill.isPaid;
-      await updateBill(bill.id, { isPaid: newPaidStatus });
-      setBills(prev => prev.map(b => b.id === bill.id ? { ...b, isPaid: newPaidStatus } : b));
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          billId: bill.id,
+          amount,
+          companyName: bill.companyName,
+          userId: user.uid,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to create checkout session');
+      }
+
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error('No checkout URL returned');
+      }
     } catch (err) {
-      console.error('Failed to update bill:', err);
-      setError('Failed to update bill status.');
-    } finally {
-      setTogglingPaidId(null);
-    }
-  };
-
-  const openEditModal = (bill: Bill) => {
-    setEditingBill(bill);
-    setEditError(null);
-    const dueDateStr = new Date(bill.dueDate).toISOString().split('T')[0];
-    setEditForm({
-      billName: bill.billName,
-      provider: bill.provider,
-      amount: bill.amount.toString(),
-      category: bill.category,
-      dueDate: dueDateStr,
-    });
-  };
-
-  const handleEditSave = async () => {
-    if (!editingBill?.id) return;
-    setEditError(null);
-
-    if (!editForm.billName.trim()) {
-      setEditError('Bill name is required');
-      return;
-    }
-    if (!editForm.amount || parseFloat(editForm.amount) <= 0) {
-      setEditError('Amount must be greater than $0');
-      return;
-    }
-    if (!editForm.dueDate) {
-      setEditError('Due date is required');
-      return;
-    }
-
-    setEditSaving(true);
-    try {
-      const updates = {
-        billName: editForm.billName.trim(),
-        provider: editForm.provider.trim(),
-        amount: parseFloat(editForm.amount),
-        category: editForm.category,
-        dueDate: new Date(editForm.dueDate + 'T00:00:00'),
-      };
-      await updateBill(editingBill.id, updates);
-      setBills(prev => prev.map(b => b.id === editingBill.id ? { ...b, ...updates } : b));
-      setEditingBill(null);
-    } catch (err) {
-      console.error('Failed to update bill:', err);
-      setEditError('Failed to save changes. Please try again.');
-    } finally {
-      setEditSaving(false);
+      console.error('Payment error:', err);
+      setError(err instanceof Error ? err.message : 'Payment failed. Please try again.');
+      setPayingBillId(null);
     }
   };
 
@@ -151,7 +158,8 @@ export default function Dashboard() {
     switch (type) {
       case "hydro": return <Zap className="w-5 h-5 text-yellow-600" />;
       case "internet": return <Wifi className="w-5 h-5 text-blue-600" />;
-      case "subscription": return <CreditCard className="w-5 h-5 text-purple-600" />;
+      case "credit_card": return <CreditCard className="w-5 h-5 text-indigo-600" />;
+      case "subscription": return <DollarSign className="w-5 h-5 text-purple-600" />;
       case "phone": return <Phone className="w-5 h-5 text-green-600" />;
       default: return <MoreHorizontal className="w-5 h-5 text-gray-600" />;
     }
@@ -161,6 +169,7 @@ export default function Dashboard() {
     switch (type) {
       case "hydro": return "bg-yellow-100";
       case "internet": return "bg-blue-100";
+      case "credit_card": return "bg-indigo-100";
       case "subscription": return "bg-purple-100";
       case "phone": return "bg-green-100";
       default: return "bg-gray-100";
@@ -192,6 +201,14 @@ export default function Dashboard() {
     return "text-teal-600";
   };
 
+  const formatDueDate = (date: Date) => {
+    return new Date(date).toLocaleDateString('en-CA', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  };
+
   if (authLoading || (!user && !authLoading)) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 flex items-center justify-center">
@@ -201,12 +218,7 @@ export default function Dashboard() {
   }
 
   const unpaidBills = bills.filter(b => !b.isPaid);
-  const dueSoonCount = unpaidBills.filter(b => {
-    const days = getDaysUntilDue(b.dueDate);
-    return days >= 0 && days <= 3;
-  }).length;
-
-  const overdueCount = unpaidBills.filter(b => getDaysUntilDue(b.dueDate) < 0).length;
+  const totalOwing = unpaidBills.reduce((sum, b) => sum + b.amount, 0);
 
   const greeting = () => {
     const hour = new Date().getHours();
@@ -223,9 +235,9 @@ export default function Dashboard() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 gradient-navy rounded-xl flex items-center justify-center border border-slate-600">
-              <span className="text-white font-bold">M</span>
+              <span className="text-white font-bold">B</span>
             </div>
-            <span className="text-white font-semibold text-lg">MyBillPort</span>
+            <span className="text-white font-semibold text-lg">BillPort</span>
           </div>
           <Link href="/notifications" className="relative p-2 hover:bg-slate-800 rounded-lg transition-colors">
             <Bell className="w-6 h-6 text-slate-300" />
@@ -240,18 +252,23 @@ export default function Dashboard() {
         <p className="text-white text-2xl font-semibold">Here&apos;s your overview</p>
       </div>
 
-      <div className="px-4 grid grid-cols-3 gap-3 mb-6">
+      {paymentSuccess && (
+        <div className="px-4 mb-4">
+          <div className="bg-green-500/10 border border-green-500/30 text-green-400 px-4 py-3 rounded-lg text-sm flex items-center gap-2">
+            <CheckCircle className="w-4 h-4 flex-shrink-0" />
+            <span>{paymentSuccess}</span>
+          </div>
+        </div>
+      )}
+
+      <div className="px-4 grid grid-cols-2 gap-3 mb-6">
         <div className="summary-card text-center">
           <p className="text-2xl font-bold text-white">{bills.length}</p>
           <p className="text-xs text-slate-400">Total Bills</p>
         </div>
         <div className="summary-card text-center">
-          <p className="text-2xl font-bold text-amber-400">{dueSoonCount}</p>
-          <p className="text-xs text-slate-400">Due Soon</p>
-        </div>
-        <div className="summary-card text-center">
-          <p className="text-2xl font-bold text-red-400">{overdueCount}</p>
-          <p className="text-xs text-slate-400">Overdue</p>
+          <p className="text-2xl font-bold text-teal-400">${totalOwing.toFixed(2)}</p>
+          <p className="text-xs text-slate-400">Total Owing</p>
         </div>
       </div>
 
@@ -260,6 +277,15 @@ export default function Dashboard() {
           <div className="bg-amber-500/10 border border-amber-500/30 text-amber-400 px-4 py-3 rounded-lg text-sm flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 flex-shrink-0" />
             <span>Free plan limit reached ({FREE_PLAN_LIMIT}/{FREE_PLAN_LIMIT} bills). Remove a bill to add more.</span>
+          </div>
+        </div>
+      )}
+
+      {error && (
+        <div className="px-4 mb-4">
+          <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg text-sm">
+            {error}
+            <button onClick={() => setError(null)} className="ml-2 underline hover:no-underline">Dismiss</button>
           </div>
         </div>
       )}
@@ -276,11 +302,6 @@ export default function Dashboard() {
           <div className="flex justify-center py-8">
             <Loader2 className="w-6 h-6 text-teal-500 animate-spin" />
           </div>
-        ) : error ? (
-          <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg text-sm">
-            {error}
-            <button onClick={loadBills} className="ml-2 underline hover:no-underline">Retry</button>
-          </div>
         ) : bills.length === 0 ? (
           <div className="bg-slate-800/50 rounded-xl p-8 text-center border border-slate-700">
             <p className="text-slate-400 mb-4">No bills yet</p>
@@ -291,53 +312,55 @@ export default function Dashboard() {
         ) : (
           bills.map((bill) => {
             const isConfirming = confirmDeleteId === bill.id;
+            const isPaying = payingBillId === bill.id;
             return (
-              <div key={bill.id} className={`bg-white rounded-xl p-4 ${bill.isPaid ? 'opacity-75' : ''}`}>
-                <div className="flex items-center gap-3">
+              <div key={bill.id} className="bg-white rounded-xl p-4">
+                <div className="flex items-start gap-3">
                   <div className={`w-12 h-12 ${getIconBg(bill.category)} rounded-lg flex items-center justify-center flex-shrink-0`}>
                     {getIcon(bill.category)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className={`font-medium text-slate-800 ${bill.isPaid ? 'line-through' : ''}`}>{bill.billName}</p>
-                    {bill.provider && (
-                      <p className="text-xs text-slate-500 truncate">{bill.provider}</p>
-                    )}
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className={`text-sm font-medium ${getStatusStyle(bill)}`}>
+                    <p className="font-semibold text-slate-800">{bill.companyName}</p>
+                    <p className="text-xs text-slate-500 mt-0.5">Acct: {bill.accountNumber || '—'}</p>
+                    <div className="flex items-center gap-3 mt-1">
+                      <span className="text-xs text-slate-400">{formatDueDate(bill.dueDate)}</span>
+                      <span className={`text-xs font-medium ${getStatusStyle(bill)}`}>
                         {getStatusText(bill)}
                       </span>
                     </div>
                   </div>
-                  <p className={`font-semibold text-slate-800 flex-shrink-0 ${bill.isPaid ? 'line-through' : ''}`}>${bill.amount.toFixed(2)}</p>
+                  <div className="text-right flex-shrink-0">
+                    <p className="font-bold text-slate-800 text-lg">${bill.amount.toFixed(2)}</p>
+                    <p className="text-[10px] text-slate-400">CAD</p>
+                  </div>
                 </div>
 
-                <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
-                  <div className="flex items-center gap-1">
+                <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 flex-1">
                     <button
-                      onClick={() => handleTogglePaid(bill)}
-                      disabled={togglingPaidId === bill.id}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
-                        bill.isPaid
-                          ? 'bg-green-50 text-green-600 hover:bg-green-100'
-                          : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
-                      }`}
+                      onClick={() => handlePay(bill, 'full')}
+                      disabled={isPaying}
+                      className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg bg-teal-600 text-white hover:bg-teal-700 transition-colors disabled:opacity-50"
                     >
-                      {togglingPaidId === bill.id ? (
+                      {isPaying ? (
                         <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      ) : bill.isPaid ? (
-                        <CheckCircle className="w-3.5 h-3.5" />
                       ) : (
-                        <Circle className="w-3.5 h-3.5" />
+                        <DollarSign className="w-3.5 h-3.5" />
                       )}
-                      {bill.isPaid ? 'Paid' : 'Mark Paid'}
+                      Pay Full
                     </button>
 
                     <button
-                      onClick={() => openEditModal(bill)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-50 text-slate-500 hover:bg-slate-100 transition-colors"
+                      onClick={() => handlePay(bill, 'half')}
+                      disabled={isPaying}
+                      className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors disabled:opacity-50"
                     >
-                      <Pencil className="w-3.5 h-3.5" />
-                      Edit
+                      {isPaying ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <DollarSign className="w-3.5 h-3.5" />
+                      )}
+                      Pay Half (${(bill.amount / 2).toFixed(2)})
                     </button>
                   </div>
 
@@ -346,7 +369,7 @@ export default function Dashboard() {
                   ) : (
                     <button
                       onClick={() => setConfirmDeleteId(isConfirming ? null : bill.id!)}
-                      className={`p-2 transition-colors rounded-lg ${isConfirming ? 'text-red-500 bg-red-50' : 'text-slate-400 hover:text-red-500'}`}
+                      className={`p-2 transition-colors rounded-lg flex-shrink-0 ${isConfirming ? 'text-red-500 bg-red-50' : 'text-slate-400 hover:text-red-500'}`}
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -386,120 +409,6 @@ export default function Dashboard() {
           >
             Add Another Bill
           </Link>
-        </div>
-      )}
-
-      {editingBill && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md max-h-[85vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-5 border-b border-slate-100">
-              <h2 className="text-lg font-semibold text-slate-800">Edit Bill</h2>
-              <button onClick={() => setEditingBill(null)} className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
-                <X className="w-5 h-5 text-slate-500" />
-              </button>
-            </div>
-            <div className="p-5 space-y-4">
-              {editError && (
-                <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
-                  {editError}
-                </div>
-              )}
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Bill Name *</label>
-                <input
-                  type="text"
-                  value={editForm.billName}
-                  onChange={(e) => setEditForm(prev => ({ ...prev, billName: e.target.value }))}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Provider</label>
-                <input
-                  type="text"
-                  value={editForm.provider}
-                  onChange={(e) => setEditForm(prev => ({ ...prev, provider: e.target.value }))}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Category</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {billCategories.map((cat) => {
-                    const Icon = cat.icon;
-                    const isSelected = editForm.category === cat.id;
-                    return (
-                      <button
-                        key={cat.id}
-                        type="button"
-                        onClick={() => setEditForm(prev => ({ ...prev, category: cat.id }))}
-                        className={`p-2 rounded-xl flex flex-col items-center transition-all ${
-                          isSelected
-                            ? "bg-slate-100 border-2 border-teal-500"
-                            : "bg-slate-50 border-2 border-transparent hover:border-slate-200"
-                        }`}
-                      >
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-1 ${cat.color}`}>
-                          <Icon className="w-4 h-4" />
-                        </div>
-                        <span className={`text-xs font-medium ${isSelected ? "text-teal-600" : "text-slate-600"}`}>
-                          {cat.label}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Amount (CAD) *</label>
-                <input
-                  type="number"
-                  value={editForm.amount}
-                  onChange={(e) => setEditForm(prev => ({ ...prev, amount: e.target.value }))}
-                  step="0.01"
-                  min="0.01"
-                  className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Due Date *</label>
-                <input
-                  type="date"
-                  value={editForm.dueDate}
-                  onChange={(e) => setEditForm(prev => ({ ...prev, dueDate: e.target.value }))}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800"
-                />
-              </div>
-
-              <div className="flex gap-3 pt-2">
-                <button
-                  onClick={() => setEditingBill(null)}
-                  className="flex-1 py-3 rounded-lg font-semibold border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleEditSave}
-                  disabled={editSaving}
-                  className="flex-1 btn-accent py-3 rounded-lg font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
-                >
-                  {editSaving ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    'Save Changes'
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
         </div>
       )}
 
