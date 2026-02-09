@@ -23,6 +23,12 @@ import {
   browserLocalPersistence,
   setPersistence,
   Auth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  sendPasswordResetEmail,
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
+  ConfirmationResult,
 } from "firebase/auth";
 
 function getFirebaseConfig() {
@@ -201,4 +207,46 @@ export async function deleteBill(billId: string) {
   await deleteDoc(doc(db, "bills", billId));
 }
 
-export type { User };
+export function signInWithGoogle() {
+  const auth = getFirebaseAuth();
+  if (!auth) return Promise.reject(new Error('Firebase not available'));
+  const provider = new GoogleAuthProvider();
+  return signInWithPopup(auth, provider).then(r => r.user);
+}
+
+export function resetPassword(email: string) {
+  const auth = getFirebaseAuth();
+  if (!auth) return Promise.reject(new Error('Firebase not available'));
+  return sendPasswordResetEmail(auth, email);
+}
+
+let _recaptchaVerifier: RecaptchaVerifier | null = null;
+
+export function setupRecaptcha(elementId: string) {
+  const auth = getFirebaseAuth();
+  if (!auth) throw new Error('Firebase not available');
+  if (_recaptchaVerifier) {
+    _recaptchaVerifier.clear();
+    _recaptchaVerifier = null;
+  }
+  _recaptchaVerifier = new RecaptchaVerifier(auth, elementId, {
+    size: 'invisible',
+  });
+  return _recaptchaVerifier;
+}
+
+export function sendPhoneOtp(phoneNumber: string): Promise<ConfirmationResult> {
+  const auth = getFirebaseAuth();
+  if (!auth) return Promise.reject(new Error('Firebase not available'));
+  if (!_recaptchaVerifier) return Promise.reject(new Error('reCAPTCHA not initialized'));
+  return signInWithPhoneNumber(auth, phoneNumber, _recaptchaVerifier);
+}
+
+export function clearRecaptcha() {
+  if (_recaptchaVerifier) {
+    _recaptchaVerifier.clear();
+    _recaptchaVerifier = null;
+  }
+}
+
+export type { User, ConfirmationResult };

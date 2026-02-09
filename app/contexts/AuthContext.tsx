@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { User, subscribeToAuth, loginUser, registerUser, logoutUser } from '../lib/firebase';
+import { User, subscribeToAuth, loginUser, registerUser, logoutUser, signInWithGoogle } from '../lib/firebase';
 
 interface AuthContextType {
   user: User | null;
@@ -9,6 +9,7 @@ interface AuthContextType {
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   clearError: () => void;
 }
@@ -56,6 +57,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const loginWithGoogle = async () => {
+    setError(null);
+    setLoading(true);
+    try {
+      await signInWithGoogle();
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Google sign-in failed';
+      setError(getAuthErrorMessage(message));
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = async () => {
     setError(null);
     try {
@@ -70,7 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const clearError = () => setError(null);
 
   return (
-    <AuthContext.Provider value={{ user, loading, error, login, signup, logout, clearError }}>
+    <AuthContext.Provider value={{ user, loading, error, login, signup, loginWithGoogle, logout, clearError }}>
       {children}
     </AuthContext.Provider>
   );
@@ -99,6 +114,27 @@ function getAuthErrorMessage(errorMessage: string): string {
   }
   if (errorMessage.includes('auth/too-many-requests')) {
     return 'Too many attempts. Please try again later.';
+  }
+  if (errorMessage.includes('auth/popup-closed-by-user')) {
+    return 'Sign-in was cancelled. Please try again.';
+  }
+  if (errorMessage.includes('auth/popup-blocked')) {
+    return 'Pop-up was blocked by your browser. Please allow pop-ups and try again.';
+  }
+  if (errorMessage.includes('auth/cancelled-popup-request')) {
+    return 'Sign-in was cancelled. Please try again.';
+  }
+  if (errorMessage.includes('auth/invalid-phone-number')) {
+    return 'Please enter a valid phone number with country code (e.g. +1234567890).';
+  }
+  if (errorMessage.includes('auth/invalid-verification-code')) {
+    return 'Invalid verification code. Please try again.';
+  }
+  if (errorMessage.includes('auth/code-expired')) {
+    return 'Verification code expired. Please request a new one.';
+  }
+  if (errorMessage.includes('Firebase not available')) {
+    return 'Unable to connect to authentication service. Please refresh and try again.';
   }
   return errorMessage;
 }
