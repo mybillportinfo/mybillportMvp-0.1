@@ -6,7 +6,17 @@ MyBillPort is a modern Bill Management OS for people living in Canada to track r
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
-## Recent Changes (February 6, 2026)
+## Recent Changes (February 9, 2026)
+- ✅ Complete auth system hardening with multiple sign-in methods
+- ✅ Google Sign-In via signInWithPopup on login and signup pages
+- ✅ Forgot Password page (/forgot-password) with Firebase sendPasswordResetEmail
+- ✅ Phone Number Auth page (/phone-login) with OTP verification via RecaptchaVerifier
+- ✅ Apple Sign-In button (disabled, marked "Coming Soon") on login and signup
+- ✅ Fixed Firebase API key format issue (.env.local had extra quotes/comma)
+- ✅ Removed _initFailed poison flag so Firebase can retry initialization
+- ✅ Expanded error handling for popup-blocked, phone auth, and code-expired errors
+
+## Previous Changes (February 6, 2026)
 - ✅ Fixed env variable config to support both Replit and Vercel deployment
 - ✅ Improved auth guard on settings page to prevent premature redirects
 - ✅ Updated all contact emails to mybillportinfo@gmail.com
@@ -74,8 +84,10 @@ Preferred communication style: Simple, everyday language.
 
 ### Core Pages
 - `/` - Landing page with dark theme
-- `/login` - Sign in with email/password, Google, or Apple
-- `/signup` - Create account with email/password, Google, or Apple
+- `/login` - Sign in with email/password, Google, Apple (coming soon), or Phone
+- `/signup` - Create account with email/password, Google, Apple (coming soon), or Phone
+- `/forgot-password` - Password reset via email
+- `/phone-login` - Phone number OTP sign-in
 - `/app` - Dashboard with greeting, summary cards, bill list
 - `/add-bill` - Add bill form with category selection
 - `/settings` - Profile (real user info), plan, connected accounts, logout
@@ -84,7 +96,7 @@ Preferred communication style: Simple, everyday language.
 - **Runtime**: Next.js (App Router, serverless-ready)
 - **Language**: TypeScript
 - **Database**: Firebase Firestore (NoSQL, per-user data isolation)
-- **Authentication**: Firebase Auth (email/password, Google OAuth)
+- **Authentication**: Firebase Auth (email/password, Google OAuth, Phone OTP)
 - **Email**: MailerSend for bill reminders
 
 ### Key Features (MVP)
