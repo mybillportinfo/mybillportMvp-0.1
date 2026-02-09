@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Home, Plus, Settings, User, Bell, Shield, Lock, LogOut, ChevronRight, Loader2, X, Mail, Eye, EyeOff, KeyRound } from "lucide-react";
+import { ArrowLeft, Home, Plus, Settings, User, Bell, Shield, Lock, LogOut, ChevronRight, Loader2, X, Eye, EyeOff, KeyRound } from "lucide-react";
 import { useAuth } from '../contexts/AuthContext';
 import { getUserPreferences, setUserPreferences } from '../lib/firebase';
 
@@ -15,11 +15,9 @@ export default function SettingsPage() {
   const [activeModal, setActiveModal] = useState<SettingsModal>(null);
 
   const [inAppReminders, setInAppReminders] = useState(true);
-  const [emailReminders, setEmailReminders] = useState(true);
-  const [reminderDays, setReminderDays] = useState('2');
-  const [overdueAlerts, setOverdueAlerts] = useState(true);
   const [savingPrefs, setSavingPrefs] = useState(false);
   const [prefsSaved, setPrefsSaved] = useState(false);
+  const [loadingPrefs, setLoadingPrefs] = useState(true);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -29,11 +27,29 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (user) {
+      setLoadingPrefs(true);
       getUserPreferences(user.uid).then(prefs => {
         setInAppReminders(prefs.inAppReminders);
-      }).catch(console.error);
+      }).catch(console.error).finally(() => {
+        setLoadingPrefs(false);
+      });
     }
   }, [user]);
+
+  const handleSavePreferences = async () => {
+    if (!user) return;
+    setSavingPrefs(true);
+    setPrefsSaved(false);
+    try {
+      await setUserPreferences(user.uid, { inAppReminders });
+      setPrefsSaved(true);
+      setTimeout(() => setPrefsSaved(false), 2000);
+    } catch (err) {
+      console.error('Failed to save preferences:', err);
+    } finally {
+      setSavingPrefs(false);
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -158,7 +174,7 @@ export default function SettingsPage() {
 
       {activeModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md max-h-[85vh] overflow-y-auto animate-in slide-in-from-bottom">
+          <div className="bg-white rounded-2xl w-full max-w-md max-h-[85vh] overflow-y-auto">
             {activeModal === 'notifications' && (
               <div>
                 <div className="flex items-center justify-between p-5 border-b border-slate-100">
@@ -173,104 +189,76 @@ export default function SettingsPage() {
                   </button>
                 </div>
                 <div className="p-5 space-y-5">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Bell className="w-5 h-5 text-slate-400" />
-                      <div>
-                        <p className="font-medium text-slate-800">In-App Bill Reminders</p>
-                        <p className="text-sm text-slate-500">Get reminders when bills are due soon</p>
+                  {loadingPrefs ? (
+                    <div className="flex justify-center py-4">
+                      <Loader2 className="w-6 h-6 text-teal-500 animate-spin" />
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <Bell className="w-5 h-5 text-slate-400" />
+                          <div>
+                            <p className="font-medium text-slate-800">In-App Notifications</p>
+                            <p className="text-sm text-slate-500">Get notified when bills are due</p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => setInAppReminders(!inAppReminders)}
+                          className={`w-12 h-7 rounded-full transition-colors relative ${inAppReminders ? 'bg-teal-500' : 'bg-slate-300'}`}
+                        >
+                          <span className={`absolute top-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${inAppReminders ? 'left-[22px]' : 'left-0.5'}`} />
+                        </button>
                       </div>
-                    </div>
-                    <button
-                      onClick={() => setInAppReminders(!inAppReminders)}
-                      className={`w-12 h-7 rounded-full transition-colors relative ${inAppReminders ? 'bg-teal-500' : 'bg-slate-300'}`}
-                    >
-                      <span className={`absolute top-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${inAppReminders ? 'left-[22px]' : 'left-0.5'}`} />
-                    </button>
-                  </div>
 
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Mail className="w-5 h-5 text-slate-400" />
-                      <div>
-                        <p className="font-medium text-slate-800">Email Reminders</p>
-                        <p className="text-sm text-slate-500">Get notified before bills are due</p>
+                      <div className="bg-slate-50 rounded-lg p-4 space-y-2">
+                        <p className="text-sm font-medium text-slate-700">When enabled, you receive notifications for:</p>
+                        <ul className="text-sm text-slate-600 space-y-1.5">
+                          <li className="flex items-center gap-2">
+                            <span className="text-teal-500">&#10003;</span>
+                            New bills added
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <span className="text-teal-500">&#10003;</span>
+                            Bills due in 3 days
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <span className="text-teal-500">&#10003;</span>
+                            Bills due tomorrow
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <span className="text-teal-500">&#10003;</span>
+                            Bills due today
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <span className="text-teal-500">&#10003;</span>
+                            Overdue bills
+                          </li>
+                        </ul>
                       </div>
-                    </div>
-                    <button
-                      onClick={() => setEmailReminders(!emailReminders)}
-                      className={`w-12 h-7 rounded-full transition-colors relative ${emailReminders ? 'bg-teal-500' : 'bg-slate-300'}`}
-                    >
-                      <span className={`absolute top-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${emailReminders ? 'left-[22px]' : 'left-0.5'}`} />
-                    </button>
-                  </div>
 
-                  <div>
-                    <p className="font-medium text-slate-800 mb-2">Remind me before due date</p>
-                    <select
-                      value={reminderDays}
-                      onChange={(e) => setReminderDays(e.target.value)}
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500"
-                    >
-                      <option value="1">1 day before</option>
-                      <option value="2">2 days before</option>
-                      <option value="3">3 days before</option>
-                      <option value="7">7 days before</option>
-                    </select>
-                  </div>
+                      {prefsSaved && (
+                        <div className="bg-teal-50 border border-teal-200 text-teal-700 px-4 py-2 rounded-lg text-sm text-center">
+                          Preferences saved!
+                        </div>
+                      )}
 
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-slate-800">Overdue Alerts</p>
-                      <p className="text-sm text-slate-500">Get alerted when bills are past due</p>
-                    </div>
-                    <button
-                      onClick={() => setOverdueAlerts(!overdueAlerts)}
-                      className={`w-12 h-7 rounded-full transition-colors relative ${overdueAlerts ? 'bg-teal-500' : 'bg-slate-300'}`}
-                    >
-                      <span className={`absolute top-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${overdueAlerts ? 'left-[22px]' : 'left-0.5'}`} />
-                    </button>
-                  </div>
-
-                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                    <p className="text-sm text-amber-700">
-                      Advanced notification settings including SMS and push notifications will be available in a future update.
-                    </p>
-                  </div>
-
-                  {prefsSaved && (
-                    <div className="bg-teal-50 border border-teal-200 text-teal-700 px-4 py-2 rounded-lg text-sm text-center">
-                      Preferences saved!
-                    </div>
+                      <button
+                        onClick={handleSavePreferences}
+                        disabled={savingPrefs}
+                        className="w-full btn-accent py-3 rounded-lg font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
+                      >
+                        {savingPrefs ? (
+                          <>
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                            Saving...
+                          </>
+                        ) : (
+                          'Save Preferences'
+                        )}
+                      </button>
+                    </>
                   )}
-
-                  <button
-                    onClick={async () => {
-                      if (!user) return;
-                      setSavingPrefs(true);
-                      setPrefsSaved(false);
-                      try {
-                        await setUserPreferences(user.uid, { inAppReminders });
-                        setPrefsSaved(true);
-                        setTimeout(() => setPrefsSaved(false), 2000);
-                      } catch (err) {
-                        console.error('Failed to save preferences:', err);
-                      } finally {
-                        setSavingPrefs(false);
-                      }
-                    }}
-                    disabled={savingPrefs}
-                    className="w-full btn-accent py-3 rounded-lg font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
-                  >
-                    {savingPrefs ? (
-                      <>
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        Saving...
-                      </>
-                    ) : (
-                      'Save Preferences'
-                    )}
-                  </button>
                 </div>
               </div>
             )}
@@ -402,12 +390,6 @@ export default function SettingsPage() {
                         Secure session management
                       </li>
                     </ul>
-                  </div>
-
-                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                    <p className="text-sm text-amber-700">
-                      Two-factor authentication (2FA) will be available in a future update.
-                    </p>
                   </div>
                 </div>
               </div>

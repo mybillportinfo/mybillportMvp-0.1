@@ -20,9 +20,9 @@ const billCategories = [
 export default function AddBillPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [providerName, setProviderName] = useState('');
+  const [billName, setBillName] = useState('');
   const [provider, setProvider] = useState('');
-  const [billType, setBillType] = useState('other');
+  const [category, setCategory] = useState('other');
   const [amount, setAmount] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -72,13 +72,13 @@ export default function AddBillPage() {
       return;
     }
 
-    if (!providerName.trim()) {
+    if (!billName.trim()) {
       setError('Please enter a bill name');
       return;
     }
 
     if (!amount || parseFloat(amount) <= 0) {
-      setError('Please enter a valid amount');
+      setError('Please enter a valid amount greater than $0');
       return;
     }
 
@@ -87,18 +87,27 @@ export default function AddBillPage() {
       return;
     }
 
+    const selectedDate = new Date(dueDate + 'T00:00:00');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (selectedDate < today) {
+      setError('Due date must be today or a future date');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       const billId = await addBill(user.uid, {
-        providerName: providerName.trim(),
+        billName: billName.trim(),
         provider: provider.trim(),
-        billType,
+        category,
         amount: parseFloat(amount),
-        dueDate: new Date(dueDate),
+        dueDate: selectedDate,
+        isPaid: false,
       });
 
-      await createBillAddedNotification(user.uid, providerName.trim(), billId).catch(console.error);
+      await createBillAddedNotification(user.uid, billName.trim(), billId).catch(console.error);
 
       setSuccess(true);
       setTimeout(() => {
@@ -180,11 +189,11 @@ export default function AddBillPage() {
             )}
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Bill Name</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Bill Name *</label>
               <input
                 type="text"
-                value={providerName}
-                onChange={(e) => setProviderName(e.target.value)}
+                value={billName}
+                onChange={(e) => setBillName(e.target.value)}
                 placeholder="e.g., Electricity Bill"
                 className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800"
               />
@@ -206,12 +215,12 @@ export default function AddBillPage() {
               <div className="grid grid-cols-3 gap-2">
                 {billCategories.map((cat) => {
                   const Icon = cat.icon;
-                  const isSelected = billType === cat.id;
+                  const isSelected = category === cat.id;
                   return (
                     <button
                       key={cat.id}
                       type="button"
-                      onClick={() => setBillType(cat.id)}
+                      onClick={() => setCategory(cat.id)}
                       className={`p-3 rounded-xl flex flex-col items-center transition-all ${
                         isSelected
                           ? "bg-slate-100 border-2 border-teal-500"
@@ -231,20 +240,20 @@ export default function AddBillPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Amount (CAD)</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Amount (CAD) *</label>
               <input
                 type="number"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0.00"
                 step="0.01"
-                min="0"
+                min="0.01"
                 className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Due Date</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Due Date *</label>
               <input
                 type="date"
                 value={dueDate}

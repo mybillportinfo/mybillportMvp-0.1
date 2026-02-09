@@ -98,19 +98,24 @@ function getFirebaseAuth(): Auth | null {
 export interface Bill {
   id?: string;
   userId: string;
-  providerName: string;
-  provider?: string;
-  billType: string;
+  billName: string;
+  provider: string;
   amount: number;
+  category: string;
   dueDate: Date;
+  isPaid: boolean;
   createdAt: Date;
+  updatedAt: Date;
 }
+
+export type NotificationType = "bill_added" | "due_soon" | "due_today" | "overdue";
 
 export interface AppNotification {
   id?: string;
   userId: string;
   title: string;
   message: string;
+  type: NotificationType;
   relatedBillId?: string;
   isRead: boolean;
   createdAt: Date;
@@ -150,7 +155,7 @@ export function subscribeToAuth(callback: (user: User | null) => void) {
   return onAuthStateChanged(auth, callback);
 }
 
-export async function addBill(userId: string, bill: Omit<Bill, 'id' | 'userId' | 'createdAt'>) {
+export async function addBill(userId: string, bill: Omit<Bill, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) {
   const auth = getFirebaseAuth();
   if (!auth) throw new Error('Firebase not available');
   const currentUser = auth.currentUser;
@@ -162,11 +167,17 @@ export async function addBill(userId: string, bill: Omit<Bill, 'id' | 'userId' |
 
   const db = getFirebaseDb();
   if (!db) throw new Error('Firebase not available');
+  const now = Timestamp.now();
   const docRef = await addDoc(collection(db, "bills"), {
-    ...bill,
     userId,
+    billName: bill.billName,
+    provider: bill.provider,
+    amount: bill.amount,
+    category: bill.category,
     dueDate: Timestamp.fromDate(new Date(bill.dueDate)),
-    createdAt: Timestamp.now(),
+    isPaid: bill.isPaid ?? false,
+    createdAt: now,
+    updatedAt: now,
   });
   return docRef.id;
 }
@@ -195,12 +206,14 @@ export async function fetchBills(userId: string): Promise<Bill[]> {
       return {
         id: d.id,
         userId: data.userId,
-        providerName: data.providerName,
+        billName: data.billName || data.providerName || '',
         provider: data.provider || '',
-        billType: data.billType,
-        amount: data.amount,
+        category: data.category || data.billType || 'other',
+        amount: data.amount || 0,
         dueDate: data.dueDate?.toDate() || new Date(),
+        isPaid: data.isPaid ?? false,
         createdAt: data.createdAt?.toDate() || new Date(),
+        updatedAt: data.updatedAt?.toDate() || data.createdAt?.toDate() || new Date(),
       };
     });
     return bills.sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime());
@@ -208,6 +221,30 @@ export async function fetchBills(userId: string): Promise<Bill[]> {
     console.error('Firestore fetchBills error:', error);
     throw error;
   }
+}
+
+export async function updateBill(billId: string, updates: Partial<Omit<Bill, 'id' | 'userId' | 'createdAt'>>) {
+  const auth = getFirebaseAuth();
+  if (!auth) throw new Error('Firebase not available');
+  const currentUser = auth.currentUser;
+  if (!currentUser) {
+    throw new Error('User must be authenticated to update bills');
+  }
+
+  await currentUser.getIdToken(true);
+  const db = getFirebaseDb();
+  if (!db) throw new Error('Firebase not available');
+
+  const updateData: { [x: string]: string | number | boolean | Timestamp } = { updatedAt: Timestamp.now() };
+
+  if (updates.billName !== undefined) updateData.billName = updates.billName;
+  if (updates.provider !== undefined) updateData.provider = updates.provider;
+  if (updates.amount !== undefined) updateData.amount = updates.amount;
+  if (updates.category !== undefined) updateData.category = updates.category;
+  if (updates.dueDate !== undefined) updateData.dueDate = Timestamp.fromDate(new Date(updates.dueDate));
+  if (updates.isPaid !== undefined) updateData.isPaid = updates.isPaid;
+
+  await updateDoc(doc(db, "bills", billId), updateData);
 }
 
 export async function deleteBill(billId: string) {
@@ -223,8 +260,6 @@ export async function deleteBill(billId: string) {
   if (!db) throw new Error('Firebase not available');
   await deleteDoc(doc(db, "bills", billId));
 }
-
-// --- Notification Functions ---
 
 export async function addNotification(userId: string, notification: Omit<AppNotification, 'id' | 'userId' | 'createdAt'>) {
   const auth = getFirebaseAuth();
@@ -269,6 +304,7 @@ export async function fetchNotifications(userId: string): Promise<AppNotificatio
         userId: data.userId,
         title: data.title,
         message: data.message,
+        type: data.type || 'bill_added',
         relatedBillId: data.relatedBillId || undefined,
         isRead: data.isRead || false,
         createdAt: data.createdAt?.toDate() || new Date(),
@@ -312,8 +348,6 @@ export async function markAllNotificationsRead(userId: string) {
   await Promise.all(updates);
 }
 
-// --- User Preferences Functions ---
-
 export async function getUserPreferences(userId: string): Promise<UserPreferences> {
   try {
     const auth = getFirebaseAuth();
@@ -349,41 +383,93 @@ export async function setUserPreferences(userId: string, prefs: UserPreferences)
   await setDoc(doc(db, "userPreferences", userId), prefs, { merge: true });
 }
 
-// --- Notification Helpers ---
-
 export async function createBillAddedNotification(userId: string, billName: string, billId: string) {
   const prefs = await getUserPreferences(userId);
   if (!prefs.inAppReminders) return;
 
   await addNotification(userId, {
     title: "Bill Added",
-    message: `"${billName}" has been added to your bills.`,
+    message: `Your bill "${billName}" was added successfully.`,
+    type: "bill_added",
     relatedBillId: billId,
     isRead: false,
   });
 }
 
-export async function checkAndCreateDueSoonNotifications(userId: string, bills: Bill[]) {
+async function hasRecentNotification(userId: string, billId: string, type: NotificationType): Promise<boolean> {
+  try {
+    const db = getFirebaseDb();
+    if (!db) return false;
+
+    const q = query(
+      collection(db, "notifications"),
+      where("userId", "==", userId),
+      where("relatedBillId", "==", billId),
+      where("type", "==", type)
+    );
+    const snapshot = await getDocs(q);
+
+    const now = new Date();
+    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+    return snapshot.docs.some(d => {
+      const createdAt = d.data().createdAt?.toDate();
+      return createdAt && createdAt > oneDayAgo;
+    });
+  } catch {
+    return false;
+  }
+}
+
+export async function checkAndCreateDueDateNotifications(userId: string, bills: Bill[]) {
   const prefs = await getUserPreferences(userId);
   if (!prefs.inAppReminders) return;
 
   const now = new Date();
-  const dueSoonBills = bills.filter(bill => {
-    const diffTime = new Date(bill.dueDate).getTime() - now.getTime();
-    const daysUntil = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return daysUntil >= 0 && daysUntil <= 3;
-  });
+  now.setHours(0, 0, 0, 0);
 
-  for (const bill of dueSoonBills) {
-    const daysUntil = Math.ceil((new Date(bill.dueDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-    const dueText = daysUntil === 0 ? "due today" : `due in ${daysUntil} day${daysUntil === 1 ? '' : 's'}`;
+  for (const bill of bills) {
+    if (bill.isPaid) continue;
 
-    await addNotification(userId, {
-      title: "Bill Due Soon",
-      message: `"${bill.providerName}" ($${bill.amount.toFixed(2)}) is ${dueText}.`,
-      relatedBillId: bill.id,
-      isRead: false,
-    });
+    const due = new Date(bill.dueDate);
+    due.setHours(0, 0, 0, 0);
+    const diffTime = due.getTime() - now.getTime();
+    const daysUntil = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+    let type: NotificationType | null = null;
+    let title = "";
+    let message = "";
+
+    if (daysUntil < 0) {
+      type = "overdue";
+      title = "Bill Overdue";
+      message = `"${bill.billName}" ($${bill.amount.toFixed(2)}) is ${Math.abs(daysUntil)} day${Math.abs(daysUntil) === 1 ? '' : 's'} overdue.`;
+    } else if (daysUntil === 0) {
+      type = "due_today";
+      title = "Bill Due Today";
+      message = `"${bill.billName}" ($${bill.amount.toFixed(2)}) is due today.`;
+    } else if (daysUntil === 1) {
+      type = "due_soon";
+      title = "Bill Due Tomorrow";
+      message = `"${bill.billName}" ($${bill.amount.toFixed(2)}) is due tomorrow.`;
+    } else if (daysUntil === 3) {
+      type = "due_soon";
+      title = "Bill Due Soon";
+      message = `"${bill.billName}" ($${bill.amount.toFixed(2)}) is due in 3 days.`;
+    }
+
+    if (type && bill.id) {
+      const alreadySent = await hasRecentNotification(userId, bill.id, type);
+      if (!alreadySent) {
+        await addNotification(userId, {
+          title,
+          message,
+          type,
+          relatedBillId: bill.id,
+          isRead: false,
+        });
+      }
+    }
   }
 }
 
@@ -399,29 +485,5 @@ export function resetPassword(email: string) {
   if (!auth) return Promise.reject(new Error('Firebase not available'));
   return sendPasswordResetEmail(auth, email);
 }
-
-// TODO: FUTURE - Push Notifications
-// - Register FCM tokens per user device
-// - Send push notifications via Firebase Cloud Messaging
-// - Background notification handling for mobile web
-
-// TODO: FUTURE - Email Reminders
-// - Scheduled email reminders via Cloud Functions
-// - Configurable reminder intervals per user
-// - Weekly/monthly bill summary emails via MailerSend
-// - Overdue bill escalation emails
-
-// TODO: FUTURE - Gmail Bill Ingestion
-// - Connect user's Gmail account via OAuth2
-// - Parse incoming emails for bill notifications
-// - Auto-detect bill amounts and due dates from email content
-// - Supported providers: Hydro, Rogers, Bell, Telus, etc.
-// - User confirms before adding auto-detected bills
-
-// TODO: FUTURE - Subscription Plans
-// - Premium plan with unlimited bills
-// - Stripe payment integration for upgrades
-// - Plan management in settings
-// - Usage analytics and insights
 
 export type { User };

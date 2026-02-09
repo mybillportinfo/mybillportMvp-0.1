@@ -7,32 +7,25 @@ MyBillPort is a modern Bill Management OS for people living in Canada to track r
 Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (February 9, 2026)
-- ✅ In-app notification system: Firestore-backed notifications with bell icon on dashboard
-- ✅ Notifications page (/notifications): view all notifications, mark as read, mark all read
-- ✅ Auto-create notification when a bill is added
-- ✅ Auto-create due-soon notifications for bills due within 3 days
-- ✅ Settings: "In-App Bill Reminders" toggle persisted in Firestore (userPreferences collection)
-- ✅ Notification toggle respected before creating notifications
-- ✅ Provider field added to add-bill form
-- ✅ Bell icon with unread count badge on dashboard header
-- ✅ TODO comments for push notifications, email reminders, Gmail ingestion, subscription plans
+- ✅ FULL SCHEMA REBUILD: Bill model now uses billName, provider, category, isPaid, updatedAt
+- ✅ Edit bill: inline modal with full form (name, provider, category, amount, due date)
+- ✅ Mark as paid/unpaid: toggle button on each bill card
+- ✅ Delete bill: confirmation dialog before removing
+- ✅ Notification types: bill_added, due_soon, due_today, overdue with visual badges
+- ✅ Deduplication: notifications check for recent duplicates before creating
+- ✅ Due date triggers: 3 days, 1 day, today, overdue (skips paid bills)
+- ✅ Settings cleaned up: only in-app toggle (persisted), removed non-functional placeholders
+- ✅ Add bill validation: future date required, amount > 0, billName required
+- ✅ Backward-compatible fetchBills: reads old providerName/billType fields from existing data
 
-## Previous Changes (February 9, 2026)
-- ✅ Removed phone number auth (unstable) and Apple sign-in (not needed yet)
-- ✅ Auth now: Email/password + Google Sign-In only
-- ✅ Forgot Password flow kept working (/forgot-password)
-- ✅ Settings page: Notifications, Privacy, Security modals are functional
-- ✅ Free plan limit enforced: max 5 bills, blocks adding more with clear message
-- ✅ Delete bill confirmation dialog before removing
-- ✅ Bill count displayed on dashboard (X/5 used) and add-bill page
-
-## Previous Changes (February 6, 2026)
-- ✅ Fixed env variable config to support both Replit and Vercel deployment
-- ✅ Improved auth guard on settings page to prevent premature redirects
-
-## Previous Changes (February 5, 2026)
-- ✅ Fixed Firestore permission-denied errors blocking bill CRUD operations
-- ✅ Production-safe Firestore rules enforcing per-user data isolation
+## Previous Changes
+- ✅ In-app notification system with Firestore backend
+- ✅ Notifications page with mark-as-read, mark-all-read
+- ✅ Bell icon with unread badge on dashboard
+- ✅ Auth: Email/password + Google Sign-In only (no phone, no Apple)
+- ✅ Forgot Password flow
+- ✅ Free plan limit: max 5 bills enforced
+- ✅ Firestore rules: per-user data isolation
 
 ## System Architecture
 
@@ -40,7 +33,6 @@ Preferred communication style: Simple, everyday language.
 - **Framework**: React 18 with TypeScript
 - **Routing**: Next.js App Router
 - **Styling**: Tailwind CSS with custom CSS variables (dark theme)
-- **Build Tool**: Next.js (Vite for dev)
 - **Design System**: Premium fintech theme (navy/slate/muted teal)
 
 ### Core Pages
@@ -48,10 +40,10 @@ Preferred communication style: Simple, everyday language.
 - `/login` - Sign in with email/password or Google
 - `/signup` - Create account with email/password or Google
 - `/forgot-password` - Password reset via email
-- `/app` - Dashboard with greeting, summary cards, bill list, bell icon, delete confirmation
-- `/add-bill` - Add bill form with provider, category, amount, due date, 5-bill limit
-- `/notifications` - In-app notification list with mark read/mark all read
-- `/settings` - Profile, plan, notifications/privacy/security modals, legal links, logout
+- `/app` - Dashboard: summary cards, bill list with edit/paid/delete actions, bell icon
+- `/add-bill` - Add bill form with billName, provider, category, amount, due date
+- `/notifications` - Notification list with type badges, mark read/mark all read
+- `/settings` - Profile, plan, notifications toggle, privacy/security modals, legal links
 - `/privacy` - Full privacy policy page
 - `/terms` - Full terms of service page
 
@@ -60,29 +52,26 @@ Preferred communication style: Simple, everyday language.
 - **Language**: TypeScript
 - **Database**: Firebase Firestore (NoSQL, per-user data isolation)
 - **Authentication**: Firebase Auth (email/password, Google OAuth)
-- **Email**: MailerSend for bill reminders (future)
 
 ### Firestore Collections
-- `bills` - User bills (userId, providerName, billType, amount, dueDate, createdAt)
-- `notifications` - In-app notifications (userId, title, message, relatedBillId, isRead, createdAt)
-- `userPreferences` - User settings (inAppReminders boolean)
+- `bills` - userId, billName, provider, amount, category, dueDate, isPaid, createdAt, updatedAt
+- `notifications` - userId, title, message, type (bill_added|due_soon|due_today|overdue), relatedBillId, isRead, createdAt
+- `userPreferences` - inAppReminders (boolean)
 
 ### Key Features (MVP)
-- **Bill Management**: Add, track, categorize, delete bills with confirmation
-- **Free Plan Limit**: Maximum 5 bills per user, enforced on add-bill page
-- **Status Indicators**: Auto-calculated (green=upcoming, yellow=due soon, red=overdue)
-- **In-App Notifications**: Bell icon with unread count, notification page, mark as read
-- **Notification Triggers**: Bill added, bill due within 3 days
-- **Settings**: In-app reminders toggle (persisted), privacy/security modals
+- **Bill CRUD**: Add, edit, delete, mark paid/unpaid
+- **Free Plan Limit**: Maximum 5 bills per user
+- **Status Indicators**: Auto-calculated (green=paid, teal=upcoming, amber=due soon, red=overdue)
+- **In-App Notifications**: Bell icon with unread count, type-specific badges
+- **Notification Triggers**: Bill added, 3 days before, 1 day before, due today, overdue
+- **Deduplication**: No duplicate notifications within 24 hours per bill+type
+- **Settings**: In-app reminders toggle (persisted to Firestore)
 - **Auth**: Email/password + Google Sign-In + Forgot Password
 
 ### Features NOT Included (MVP Scope)
-- SMS notifications
-- Email sending
-- Push notifications (FCM)
+- SMS notifications, Email reminders, Push notifications (FCM)
 - Gmail API bill ingestion
-- Payment processing
-- Subscription plans
+- Payment processing, Subscription plans
 
 ## External Dependencies
 - **firebase**: Firebase SDK (Auth + Firestore)
@@ -91,9 +80,5 @@ Preferred communication style: Simple, everyday language.
 
 ## Firebase Configuration
 - **Project ID**: mybillport-8e05a
-- **Firestore Rules**: Production-safe rules enforcing userId matching
 - **Auth Methods**: Email/password, Google OAuth
-- **Environment Variables Required**:
-  - NEXT_PUBLIC_FIREBASE_API_KEY
-  - NEXT_PUBLIC_FIREBASE_PROJECT_ID
-  - NEXT_PUBLIC_FIREBASE_APP_ID
+- **Environment Variables**: NEXT_PUBLIC_FIREBASE_API_KEY, NEXT_PUBLIC_FIREBASE_PROJECT_ID, NEXT_PUBLIC_FIREBASE_APP_ID

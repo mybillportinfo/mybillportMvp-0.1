@@ -3,9 +3,16 @@
 import { useEffect, useState } from 'react';
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Home, Plus, Settings, Bell, Check, CheckCheck, Loader2 } from "lucide-react";
+import { ArrowLeft, Home, Plus, Settings, Bell, Check, CheckCheck, Loader2, AlertTriangle, Clock, CalendarClock } from "lucide-react";
 import { useAuth } from '../contexts/AuthContext';
-import { fetchNotifications, markNotificationRead, markAllNotificationsRead, AppNotification } from '../lib/firebase';
+import { fetchNotifications, markNotificationRead, markAllNotificationsRead, AppNotification, NotificationType } from '../lib/firebase';
+
+const typeConfig: Record<NotificationType, { label: string; color: string; bgColor: string }> = {
+  bill_added: { label: 'Added', color: 'text-teal-600', bgColor: 'bg-teal-50' },
+  due_soon: { label: 'Due Soon', color: 'text-amber-600', bgColor: 'bg-amber-50' },
+  due_today: { label: 'Due Today', color: 'text-orange-600', bgColor: 'bg-orange-50' },
+  overdue: { label: 'Overdue', color: 'text-red-600', bgColor: 'bg-red-50' },
+};
 
 export default function NotificationsPage() {
   const { user, loading: authLoading } = useAuth();
@@ -82,6 +89,16 @@ export default function NotificationsPage() {
     return new Date(date).toLocaleDateString();
   };
 
+  const getNotifIcon = (type: NotificationType) => {
+    switch (type) {
+      case 'bill_added': return <Bell className="w-5 h-5" />;
+      case 'due_soon': return <CalendarClock className="w-5 h-5" />;
+      case 'due_today': return <Clock className="w-5 h-5" />;
+      case 'overdue': return <AlertTriangle className="w-5 h-5" />;
+      default: return <Bell className="w-5 h-5" />;
+    }
+  };
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 flex items-center justify-center">
@@ -138,44 +155,54 @@ export default function NotificationsPage() {
             <p className="text-slate-500 text-sm">You&apos;ll see reminders here when bills are due</p>
           </div>
         ) : (
-          notifications.map((notif) => (
-            <div
-              key={notif.id}
-              className={`rounded-xl p-4 transition-colors ${
-                notif.isRead
-                  ? 'bg-slate-800/30 border border-slate-700/50'
-                  : 'bg-slate-800/70 border border-teal-500/30'
-              }`}
-            >
-              <div className="flex items-start gap-3">
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                  notif.isRead ? 'bg-slate-700' : 'bg-teal-500/20'
-                }`}>
-                  <Bell className={`w-5 h-5 ${notif.isRead ? 'text-slate-400' : 'text-teal-400'}`} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2">
-                    <p className={`font-medium text-sm ${notif.isRead ? 'text-slate-400' : 'text-white'}`}>
-                      {notif.title}
-                    </p>
-                    <span className="text-xs text-slate-500 flex-shrink-0">{formatTime(notif.createdAt)}</span>
+          notifications.map((notif) => {
+            const config = typeConfig[notif.type] || typeConfig.bill_added;
+            return (
+              <div
+                key={notif.id}
+                className={`rounded-xl p-4 transition-colors ${
+                  notif.isRead
+                    ? 'bg-slate-800/30 border border-slate-700/50'
+                    : 'bg-slate-800/70 border border-teal-500/30'
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                    notif.isRead ? 'bg-slate-700 text-slate-400' : `${config.bgColor} ${config.color}`
+                  }`}>
+                    {getNotifIcon(notif.type)}
                   </div>
-                  <p className={`text-sm mt-0.5 ${notif.isRead ? 'text-slate-500' : 'text-slate-300'}`}>
-                    {notif.message}
-                  </p>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <p className={`font-medium text-sm ${notif.isRead ? 'text-slate-400' : 'text-white'}`}>
+                          {notif.title}
+                        </p>
+                        <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${
+                          notif.isRead ? 'bg-slate-700 text-slate-400' : `${config.bgColor} ${config.color}`
+                        }`}>
+                          {config.label}
+                        </span>
+                      </div>
+                      <span className="text-xs text-slate-500 flex-shrink-0">{formatTime(notif.createdAt)}</span>
+                    </div>
+                    <p className={`text-sm mt-0.5 ${notif.isRead ? 'text-slate-500' : 'text-slate-300'}`}>
+                      {notif.message}
+                    </p>
+                  </div>
+                  {!notif.isRead && (
+                    <button
+                      onClick={() => notif.id && handleMarkRead(notif.id)}
+                      className="p-1.5 text-teal-400 hover:bg-teal-500/20 rounded-lg transition-colors flex-shrink-0"
+                      title="Mark as read"
+                    >
+                      <Check className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
-                {!notif.isRead && (
-                  <button
-                    onClick={() => notif.id && handleMarkRead(notif.id)}
-                    className="p-1.5 text-teal-400 hover:bg-teal-500/20 rounded-lg transition-colors flex-shrink-0"
-                    title="Mark as read"
-                  >
-                    <Check className="w-4 h-4" />
-                  </button>
-                )}
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 
