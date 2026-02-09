@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const loginWithGoogle = async () => {
+  const loginWithGoogleFn = async () => {
     setError(null);
     setLoading(true);
     try {
@@ -85,7 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const clearError = () => setError(null);
 
   return (
-    <AuthContext.Provider value={{ user, loading, error, login, signup, loginWithGoogle, logout, clearError }}>
+    <AuthContext.Provider value={{ user, loading, error, login, signup, loginWithGoogle: loginWithGoogleFn, logout, clearError }}>
       {children}
     </AuthContext.Provider>
   );
@@ -123,15 +123,6 @@ function getAuthErrorMessage(errorMessage: string): string {
   }
   if (errorMessage.includes('auth/cancelled-popup-request')) {
     return 'Sign-in was cancelled. Please try again.';
-  }
-  if (errorMessage.includes('auth/invalid-phone-number')) {
-    return 'Please enter a valid phone number with country code (e.g. +1234567890).';
-  }
-  if (errorMessage.includes('auth/invalid-verification-code')) {
-    return 'Invalid verification code. Please try again.';
-  }
-  if (errorMessage.includes('auth/code-expired')) {
-    return 'Verification code expired. Please request a new one.';
   }
   if (errorMessage.includes('Firebase not available')) {
     return 'Unable to connect to authentication service. Please refresh and try again.';

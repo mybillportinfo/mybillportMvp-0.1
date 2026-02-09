@@ -26,9 +26,6 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   sendPasswordResetEmail,
-  RecaptchaVerifier,
-  signInWithPhoneNumber,
-  ConfirmationResult,
 } from "firebase/auth";
 
 function getFirebaseConfig() {
@@ -220,33 +217,29 @@ export function resetPassword(email: string) {
   return sendPasswordResetEmail(auth, email);
 }
 
-let _recaptchaVerifier: RecaptchaVerifier | null = null;
+// ============================================================
+// FUTURE: Gmail API Integration
+// - Connect user's Gmail account via OAuth2
+// - Parse incoming emails for bill notifications
+// - Auto-detect bill amounts and due dates from email content
+// - Supported providers: Hydro, Rogers, Bell, Telus, etc.
+// ============================================================
 
-export function setupRecaptcha(elementId: string) {
-  const auth = getFirebaseAuth();
-  if (!auth) throw new Error('Firebase not available');
-  if (_recaptchaVerifier) {
-    _recaptchaVerifier.clear();
-    _recaptchaVerifier = null;
-  }
-  _recaptchaVerifier = new RecaptchaVerifier(auth, elementId, {
-    size: 'invisible',
-  });
-  return _recaptchaVerifier;
-}
+// ============================================================
+// FUTURE: Email-Based Bill Detection
+// - Scan connected email for recurring bill patterns
+// - Extract provider name, amount, due date from email body
+// - Suggest new bills based on detected patterns
+// - User confirms before adding auto-detected bills
+// ============================================================
 
-export function sendPhoneOtp(phoneNumber: string): Promise<ConfirmationResult> {
-  const auth = getFirebaseAuth();
-  if (!auth) return Promise.reject(new Error('Firebase not available'));
-  if (!_recaptchaVerifier) return Promise.reject(new Error('reCAPTCHA not initialized'));
-  return signInWithPhoneNumber(auth, phoneNumber, _recaptchaVerifier);
-}
+// ============================================================
+// FUTURE: Notification System
+// - Push notifications via Firebase Cloud Messaging (FCM)
+// - Scheduled email reminders via Cloud Functions
+// - Configurable reminder intervals (1, 2, 3, 7 days before due)
+// - Overdue bill escalation alerts
+// - Weekly/monthly bill summary emails
+// ============================================================
 
-export function clearRecaptcha() {
-  if (_recaptchaVerifier) {
-    _recaptchaVerifier.clear();
-    _recaptchaVerifier = null;
-  }
-}
-
-export type { User, ConfirmationResult };
+export type { User };
