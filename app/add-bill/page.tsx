@@ -3,10 +3,10 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Home, Plus, Settings, Loader2, AlertTriangle, Search, X } from "lucide-react";
+import { ArrowLeft, Home, Plus, Settings, Loader2, AlertTriangle, Search, X, ChevronDown } from "lucide-react";
 import { useAuth } from '../contexts/AuthContext';
 import { addBill, fetchBills, createBillAddedNotification } from '../lib/firebase';
-import { searchBillers, canadianBillers, BillerEntry } from '../lib/canadianBillers';
+import { searchBillers, canadianBillers, BillerEntry, billCategories } from '../lib/canadianBillers';
 
 const FREE_PLAN_LIMIT = 3;
 
@@ -25,7 +25,8 @@ export default function AddBillPage() {
 
   const [suggestions, setSuggestions] = useState<BillerEntry[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('other');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedSubcategory, setSelectedSubcategory] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
@@ -80,8 +81,17 @@ export default function AddBillPage() {
   const selectBiller = (biller: BillerEntry) => {
     setCompanyName(biller.name);
     setSelectedCategory(biller.category);
+    setSelectedSubcategory(biller.subcategory);
     setShowSuggestions(false);
     setSuggestions([]);
+  };
+
+  const currentCategoryObj = billCategories.find(c => c.id === selectedCategory);
+  const subcategories = currentCategoryObj?.subcategories || [];
+
+  const handleCategoryChange = (catId: string) => {
+    setSelectedCategory(catId);
+    setSelectedSubcategory('');
   };
 
   const isAtLimit = billCount !== null && billCount >= FREE_PLAN_LIMIT;
@@ -97,6 +107,11 @@ export default function AddBillPage() {
 
     if (isAtLimit) {
       setError(`Free plan allows up to ${FREE_PLAN_LIMIT} bills. Remove a bill or upgrade to add more.`);
+      return;
+    }
+
+    if (!selectedCategory) {
+      setError('Please select a bill category');
       return;
     }
 
@@ -135,9 +150,13 @@ export default function AddBillPage() {
         companyName: companyName.trim(),
         accountNumber: accountNumber.trim(),
         category: selectedCategory,
+        subcategory: selectedSubcategory,
         amount: parseFloat(amount),
         dueDate: selectedDate,
         isPaid: false,
+        paymentStatus: "unpaid",
+        amountPaid: 0,
+        remainingBalance: parseFloat(amount),
       });
 
       await createBillAddedNotification(user.uid, companyName.trim(), billId).catch(console.error);
@@ -218,6 +237,42 @@ export default function AddBillPage() {
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
                 {error}
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Bill Category *</label>
+              <div className="relative">
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => handleCategoryChange(e.target.value)}
+                  className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800 appearance-none bg-white"
+                >
+                  <option value="">Select a category...</option>
+                  {billCategories.map(cat => (
+                    <option key={cat.id} value={cat.id}>{cat.label}</option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              </div>
+            </div>
+
+            {selectedCategory && subcategories.length > 0 && (
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Sub-type</label>
+                <div className="relative">
+                  <select
+                    value={selectedSubcategory}
+                    onChange={(e) => setSelectedSubcategory(e.target.value)}
+                    className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800 appearance-none bg-white"
+                  >
+                    <option value="">Select a sub-type (optional)...</option>
+                    {subcategories.map(sub => (
+                      <option key={sub.id} value={sub.id}>{sub.label}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                </div>
               </div>
             )}
 

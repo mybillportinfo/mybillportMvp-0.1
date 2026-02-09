@@ -3,9 +3,10 @@
 import { useEffect, useState } from 'react';
 import Link from "next/link";
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Home, Plus, Settings, Loader2, Trash2, AlertTriangle, Bell, DollarSign, CreditCard, Zap, Wifi, Phone, MoreHorizontal, CheckCircle } from "lucide-react";
+import { Home, Plus, Settings, Loader2, Trash2, AlertTriangle, Bell, DollarSign, CreditCard, Zap, Wifi, Phone, MoreHorizontal, CheckCircle, Building2, ShieldCheck, Landmark, Tv, Flame } from "lucide-react";
 import { useAuth } from '../contexts/AuthContext';
 import { fetchBills, deleteBill, fetchNotifications, checkAndCreateDueDateNotifications, logPayment, createPaymentNotification, Bill } from '../lib/firebase';
+import { getCategoryLabel } from '../lib/canadianBillers';
 
 const FREE_PLAN_LIMIT = 3;
 
@@ -122,7 +123,8 @@ export default function Dashboard() {
     setPayingBillId(bill.id);
     setError(null);
 
-    const amount = payType === 'full' ? bill.amount : Math.round(bill.amount * 50) / 100;
+    const payableAmount = bill.remainingBalance > 0 ? bill.remainingBalance : bill.amount;
+    const amount = payType === 'full' ? payableAmount : Math.round((payableAmount / 2) * 100) / 100;
 
     try {
       const res = await fetch('/api/checkout', {
@@ -154,23 +156,33 @@ export default function Dashboard() {
     }
   };
 
-  const getIcon = (type: string) => {
-    switch (type) {
+  const getIcon = (category: string) => {
+    switch (category) {
+      case "utilities": return <Zap className="w-5 h-5 text-yellow-600" />;
+      case "telecom": return <Wifi className="w-5 h-5 text-blue-600" />;
+      case "financial": return <CreditCard className="w-5 h-5 text-indigo-600" />;
+      case "subscriptions": return <Tv className="w-5 h-5 text-purple-600" />;
+      case "housing": return <Building2 className="w-5 h-5 text-emerald-600" />;
+      case "insurance": return <ShieldCheck className="w-5 h-5 text-sky-600" />;
+      case "government": return <Landmark className="w-5 h-5 text-red-600" />;
       case "hydro": return <Zap className="w-5 h-5 text-yellow-600" />;
       case "internet": return <Wifi className="w-5 h-5 text-blue-600" />;
       case "credit_card": return <CreditCard className="w-5 h-5 text-indigo-600" />;
-      case "subscription": return <DollarSign className="w-5 h-5 text-purple-600" />;
+      case "subscription": return <Tv className="w-5 h-5 text-purple-600" />;
       case "phone": return <Phone className="w-5 h-5 text-green-600" />;
       default: return <MoreHorizontal className="w-5 h-5 text-gray-600" />;
     }
   };
 
-  const getIconBg = (type: string) => {
-    switch (type) {
-      case "hydro": return "bg-yellow-100";
-      case "internet": return "bg-blue-100";
-      case "credit_card": return "bg-indigo-100";
-      case "subscription": return "bg-purple-100";
+  const getIconBg = (category: string) => {
+    switch (category) {
+      case "utilities": case "hydro": return "bg-yellow-100";
+      case "telecom": case "internet": return "bg-blue-100";
+      case "financial": case "credit_card": return "bg-indigo-100";
+      case "subscriptions": case "subscription": return "bg-purple-100";
+      case "housing": return "bg-emerald-100";
+      case "insurance": return "bg-sky-100";
+      case "government": return "bg-red-100";
       case "phone": return "bg-green-100";
       default: return "bg-gray-100";
     }
@@ -186,7 +198,8 @@ export default function Dashboard() {
   };
 
   const getStatusText = (bill: Bill) => {
-    if (bill.isPaid) return "Paid";
+    if (bill.paymentStatus === "paid" || bill.isPaid) return "Paid";
+    if (bill.paymentStatus === "partially_paid") return "Partially Paid";
     const daysUntil = getDaysUntilDue(bill.dueDate);
     if (daysUntil < 0) return `${Math.abs(daysUntil)} day${Math.abs(daysUntil) === 1 ? '' : 's'} overdue`;
     if (daysUntil === 0) return "Due today";
@@ -194,7 +207,8 @@ export default function Dashboard() {
   };
 
   const getStatusStyle = (bill: Bill) => {
-    if (bill.isPaid) return "text-green-500";
+    if (bill.paymentStatus === "paid" || bill.isPaid) return "text-green-500";
+    if (bill.paymentStatus === "partially_paid") return "text-blue-500";
     const daysUntil = getDaysUntilDue(bill.dueDate);
     if (daysUntil < 0) return "text-red-500";
     if (daysUntil <= 3) return "text-amber-500";
@@ -217,8 +231,8 @@ export default function Dashboard() {
     );
   }
 
-  const unpaidBills = bills.filter(b => !b.isPaid);
-  const totalOwing = unpaidBills.reduce((sum, b) => sum + b.amount, 0);
+  const unpaidBills = bills.filter(b => b.paymentStatus !== 'paid' && !b.isPaid);
+  const totalOwing = unpaidBills.reduce((sum, b) => sum + (b.remainingBalance > 0 ? b.remainingBalance : b.amount), 0);
 
   const greeting = () => {
     const hour = new Date().getHours();
@@ -313,6 +327,9 @@ export default function Dashboard() {
           bills.map((bill) => {
             const isConfirming = confirmDeleteId === bill.id;
             const isPaying = payingBillId === bill.id;
+            const isFullyPaid = bill.paymentStatus === "paid" || bill.isPaid;
+            const isPartiallyPaid = bill.paymentStatus === "partially_paid";
+            const displayBalance = bill.remainingBalance > 0 ? bill.remainingBalance : bill.amount;
             return (
               <div key={bill.id} className="bg-white rounded-xl p-4">
                 <div className="flex items-start gap-3">
@@ -328,53 +345,89 @@ export default function Dashboard() {
                         {getStatusText(bill)}
                       </span>
                     </div>
+                    {bill.category && (
+                      <span className="text-[10px] text-slate-400 mt-0.5 inline-block">
+                        {getCategoryLabel(bill.category)}
+                      </span>
+                    )}
                   </div>
                   <div className="text-right flex-shrink-0">
                     <p className="font-bold text-slate-800 text-lg">${bill.amount.toFixed(2)}</p>
                     <p className="text-[10px] text-slate-400">CAD</p>
+                    {isPartiallyPaid && (
+                      <p className="text-xs text-blue-500 font-medium mt-0.5">
+                        ${bill.remainingBalance.toFixed(2)} left
+                      </p>
+                    )}
+                    {isFullyPaid && (
+                      <p className="text-xs text-green-500 font-medium mt-0.5">
+                        Paid in full
+                      </p>
+                    )}
                   </div>
                 </div>
 
-                <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 flex-1">
-                    <button
-                      onClick={() => handlePay(bill, 'full')}
-                      disabled={isPaying}
-                      className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg bg-teal-600 text-white hover:bg-teal-700 transition-colors disabled:opacity-50"
-                    >
-                      {isPaying ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      ) : (
-                        <DollarSign className="w-3.5 h-3.5" />
-                      )}
-                      Pay Full
-                    </button>
+                {!isFullyPaid && (
+                  <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 flex-1">
+                      <button
+                        onClick={() => handlePay(bill, 'full')}
+                        disabled={isPaying}
+                        className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg bg-teal-600 text-white hover:bg-teal-700 transition-colors disabled:opacity-50"
+                      >
+                        {isPaying ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <DollarSign className="w-3.5 h-3.5" />
+                        )}
+                        {isPartiallyPaid ? `Pay Remaining ($${displayBalance.toFixed(2)})` : 'Pay Full'}
+                      </button>
 
-                    <button
-                      onClick={() => handlePay(bill, 'half')}
-                      disabled={isPaying}
-                      className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors disabled:opacity-50"
-                    >
-                      {isPaying ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      ) : (
-                        <DollarSign className="w-3.5 h-3.5" />
-                      )}
-                      Pay Half (${(bill.amount / 2).toFixed(2)})
-                    </button>
+                      <button
+                        onClick={() => handlePay(bill, 'half')}
+                        disabled={isPaying}
+                        className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors disabled:opacity-50"
+                      >
+                        {isPaying ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <DollarSign className="w-3.5 h-3.5" />
+                        )}
+                        Pay Half (${(displayBalance / 2).toFixed(2)})
+                      </button>
+                    </div>
+
+                    {deletingId === bill.id ? (
+                      <Loader2 className="w-4 h-4 text-slate-400 animate-spin" />
+                    ) : (
+                      <button
+                        onClick={() => setConfirmDeleteId(isConfirming ? null : bill.id!)}
+                        className={`p-2 transition-colors rounded-lg flex-shrink-0 ${isConfirming ? 'text-red-500 bg-red-50' : 'text-slate-400 hover:text-red-500'}`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
+                )}
 
-                  {deletingId === bill.id ? (
-                    <Loader2 className="w-4 h-4 text-slate-400 animate-spin" />
-                  ) : (
-                    <button
-                      onClick={() => setConfirmDeleteId(isConfirming ? null : bill.id!)}
-                      className={`p-2 transition-colors rounded-lg flex-shrink-0 ${isConfirming ? 'text-red-500 bg-red-50' : 'text-slate-400 hover:text-red-500'}`}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
+                {isFullyPaid && (
+                  <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-green-600">
+                      <CheckCircle className="w-4 h-4" />
+                      <span className="text-sm font-medium">Payment complete</span>
+                    </div>
+                    {deletingId === bill.id ? (
+                      <Loader2 className="w-4 h-4 text-slate-400 animate-spin" />
+                    ) : (
+                      <button
+                        onClick={() => setConfirmDeleteId(isConfirming ? null : bill.id!)}
+                        className={`p-2 transition-colors rounded-lg flex-shrink-0 ${isConfirming ? 'text-red-500 bg-red-50' : 'text-slate-400 hover:text-red-500'}`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                )}
 
                 {isConfirming && (
                   <div className="mt-3 pt-3 border-t border-red-100 flex items-center justify-between bg-red-50 -mx-4 -mb-4 px-4 py-3 rounded-b-xl">

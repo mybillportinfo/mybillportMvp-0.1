@@ -95,6 +95,8 @@ function getFirebaseAuth(): Auth | null {
   return _auth;
 }
 
+export type PaymentStatus = "unpaid" | "partially_paid" | "paid";
+
 export interface Bill {
   id?: string;
   userId: string;
@@ -102,8 +104,12 @@ export interface Bill {
   accountNumber: string;
   amount: number;
   category: string;
+  subcategory: string;
   dueDate: Date;
   isPaid: boolean;
+  paymentStatus: PaymentStatus;
+  amountPaid: number;
+  remainingBalance: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -183,8 +189,12 @@ export async function addBill(userId: string, bill: Omit<Bill, 'id' | 'userId' |
     accountNumber: bill.accountNumber,
     amount: bill.amount,
     category: bill.category,
+    subcategory: bill.subcategory || '',
     dueDate: Timestamp.fromDate(new Date(bill.dueDate)),
     isPaid: bill.isPaid ?? false,
+    paymentStatus: "unpaid",
+    amountPaid: 0,
+    remainingBalance: bill.amount,
     createdAt: now,
     updatedAt: now,
   });
@@ -212,15 +222,30 @@ export async function fetchBills(userId: string): Promise<Bill[]> {
 
     const bills = snapshot.docs.map(d => {
       const data = d.data();
+      const amount = data.amount || 0;
+      const amountPaid = data.amountPaid || 0;
+      const isPaid = data.isPaid ?? false;
+      let paymentStatus: PaymentStatus = "unpaid";
+      if (data.paymentStatus) {
+        paymentStatus = data.paymentStatus;
+      } else if (isPaid) {
+        paymentStatus = "paid";
+      } else if (amountPaid > 0) {
+        paymentStatus = "partially_paid";
+      }
       return {
         id: d.id,
         userId: data.userId,
         companyName: data.companyName || data.billName || data.providerName || '',
         accountNumber: data.accountNumber || '',
         category: data.category || data.billType || 'other',
-        amount: data.amount || 0,
+        subcategory: data.subcategory || '',
+        amount,
         dueDate: data.dueDate?.toDate() || new Date(),
-        isPaid: data.isPaid ?? false,
+        isPaid,
+        paymentStatus,
+        amountPaid,
+        remainingBalance: data.remainingBalance ?? (amount - amountPaid),
         createdAt: data.createdAt?.toDate() || new Date(),
         updatedAt: data.updatedAt?.toDate() || data.createdAt?.toDate() || new Date(),
       };
@@ -250,8 +275,12 @@ export async function updateBill(billId: string, updates: Partial<Omit<Bill, 'id
   if (updates.accountNumber !== undefined) updateData.accountNumber = updates.accountNumber;
   if (updates.amount !== undefined) updateData.amount = updates.amount;
   if (updates.category !== undefined) updateData.category = updates.category;
+  if (updates.subcategory !== undefined) updateData.subcategory = updates.subcategory;
   if (updates.dueDate !== undefined) updateData.dueDate = Timestamp.fromDate(new Date(updates.dueDate));
   if (updates.isPaid !== undefined) updateData.isPaid = updates.isPaid;
+  if (updates.paymentStatus !== undefined) updateData.paymentStatus = updates.paymentStatus;
+  if (updates.amountPaid !== undefined) updateData.amountPaid = updates.amountPaid;
+  if (updates.remainingBalance !== undefined) updateData.remainingBalance = updates.remainingBalance;
 
   await updateDoc(doc(db, "bills", billId), updateData);
 }
@@ -284,9 +313,30 @@ export async function logPayment(userId: string, billId: string, amountPaid: num
     userId,
     billId,
     amountPaid,
+    paymentType: 'full',
     stripeSessionId: stripeSessionId || null,
     timestamp: Timestamp.now(),
   });
+
+  const billDoc = await getDoc(doc(db, "bills", billId));
+  if (billDoc.exists()) {
+    const billData = billDoc.data();
+    const totalAmount = billData.amount || 0;
+    const previouslyPaid = billData.amountPaid || 0;
+    const newTotalPaid = previouslyPaid + amountPaid;
+    const remaining = Math.max(0, totalAmount - newTotalPaid);
+    const isPaid = remaining <= 0;
+    const paymentStatus: PaymentStatus = isPaid ? "paid" : "partially_paid";
+
+    await updateDoc(doc(db, "bills", billId), {
+      amountPaid: newTotalPaid,
+      remainingBalance: remaining,
+      isPaid,
+      paymentStatus,
+      updatedAt: Timestamp.now(),
+    });
+  }
+
   return docRef.id;
 }
 
@@ -494,10 +544,14 @@ export async function checkAndCreateDueDateNotifications(userId: string, bills: 
       type = "due_soon";
       title = "Bill Due Tomorrow";
       message = `"${bill.companyName}" ($${bill.amount.toFixed(2)}) is due tomorrow.`;
-    } else if (daysUntil === 3) {
+    } else if (daysUntil <= 3 && daysUntil > 1) {
       type = "due_soon";
       title = "Bill Due Soon";
-      message = `"${bill.companyName}" ($${bill.amount.toFixed(2)}) is due in 3 days.`;
+      message = `"${bill.companyName}" ($${bill.amount.toFixed(2)}) is due in ${daysUntil} days.`;
+    } else if (daysUntil === 7) {
+      type = "due_soon";
+      title = "Bill Due in 7 Days";
+      message = `"${bill.companyName}" ($${bill.amount.toFixed(2)}) is due in 7 days.`;
     }
 
     if (type && bill.id) {

@@ -87,7 +87,7 @@ export default function SettingsPage() {
             </div>
             <div className="flex-1">
               <p className="font-semibold text-slate-800">
-                {user.displayName || 'MyBillPort User'}
+                {user.displayName || 'BillPort User'}
               </p>
               <p className="text-sm text-slate-500">{user.email}</p>
             </div>
@@ -217,6 +217,10 @@ export default function SettingsPage() {
                           <li className="flex items-center gap-2">
                             <span className="text-teal-500">&#10003;</span>
                             New bills added
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <span className="text-teal-500">&#10003;</span>
+                            Bills due in 7 days
                           </li>
                           <li className="flex items-center gap-2">
                             <span className="text-teal-500">&#10003;</span>
