@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Home, Plus, Settings, Zap, Wifi, Phone, CreditCard, FileText, Loader2, AlertTriangle } from "lucide-react";
 import { useAuth } from '../contexts/AuthContext';
-import { addBill, fetchBills } from '../lib/firebase';
+import { addBill, fetchBills, createBillAddedNotification } from '../lib/firebase';
 
 const FREE_PLAN_LIMIT = 5;
 
@@ -21,6 +21,7 @@ export default function AddBillPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [providerName, setProviderName] = useState('');
+  const [provider, setProvider] = useState('');
   const [billType, setBillType] = useState('other');
   const [amount, setAmount] = useState('');
   const [dueDate, setDueDate] = useState('');
@@ -89,12 +90,15 @@ export default function AddBillPage() {
     setIsSubmitting(true);
 
     try {
-      await addBill(user.uid, {
+      const billId = await addBill(user.uid, {
         providerName: providerName.trim(),
+        provider: provider.trim(),
         billType,
         amount: parseFloat(amount),
         dueDate: new Date(dueDate),
       });
+
+      await createBillAddedNotification(user.uid, providerName.trim(), billId).catch(console.error);
 
       setSuccess(true);
       setTimeout(() => {
@@ -181,6 +185,17 @@ export default function AddBillPage() {
                 type="text"
                 value={providerName}
                 onChange={(e) => setProviderName(e.target.value)}
+                placeholder="e.g., Electricity Bill"
+                className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Provider</label>
+              <input
+                type="text"
+                value={provider}
+                onChange={(e) => setProvider(e.target.value)}
                 placeholder="e.g., Toronto Hydro"
                 className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800"
               />

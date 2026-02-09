@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Home, Plus, Settings, User, Bell, Shield, Lock, LogOut, ChevronRight, Loader2, X, Mail, Eye, EyeOff, KeyRound } from "lucide-react";
 import { useAuth } from '../contexts/AuthContext';
+import { getUserPreferences, setUserPreferences } from '../lib/firebase';
 
 type SettingsModal = 'notifications' | 'privacy' | 'security' | null;
 
@@ -13,15 +14,26 @@ export default function SettingsPage() {
   const router = useRouter();
   const [activeModal, setActiveModal] = useState<SettingsModal>(null);
 
+  const [inAppReminders, setInAppReminders] = useState(true);
   const [emailReminders, setEmailReminders] = useState(true);
   const [reminderDays, setReminderDays] = useState('2');
   const [overdueAlerts, setOverdueAlerts] = useState(true);
+  const [savingPrefs, setSavingPrefs] = useState(false);
+  const [prefsSaved, setPrefsSaved] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
       router.push('/login');
     }
   }, [user, loading, router]);
+
+  useEffect(() => {
+    if (user) {
+      getUserPreferences(user.uid).then(prefs => {
+        setInAppReminders(prefs.inAppReminders);
+      }).catch(console.error);
+    }
+  }, [user]);
 
   const handleLogout = async () => {
     try {
@@ -163,6 +175,22 @@ export default function SettingsPage() {
                 <div className="p-5 space-y-5">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
+                      <Bell className="w-5 h-5 text-slate-400" />
+                      <div>
+                        <p className="font-medium text-slate-800">In-App Bill Reminders</p>
+                        <p className="text-sm text-slate-500">Get reminders when bills are due soon</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setInAppReminders(!inAppReminders)}
+                      className={`w-12 h-7 rounded-full transition-colors relative ${inAppReminders ? 'bg-teal-500' : 'bg-slate-300'}`}
+                    >
+                      <span className={`absolute top-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${inAppReminders ? 'left-[22px]' : 'left-0.5'}`} />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
                       <Mail className="w-5 h-5 text-slate-400" />
                       <div>
                         <p className="font-medium text-slate-800">Email Reminders</p>
@@ -210,11 +238,38 @@ export default function SettingsPage() {
                     </p>
                   </div>
 
+                  {prefsSaved && (
+                    <div className="bg-teal-50 border border-teal-200 text-teal-700 px-4 py-2 rounded-lg text-sm text-center">
+                      Preferences saved!
+                    </div>
+                  )}
+
                   <button
-                    onClick={() => setActiveModal(null)}
-                    className="w-full btn-accent py-3 rounded-lg font-semibold"
+                    onClick={async () => {
+                      if (!user) return;
+                      setSavingPrefs(true);
+                      setPrefsSaved(false);
+                      try {
+                        await setUserPreferences(user.uid, { inAppReminders });
+                        setPrefsSaved(true);
+                        setTimeout(() => setPrefsSaved(false), 2000);
+                      } catch (err) {
+                        console.error('Failed to save preferences:', err);
+                      } finally {
+                        setSavingPrefs(false);
+                      }
+                    }}
+                    disabled={savingPrefs}
+                    className="w-full btn-accent py-3 rounded-lg font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
                   >
-                    Save Preferences
+                    {savingPrefs ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      'Save Preferences'
+                    )}
                   </button>
                 </div>
               </div>

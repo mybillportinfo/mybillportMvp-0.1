@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react';
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
-import { Home, Plus, Settings, Zap, Wifi, CreditCard, Phone, MoreHorizontal, Loader2, Trash2, AlertTriangle } from "lucide-react";
+import { Home, Plus, Settings, Zap, Wifi, CreditCard, Phone, MoreHorizontal, Loader2, Trash2, AlertTriangle, Bell } from "lucide-react";
 import { useAuth } from '../contexts/AuthContext';
-import { fetchBills, deleteBill, Bill } from '../lib/firebase';
+import { fetchBills, deleteBill, fetchNotifications, checkAndCreateDueSoonNotifications, Bill } from '../lib/firebase';
 
 const FREE_PLAN_LIMIT = 5;
 
@@ -17,6 +17,8 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [unreadNotifCount, setUnreadNotifCount] = useState(0);
+  const [dueSoonChecked, setDueSoonChecked] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -37,6 +39,14 @@ export default function Dashboard() {
     try {
       const userBills = await fetchBills(user.uid);
       setBills(userBills);
+
+      if (!dueSoonChecked && userBills.length > 0) {
+        setDueSoonChecked(true);
+        await checkAndCreateDueSoonNotifications(user.uid, userBills).catch(console.error);
+      }
+
+      const notifs = await fetchNotifications(user.uid).catch(() => []);
+      setUnreadNotifCount(notifs.filter(n => !n.isRead).length);
     } catch (err) {
       console.error('Failed to fetch bills:', err);
       setError('Failed to load bills. Please try again.');
@@ -119,11 +129,21 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 pb-24">
       <div className="px-5 pt-12 pb-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 gradient-navy rounded-xl flex items-center justify-center border border-slate-600">
-            <span className="text-white font-bold">M</span>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 gradient-navy rounded-xl flex items-center justify-center border border-slate-600">
+              <span className="text-white font-bold">M</span>
+            </div>
+            <span className="text-white font-semibold text-lg">MyBillPort</span>
           </div>
-          <span className="text-white font-semibold text-lg">MyBillPort</span>
+          <Link href="/notifications" className="relative p-2 hover:bg-slate-800 rounded-lg transition-colors">
+            <Bell className="w-6 h-6 text-slate-300" />
+            {unreadNotifCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                {unreadNotifCount > 9 ? '9+' : unreadNotifCount}
+              </span>
+            )}
+          </Link>
         </div>
         <p className="text-slate-400">{greeting()}</p>
         <p className="text-white text-2xl font-semibold">Here&apos;s your overview</p>
@@ -189,6 +209,9 @@ export default function Dashboard() {
                   </div>
                   <div className="flex-1">
                     <p className="font-medium text-slate-800">{bill.providerName}</p>
+                    {bill.provider && (
+                      <p className="text-xs text-slate-500">{bill.provider}</p>
+                    )}
                     <p className={`text-sm ${getStatusStyle(daysUntil)}`}>
                       {daysUntil < 0
                         ? `${Math.abs(daysUntil)} days overdue`
