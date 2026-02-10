@@ -54,12 +54,15 @@ export async function POST(req: NextRequest) {
       .update(`${billId}-${userId}-${paymentType}-${amountCents}-${idempotencyToken}`)
       .digest('hex');
 
+    console.log('[create-payment-intent] Creating PI:', { billId, userId, paymentType, amountCents, idempotencyToken: idempotencyToken ? 'present' : 'none' });
+
     // Create Stripe PaymentIntent
     const stripe = await getStripeClient();
     const paymentIntent = await stripe.paymentIntents.create(
       {
         amount: amountCents,
         currency: 'cad',
+        automatic_payment_methods: { enabled: true },
         metadata: {
           billId,
           userId,
@@ -73,24 +76,29 @@ export async function POST(req: NextRequest) {
       }
     );
 
+    console.log('[create-payment-intent] Success:', { piId: paymentIntent.id, amount: amountCents });
+
     return NextResponse.json({
       clientSecret: paymentIntent.client_secret,
       paymentIntentId: paymentIntent.id,
       amount: amountCents / 100,
     });
   } catch (error: any) {
-    console.error('create-payment-intent error:', error);
+    console.error('[create-payment-intent] ERROR:', {
+      message: error.message,
+      type: error.type,
+      code: error.code,
+      statusCode: error.statusCode,
+      raw: error.raw?.message,
+    });
 
-    if (error.type === 'StripeInvalidRequestError') {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 400 }
-      );
-    }
+    const errorMessage = error.type?.startsWith('Stripe')
+      ? error.message
+      : 'Failed to create payment intent';
 
     return NextResponse.json(
-      { error: 'Failed to create payment intent' },
-      { status: 500 }
+      { error: errorMessage },
+      { status: error.statusCode || 500 }
     );
   }
 }

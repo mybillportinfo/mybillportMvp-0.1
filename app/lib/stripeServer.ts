@@ -67,9 +67,7 @@ async function getCredentials(): Promise<{ secretKey: string; publishableKey: st
 export async function getStripeClient(): Promise<Stripe> {
   if (!_stripe) {
     const { secretKey } = await getCredentials();
-    _stripe = new Stripe(secretKey, {
-      apiVersion: '2026-01-28.clover' as any,
-    });
+    _stripe = new Stripe(secretKey);
   }
   return _stripe;
 }
