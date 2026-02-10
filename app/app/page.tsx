@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import Link from "next/link";
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Home, Plus, Settings, Loader2, Trash2, AlertTriangle, Bell, DollarSign, CreditCard, Zap, Wifi, Phone, MoreHorizontal, CheckCircle, Building2, ShieldCheck, Landmark, Tv, Flame } from "lucide-react";
+import { useRouter } from 'next/navigation';
+import { Home, Plus, Settings, Loader2, Trash2, AlertTriangle, Bell, DollarSign, CreditCard, Zap, Wifi, Phone, MoreHorizontal, CheckCircle, Building2, ShieldCheck, Landmark, Tv, Car, GraduationCap } from "lucide-react";
 import { useAuth } from '../contexts/AuthContext';
-import { fetchBills, deleteBill, fetchNotifications, checkAndCreateDueDateNotifications, logPayment, createPaymentNotification, Bill } from '../lib/firebase';
+import { fetchBills, deleteBill, fetchNotifications, checkAndCreateDueDateNotifications, payBill, createPaymentNotification, sortBills, Bill } from '../lib/firebase';
 import { getCategoryLabel } from '../lib/canadianBillers';
 
 const FREE_PLAN_LIMIT = 3;
@@ -13,7 +13,6 @@ const FREE_PLAN_LIMIT = 3;
 export default function Dashboard() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [bills, setBills] = useState<Bill[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -31,51 +30,6 @@ export default function Dashboard() {
   }, [user, authLoading, router]);
 
   useEffect(() => {
-    const payment = searchParams.get('payment');
-    const sessionId = searchParams.get('session_id');
-
-    if (payment === 'success' && sessionId && user) {
-      verifyAndLogPayment(sessionId);
-      window.history.replaceState({}, '', '/app');
-    } else if (payment === 'cancelled') {
-      setError('Payment was cancelled.');
-      window.history.replaceState({}, '', '/app');
-    }
-  }, [searchParams, user]);
-
-  const verifyAndLogPayment = async (sessionId: string) => {
-    if (!user) return;
-    try {
-      const res = await fetch('/api/verify-payment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId }),
-      });
-      const data = await res.json();
-
-      if (!data.verified) {
-        setError('Payment could not be verified. Please contact support if you were charged.');
-        return;
-      }
-
-      if (data.userId !== user.uid) {
-        setError('Payment verification mismatch.');
-        return;
-      }
-
-      await logPayment(user.uid, data.billId, data.amountPaid, sessionId);
-      await createPaymentNotification(user.uid, data.companyName, data.amountPaid, data.billId).catch(console.error);
-
-      setPaymentSuccess(`Payment of $${data.amountPaid.toFixed(2)} for "${data.companyName}" processed successfully!`);
-      setTimeout(() => setPaymentSuccess(null), 5000);
-      loadBills();
-    } catch (err) {
-      console.error('Failed to verify payment:', err);
-      setError('Failed to verify payment. Please check your Stripe account.');
-    }
-  };
-
-  useEffect(() => {
     if (user) {
       loadBills();
     }
@@ -87,7 +41,7 @@ export default function Dashboard() {
     setError(null);
     try {
       const userBills = await fetchBills(user.uid);
-      setBills(userBills);
+      setBills(sortBills(userBills));
 
       if (!dueSoonChecked && userBills.length > 0) {
         setDueSoonChecked(true);
@@ -123,35 +77,23 @@ export default function Dashboard() {
     setPayingBillId(bill.id);
     setError(null);
 
-    const payableAmount = bill.remainingBalance > 0 ? bill.remainingBalance : bill.amount;
-    const amount = payType === 'full' ? payableAmount : Math.round((payableAmount / 2) * 100) / 100;
-
     try {
-      const res = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          billId: bill.id,
-          amount,
-          companyName: bill.companyName,
-          userId: user.uid,
-        }),
-      });
+      const result = await payBill(user.uid, bill.id, payType);
 
-      const data = await res.json();
+      await createPaymentNotification(user.uid, bill.providerName, result.paymentAmount, bill.id).catch(console.error);
 
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to create checkout session');
-      }
-
-      if (data.url) {
-        window.location.href = data.url;
+      if (result.newStatus === 'paid') {
+        setPaymentSuccess(`"${bill.providerName}" marked as paid!`);
       } else {
-        throw new Error('No checkout URL returned');
+        setPaymentSuccess(`$${result.paymentAmount.toFixed(2)} paid for "${bill.providerName}". $${result.newRemainingAmount.toFixed(2)} remaining.`);
       }
+      setTimeout(() => setPaymentSuccess(null), 4000);
+
+      await loadBills();
     } catch (err) {
       console.error('Payment error:', err);
       setError(err instanceof Error ? err.message : 'Payment failed. Please try again.');
+    } finally {
       setPayingBillId(null);
     }
   };
@@ -160,30 +102,28 @@ export default function Dashboard() {
     switch (category) {
       case "utilities": return <Zap className="w-5 h-5 text-yellow-600" />;
       case "telecom": return <Wifi className="w-5 h-5 text-blue-600" />;
-      case "financial": return <CreditCard className="w-5 h-5 text-indigo-600" />;
+      case "credit_cards": case "financial": return <CreditCard className="w-5 h-5 text-indigo-600" />;
       case "subscriptions": return <Tv className="w-5 h-5 text-purple-600" />;
       case "housing": return <Building2 className="w-5 h-5 text-emerald-600" />;
       case "insurance": return <ShieldCheck className="w-5 h-5 text-sky-600" />;
       case "government": return <Landmark className="w-5 h-5 text-red-600" />;
-      case "hydro": return <Zap className="w-5 h-5 text-yellow-600" />;
-      case "internet": return <Wifi className="w-5 h-5 text-blue-600" />;
-      case "credit_card": return <CreditCard className="w-5 h-5 text-indigo-600" />;
-      case "subscription": return <Tv className="w-5 h-5 text-purple-600" />;
-      case "phone": return <Phone className="w-5 h-5 text-green-600" />;
+      case "transportation": return <Car className="w-5 h-5 text-orange-600" />;
+      case "education": return <GraduationCap className="w-5 h-5 text-cyan-600" />;
       default: return <MoreHorizontal className="w-5 h-5 text-gray-600" />;
     }
   };
 
   const getIconBg = (category: string) => {
     switch (category) {
-      case "utilities": case "hydro": return "bg-yellow-100";
-      case "telecom": case "internet": return "bg-blue-100";
-      case "financial": case "credit_card": return "bg-indigo-100";
-      case "subscriptions": case "subscription": return "bg-purple-100";
+      case "utilities": return "bg-yellow-100";
+      case "telecom": return "bg-blue-100";
+      case "credit_cards": case "financial": return "bg-indigo-100";
+      case "subscriptions": return "bg-purple-100";
       case "housing": return "bg-emerald-100";
       case "insurance": return "bg-sky-100";
       case "government": return "bg-red-100";
-      case "phone": return "bg-green-100";
+      case "transportation": return "bg-orange-100";
+      case "education": return "bg-cyan-100";
       default: return "bg-gray-100";
     }
   };
@@ -197,18 +137,31 @@ export default function Dashboard() {
     return Math.round(diffTime / (1000 * 60 * 60 * 24));
   };
 
-  const getStatusText = (bill: Bill) => {
-    if (bill.paymentStatus === "paid" || bill.isPaid) return "Paid";
-    if (bill.paymentStatus === "partially_paid") return "Partially Paid";
+  const getStatusBadge = (bill: Bill) => {
+    if (bill.status === "paid") {
+      return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Paid</span>;
+    }
+    if (bill.status === "partially_paid") {
+      return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">Partially Paid</span>;
+    }
+    const daysUntil = getDaysUntilDue(bill.dueDate);
+    if (daysUntil < 0) {
+      return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">{Math.abs(daysUntil)}d overdue</span>;
+    }
+    return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">Unpaid</span>;
+  };
+
+  const getDueDateText = (bill: Bill) => {
+    if (bill.status === "paid") return '';
     const daysUntil = getDaysUntilDue(bill.dueDate);
     if (daysUntil < 0) return `${Math.abs(daysUntil)} day${Math.abs(daysUntil) === 1 ? '' : 's'} overdue`;
     if (daysUntil === 0) return "Due today";
-    return `Due in ${daysUntil} day${daysUntil === 1 ? '' : 's'}`;
+    if (daysUntil === 1) return "Due tomorrow";
+    return `Due in ${daysUntil} days`;
   };
 
-  const getStatusStyle = (bill: Bill) => {
-    if (bill.paymentStatus === "paid" || bill.isPaid) return "text-green-500";
-    if (bill.paymentStatus === "partially_paid") return "text-blue-500";
+  const getDueDateColor = (bill: Bill) => {
+    if (bill.status === "paid") return "text-green-500";
     const daysUntil = getDaysUntilDue(bill.dueDate);
     if (daysUntil < 0) return "text-red-500";
     if (daysUntil <= 3) return "text-amber-500";
@@ -231,8 +184,8 @@ export default function Dashboard() {
     );
   }
 
-  const unpaidBills = bills.filter(b => b.paymentStatus !== 'paid' && !b.isPaid);
-  const totalOwing = unpaidBills.reduce((sum, b) => sum + (b.remainingBalance > 0 ? b.remainingBalance : b.amount), 0);
+  const unpaidBills = bills.filter(b => b.status !== 'paid');
+  const totalOwing = unpaidBills.reduce((sum, b) => sum + b.remainingAmount, 0);
 
   const greeting = () => {
     const hour = new Date().getHours();
@@ -327,9 +280,8 @@ export default function Dashboard() {
           bills.map((bill) => {
             const isConfirming = confirmDeleteId === bill.id;
             const isPaying = payingBillId === bill.id;
-            const isFullyPaid = bill.paymentStatus === "paid" || bill.isPaid;
-            const isPartiallyPaid = bill.paymentStatus === "partially_paid";
-            const displayBalance = bill.remainingBalance > 0 ? bill.remainingBalance : bill.amount;
+            const isFullyPaid = bill.status === "paid";
+            const isPartiallyPaid = bill.status === "partially_paid";
             return (
               <div key={bill.id} className="bg-white rounded-xl p-4">
                 <div className="flex items-start gap-3">
@@ -337,31 +289,36 @@ export default function Dashboard() {
                     {getIcon(bill.category)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-slate-800">{bill.companyName}</p>
-                    <p className="text-xs text-slate-500 mt-0.5">Acct: {bill.accountNumber || '—'}</p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-semibold text-slate-800">{bill.providerName}</p>
+                      {getStatusBadge(bill)}
+                    </div>
+                    {bill.accountNumber && (
+                      <p className="text-xs text-slate-500 mt-0.5">Acct: {bill.accountNumber}</p>
+                    )}
                     <div className="flex items-center gap-3 mt-1">
                       <span className="text-xs text-slate-400">{formatDueDate(bill.dueDate)}</span>
-                      <span className={`text-xs font-medium ${getStatusStyle(bill)}`}>
-                        {getStatusText(bill)}
-                      </span>
+                      {!isFullyPaid && (
+                        <span className={`text-xs font-medium ${getDueDateColor(bill)}`}>
+                          {getDueDateText(bill)}
+                        </span>
+                      )}
                     </div>
-                    {bill.category && (
-                      <span className="text-[10px] text-slate-400 mt-0.5 inline-block">
-                        {getCategoryLabel(bill.category)}
-                      </span>
-                    )}
+                    <span className="text-[10px] text-slate-400 mt-0.5 inline-block">
+                      {getCategoryLabel(bill.category)}
+                    </span>
                   </div>
                   <div className="text-right flex-shrink-0">
                     <p className="font-bold text-slate-800 text-lg">${bill.amount.toFixed(2)}</p>
                     <p className="text-[10px] text-slate-400">CAD</p>
                     {isPartiallyPaid && (
                       <p className="text-xs text-blue-500 font-medium mt-0.5">
-                        ${bill.remainingBalance.toFixed(2)} left
+                        ${bill.remainingAmount.toFixed(2)} left
                       </p>
                     )}
                     {isFullyPaid && (
                       <p className="text-xs text-green-500 font-medium mt-0.5">
-                        Paid in full
+                        Paid
                       </p>
                     )}
                   </div>
@@ -370,31 +327,48 @@ export default function Dashboard() {
                 {!isFullyPaid && (
                   <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 flex-1">
-                      <button
-                        onClick={() => handlePay(bill, 'full')}
-                        disabled={isPaying}
-                        className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg bg-teal-600 text-white hover:bg-teal-700 transition-colors disabled:opacity-50"
-                      >
-                        {isPaying ? (
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        ) : (
-                          <DollarSign className="w-3.5 h-3.5" />
-                        )}
-                        {isPartiallyPaid ? `Pay Remaining ($${displayBalance.toFixed(2)})` : 'Pay Full'}
-                      </button>
+                      {isPartiallyPaid ? (
+                        <button
+                          onClick={() => handlePay(bill, 'full')}
+                          disabled={isPaying}
+                          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg bg-teal-600 text-white hover:bg-teal-700 transition-colors disabled:opacity-50"
+                        >
+                          {isPaying ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <DollarSign className="w-3.5 h-3.5" />
+                          )}
+                          Pay Remaining (${bill.remainingAmount.toFixed(2)})
+                        </button>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => handlePay(bill, 'full')}
+                            disabled={isPaying}
+                            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg bg-teal-600 text-white hover:bg-teal-700 transition-colors disabled:opacity-50"
+                          >
+                            {isPaying ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <DollarSign className="w-3.5 h-3.5" />
+                            )}
+                            Pay Full
+                          </button>
 
-                      <button
-                        onClick={() => handlePay(bill, 'half')}
-                        disabled={isPaying}
-                        className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors disabled:opacity-50"
-                      >
-                        {isPaying ? (
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        ) : (
-                          <DollarSign className="w-3.5 h-3.5" />
-                        )}
-                        Pay Half (${(displayBalance / 2).toFixed(2)})
-                      </button>
+                          <button
+                            onClick={() => handlePay(bill, 'half')}
+                            disabled={isPaying}
+                            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors disabled:opacity-50"
+                          >
+                            {isPaying ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <DollarSign className="w-3.5 h-3.5" />
+                            )}
+                            Pay Half
+                          </button>
+                        </>
+                      )}
                     </div>
 
                     {deletingId === bill.id ? (
@@ -414,7 +388,7 @@ export default function Dashboard() {
                   <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
                     <div className="flex items-center gap-2 text-green-600">
                       <CheckCircle className="w-4 h-4" />
-                      <span className="text-sm font-medium">Payment complete</span>
+                      <span className="text-sm font-medium">Paid</span>
                     </div>
                     {deletingId === bill.id ? (
                       <Loader2 className="w-4 h-4 text-slate-400 animate-spin" />

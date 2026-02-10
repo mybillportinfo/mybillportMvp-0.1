@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Home, Plus, Settings, Loader2, AlertTriangle, Search, X, ChevronDown } from "lucide-react";
 import { useAuth } from '../contexts/AuthContext';
-import { addBill, fetchBills, createBillAddedNotification } from '../lib/firebase';
+import { addBill, fetchBills, createBillAddedNotification, BillingFrequency } from '../lib/firebase';
 import { searchBillers, canadianBillers, BillerEntry, billCategories } from '../lib/canadianBillers';
 
 const FREE_PLAN_LIMIT = 3;
@@ -13,10 +13,12 @@ const FREE_PLAN_LIMIT = 3;
 export default function AddBillPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [companyName, setCompanyName] = useState('');
+  const [providerName, setProviderName] = useState('');
   const [accountNumber, setAccountNumber] = useState('');
   const [amount, setAmount] = useState('');
   const [dueDate, setDueDate] = useState('');
+  const [billingFrequency, setBillingFrequency] = useState<BillingFrequency>('monthly');
+  const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -67,7 +69,7 @@ export default function AddBillPage() {
   };
 
   const handleCompanyInput = (value: string) => {
-    setCompanyName(value);
+    setProviderName(value);
     if (value.trim().length > 0) {
       const results = searchBillers(value);
       setSuggestions(results);
@@ -79,7 +81,7 @@ export default function AddBillPage() {
   };
 
   const selectBiller = (biller: BillerEntry) => {
-    setCompanyName(biller.name);
+    setProviderName(biller.name);
     setSelectedCategory(biller.category);
     setSelectedSubcategory(biller.subcategory);
     setShowSuggestions(false);
@@ -106,7 +108,7 @@ export default function AddBillPage() {
     }
 
     if (isAtLimit) {
-      setError(`Free plan allows up to ${FREE_PLAN_LIMIT} bills. Remove a bill or upgrade to add more.`);
+      setError(`Free plan allows up to ${FREE_PLAN_LIMIT} bills. Upgrade to add more.`);
       return;
     }
 
@@ -115,13 +117,8 @@ export default function AddBillPage() {
       return;
     }
 
-    if (!companyName.trim()) {
-      setError('Please enter a company name');
-      return;
-    }
-
-    if (!accountNumber.trim()) {
-      setError('Please enter an account number');
+    if (!providerName.trim()) {
+      setError('Please enter a company / provider name');
       return;
     }
 
@@ -147,19 +144,20 @@ export default function AddBillPage() {
 
     try {
       const billId = await addBill(user.uid, {
-        companyName: companyName.trim(),
-        accountNumber: accountNumber.trim(),
         category: selectedCategory,
         subcategory: selectedSubcategory,
-        amount: parseFloat(amount),
+        providerName: providerName.trim(),
+        accountNumber: accountNumber.trim(),
         dueDate: selectedDate,
-        isPaid: false,
-        paymentStatus: "unpaid",
-        amountPaid: 0,
-        remainingBalance: parseFloat(amount),
+        amount: parseFloat(amount),
+        paidAmount: 0,
+        remainingAmount: parseFloat(amount),
+        status: "unpaid",
+        billingFrequency,
+        notes: notes.trim(),
       });
 
-      await createBillAddedNotification(user.uid, companyName.trim(), billId).catch(console.error);
+      await createBillAddedNotification(user.uid, providerName.trim(), billId).catch(console.error);
 
       setSuccess(true);
       setTimeout(() => {
@@ -204,7 +202,7 @@ export default function AddBillPage() {
             ) : null}
             <span>
               {isAtLimit
-                ? `Free plan allows up to ${FREE_PLAN_LIMIT} bills. Remove a bill to add a new one.`
+                ? `Free plan allows up to ${FREE_PLAN_LIMIT} bills. Upgrade to add more.`
                 : `${billCount} of ${FREE_PLAN_LIMIT} bills used (Free Plan)`
               }
             </span>
@@ -223,7 +221,7 @@ export default function AddBillPage() {
             </div>
             <h2 className="text-xl font-semibold text-slate-800">Bill Limit Reached</h2>
             <p className="text-slate-600">
-              Your free plan allows up to {FREE_PLAN_LIMIT} bills. Please remove an existing bill before adding a new one.
+              Free plan allows up to {FREE_PLAN_LIMIT} bills. Upgrade to add more.
             </p>
             <Link
               href="/app"
@@ -241,7 +239,7 @@ export default function AddBillPage() {
             )}
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Bill Category *</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Category *</label>
               <div className="relative">
                 <select
                   value={selectedCategory}
@@ -277,28 +275,28 @@ export default function AddBillPage() {
             )}
 
             <div className="relative">
-              <label className="block text-sm font-medium text-slate-700 mb-1">Company Name *</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Company / Provider Name *</label>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
                   ref={inputRef}
                   type="text"
-                  value={companyName}
+                  value={providerName}
                   onChange={(e) => handleCompanyInput(e.target.value)}
                   onFocus={() => {
-                    if (companyName.trim()) {
-                      const results = searchBillers(companyName);
+                    if (providerName.trim()) {
+                      const results = searchBillers(providerName);
                       setSuggestions(results);
                       setShowSuggestions(results.length > 0);
                     }
                   }}
-                  placeholder="Search or type company name..."
+                  placeholder="Search or type provider name..."
                   className="w-full pl-10 pr-10 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800"
                 />
-                {companyName && (
+                {providerName && (
                   <button
                     type="button"
-                    onClick={() => { setCompanyName(''); setSuggestions([]); setShowSuggestions(false); }}
+                    onClick={() => { setProviderName(''); setSuggestions([]); setShowSuggestions(false); }}
                     className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-100 rounded"
                   >
                     <X className="w-4 h-4 text-slate-400" />
@@ -326,12 +324,12 @@ export default function AddBillPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Account Number *</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Account Number</label>
               <input
                 type="text"
                 value={accountNumber}
                 onChange={(e) => setAccountNumber(e.target.value)}
-                placeholder="Enter your account number"
+                placeholder="Enter your account number (optional)"
                 className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800"
               />
             </div>
@@ -347,7 +345,7 @@ export default function AddBillPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Bill Amount (CAD) *</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Amount Due (CAD) *</label>
               <input
                 type="number"
                 value={amount}
@@ -356,6 +354,33 @@ export default function AddBillPage() {
                 step="0.01"
                 min="0.01"
                 className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Billing Frequency</label>
+              <div className="relative">
+                <select
+                  value={billingFrequency}
+                  onChange={(e) => setBillingFrequency(e.target.value as BillingFrequency)}
+                  className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800 appearance-none bg-white"
+                >
+                  <option value="monthly">Monthly</option>
+                  <option value="biweekly">Biweekly</option>
+                  <option value="annual">Annual</option>
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Notes</label>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Optional notes..."
+                rows={2}
+                className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800 resize-none"
               />
             </div>
 
