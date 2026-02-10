@@ -16,6 +16,7 @@ import {
   orderBy,
   Timestamp,
   Firestore,
+  runTransaction,
 } from "firebase/firestore";
 import {
   getAuth,
@@ -95,23 +96,19 @@ function getFirebaseAuth(): Auth | null {
   return _auth;
 }
 
-export type BillStatus = "unpaid" | "partially_paid" | "paid";
-export type BillingFrequency = "monthly" | "biweekly" | "annual";
+// Bill status: unpaid (no payment), partial (some paid), paid (fully paid)
+export type BillStatus = "unpaid" | "partial" | "paid";
 
+// Bill data model - FINAL (matches Firestore schema)
 export interface Bill {
   id?: string;
   userId: string;
-  category: string;
-  subcategory: string;
-  providerName: string;
+  companyName: string;
   accountNumber: string;
   dueDate: Date;
-  amount: number;
+  totalAmount: number;
   paidAmount: number;
-  remainingAmount: number;
   status: BillStatus;
-  billingFrequency: BillingFrequency;
-  notes: string;
   createdAt: Date;
 }
 
@@ -134,12 +131,15 @@ export interface Payment {
   billId: string;
   amountPaid: number;
   paymentType: string;
+  stripePaymentIntentId?: string;
   timestamp: Date;
 }
 
 export interface UserPreferences {
   inAppReminders: boolean;
 }
+
+// --- Auth functions ---
 
 export function registerUser(email: string, password: string) {
   const auth = getFirebaseAuth();
@@ -171,6 +171,21 @@ export function subscribeToAuth(callback: (user: User | null) => void) {
   return onAuthStateChanged(auth, callback);
 }
 
+export function signInWithGoogle() {
+  const auth = getFirebaseAuth();
+  if (!auth) return Promise.reject(new Error('Firebase not available'));
+  const provider = new GoogleAuthProvider();
+  return signInWithPopup(auth, provider).then(r => r.user);
+}
+
+export function resetPassword(email: string) {
+  const auth = getFirebaseAuth();
+  if (!auth) return Promise.reject(new Error('Firebase not available'));
+  return sendPasswordResetEmail(auth, email);
+}
+
+// --- Bill CRUD ---
+
 export async function addBill(userId: string, bill: Omit<Bill, 'id' | 'userId' | 'createdAt'>) {
   const auth = getFirebaseAuth();
   if (!auth) throw new Error('Firebase not available');
@@ -186,22 +201,18 @@ export async function addBill(userId: string, bill: Omit<Bill, 'id' | 'userId' |
   const now = Timestamp.now();
   const docRef = await addDoc(collection(db, "bills"), {
     userId,
-    category: bill.category,
-    subcategory: bill.subcategory || '',
-    providerName: bill.providerName,
+    companyName: bill.companyName,
     accountNumber: bill.accountNumber || '',
     dueDate: Timestamp.fromDate(new Date(bill.dueDate)),
-    amount: bill.amount,
+    totalAmount: bill.totalAmount,
     paidAmount: 0,
-    remainingAmount: bill.amount,
     status: "unpaid",
-    billingFrequency: bill.billingFrequency || 'monthly',
-    notes: bill.notes || '',
     createdAt: now,
   });
   return docRef.id;
 }
 
+// Fetch all bills for a user, with backward compatibility for old field names
 export async function fetchBills(userId: string): Promise<Bill[]> {
   try {
     const auth = getFirebaseAuth();
@@ -223,35 +234,33 @@ export async function fetchBills(userId: string): Promise<Bill[]> {
 
     const bills = snapshot.docs.map(d => {
       const data = d.data();
-      const amount = data.amount || 0;
-      const paidAmount = data.paidAmount ?? data.amountPaid ?? 0;
-      const providerName = data.providerName || data.companyName || data.billName || '';
 
+      // Backward compatibility: normalize old field names
+      const companyName = data.companyName || data.providerName || data.billName || '';
+      const totalAmount = data.totalAmount || data.amount || 0;
+      const paidAmount = data.paidAmount ?? data.amountPaid ?? 0;
+
+      // Derive status from various legacy fields
       let status: BillStatus = "unpaid";
-      if (data.status) {
-        status = data.status;
-      } else if (data.paymentStatus) {
-        status = data.paymentStatus;
-      } else if (data.isPaid) {
+      if (data.status === "paid" || data.isPaid) {
         status = "paid";
-      } else if (paidAmount > 0) {
-        status = "partially_paid";
+      } else if (data.status === "partial" || data.status === "partially_paid") {
+        status = "partial";
+      } else if (paidAmount > 0 && paidAmount < totalAmount) {
+        status = "partial";
+      } else if (paidAmount >= totalAmount && totalAmount > 0) {
+        status = "paid";
       }
 
       return {
         id: d.id,
         userId: data.userId,
-        category: data.category || data.billType || 'other',
-        subcategory: data.subcategory || '',
-        providerName,
+        companyName,
         accountNumber: data.accountNumber || '',
         dueDate: data.dueDate?.toDate() || new Date(),
-        amount,
+        totalAmount,
         paidAmount,
-        remainingAmount: data.remainingAmount ?? data.remainingBalance ?? (amount - paidAmount),
         status,
-        billingFrequency: data.billingFrequency || 'monthly',
-        notes: data.notes || '',
         createdAt: data.createdAt?.toDate() || new Date(),
       };
     });
@@ -263,6 +272,7 @@ export async function fetchBills(userId: string): Promise<Bill[]> {
   }
 }
 
+// Sort bills: overdue first, then upcoming by due date, paid at bottom
 export function sortBills(bills: Bill[]): Bill[] {
   const now = new Date();
   now.setHours(0, 0, 0, 0);
@@ -287,35 +297,6 @@ export function sortBills(bills: Bill[]): Bill[] {
   });
 }
 
-export async function updateBill(billId: string, updates: Partial<Omit<Bill, 'id' | 'userId' | 'createdAt'>>) {
-  const auth = getFirebaseAuth();
-  if (!auth) throw new Error('Firebase not available');
-  const currentUser = auth.currentUser;
-  if (!currentUser) {
-    throw new Error('User must be authenticated to update bills');
-  }
-
-  await currentUser.getIdToken(true);
-  const db = getFirebaseDb();
-  if (!db) throw new Error('Firebase not available');
-
-  const updateData: { [x: string]: string | number | boolean | Timestamp } = {};
-
-  if (updates.providerName !== undefined) updateData.providerName = updates.providerName;
-  if (updates.accountNumber !== undefined) updateData.accountNumber = updates.accountNumber;
-  if (updates.amount !== undefined) updateData.amount = updates.amount;
-  if (updates.category !== undefined) updateData.category = updates.category;
-  if (updates.subcategory !== undefined) updateData.subcategory = updates.subcategory;
-  if (updates.dueDate !== undefined) updateData.dueDate = Timestamp.fromDate(new Date(updates.dueDate));
-  if (updates.status !== undefined) updateData.status = updates.status;
-  if (updates.paidAmount !== undefined) updateData.paidAmount = updates.paidAmount;
-  if (updates.remainingAmount !== undefined) updateData.remainingAmount = updates.remainingAmount;
-  if (updates.billingFrequency !== undefined) updateData.billingFrequency = updates.billingFrequency;
-  if (updates.notes !== undefined) updateData.notes = updates.notes;
-
-  await updateDoc(doc(db, "bills", billId), updateData);
-}
-
 export async function deleteBill(billId: string) {
   const auth = getFirebaseAuth();
   if (!auth) throw new Error('Firebase not available');
@@ -330,7 +311,15 @@ export async function deleteBill(billId: string) {
   await deleteDoc(doc(db, "bills", billId));
 }
 
-export async function payBill(userId: string, billId: string, payType: 'full' | 'half') {
+// --- Payment update (client-side, after Stripe confirms) ---
+// Updates bill in Firestore after Stripe PaymentIntent succeeds
+// Uses Firestore transaction to prevent race conditions
+export async function updateBillAfterPayment(
+  userId: string,
+  billId: string,
+  paymentAmount: number,
+  stripePaymentIntentId: string
+): Promise<{ newPaidAmount: number; newStatus: BillStatus }> {
   const auth = getFirebaseAuth();
   if (!auth) throw new Error('Firebase not available');
   const currentUser = auth.currentUser;
@@ -340,55 +329,58 @@ export async function payBill(userId: string, billId: string, payType: 'full' | 
   const db = getFirebaseDb();
   if (!db) throw new Error('Firebase not available');
 
-  const billDoc = await getDoc(doc(db, "bills", billId));
-  if (!billDoc.exists()) throw new Error('Bill not found');
+  const billRef = doc(db, "bills", billId);
 
-  const billData = billDoc.data();
-  const totalAmount = billData.amount || 0;
-  const currentPaid = billData.paidAmount ?? billData.amountPaid ?? 0;
-  const currentRemaining = billData.remainingAmount ?? billData.remainingBalance ?? (totalAmount - currentPaid);
+  // Use Firestore transaction to prevent race conditions on concurrent payments
+  const result = await runTransaction(db, async (transaction) => {
+    const billDoc = await transaction.get(billRef);
+    if (!billDoc.exists()) throw new Error('Bill not found');
 
-  let paymentAmount: number;
-  let newPaidAmount: number;
-  let newRemainingAmount: number;
-  let newStatus: BillStatus;
+    const data = billDoc.data();
+    if (data.userId !== userId) throw new Error('Unauthorized');
 
-  if (payType === 'full') {
-    paymentAmount = currentRemaining;
-    newPaidAmount = totalAmount;
-    newRemainingAmount = 0;
-    newStatus = "paid";
-  } else {
-    paymentAmount = Math.round((currentRemaining / 2) * 100) / 100;
-    newPaidAmount = Math.round((currentPaid + paymentAmount) * 100) / 100;
-    newRemainingAmount = Math.round((totalAmount - newPaidAmount) * 100) / 100;
-    newStatus = newRemainingAmount <= 0 ? "paid" : "partially_paid";
-    if (newRemainingAmount <= 0) {
-      newRemainingAmount = 0;
-      newPaidAmount = totalAmount;
+    const totalAmount = data.totalAmount || data.amount || 0;
+    const currentPaidAmount = data.paidAmount ?? data.amountPaid ?? 0;
+
+    // Increment paid amount (capped at totalAmount)
+    const newPaidAmount = Math.min(
+      Math.round((currentPaidAmount + paymentAmount) * 100) / 100,
+      totalAmount
+    );
+
+    // Determine new status
+    let newStatus: BillStatus;
+    if (newPaidAmount >= totalAmount) {
+      newStatus = 'paid';
+    } else if (newPaidAmount > 0) {
+      newStatus = 'partial';
+    } else {
+      newStatus = 'unpaid';
     }
-  }
 
-  await updateDoc(doc(db, "bills", billId), {
-    paidAmount: newPaidAmount,
-    remainingAmount: newRemainingAmount,
-    status: newStatus,
-    isPaid: newStatus === "paid",
-    paymentStatus: newStatus,
-    amountPaid: newPaidAmount,
-    remainingBalance: newRemainingAmount,
+    // Update bill within the transaction
+    transaction.update(billRef, {
+      paidAmount: newPaidAmount,
+      status: newStatus,
+    });
+
+    return { newPaidAmount, newStatus, totalAmount, currentPaidAmount };
   });
 
+  // Record payment in payments collection for audit trail (outside transaction)
   await addDoc(collection(db, "payments"), {
     userId,
     billId,
     amountPaid: paymentAmount,
-    paymentType: payType,
+    paymentType: paymentAmount >= (result.totalAmount - result.currentPaidAmount) ? 'full' : 'partial',
+    stripePaymentIntentId,
     timestamp: Timestamp.now(),
   });
 
-  return { paymentAmount, newPaidAmount, newRemainingAmount, newStatus };
+  return { newPaidAmount: result.newPaidAmount, newStatus: result.newStatus };
 }
+
+// --- Notification functions ---
 
 export async function addNotification(userId: string, notification: Omit<AppNotification, 'id' | 'userId' | 'createdAt'>) {
   const auth = getFirebaseAuth();
@@ -477,6 +469,8 @@ export async function markAllNotificationsRead(userId: string) {
   await Promise.all(updates);
 }
 
+// --- User preferences ---
+
 export async function getUserPreferences(userId: string): Promise<UserPreferences> {
   try {
     const auth = getFirebaseAuth();
@@ -512,27 +506,16 @@ export async function setUserPreferences(userId: string, prefs: UserPreferences)
   await setDoc(doc(db, "userPreferences", userId), prefs, { merge: true });
 }
 
-export async function createBillAddedNotification(userId: string, providerName: string, billId: string) {
+// --- Notification helpers ---
+
+export async function createBillAddedNotification(userId: string, companyName: string, billId: string) {
   const prefs = await getUserPreferences(userId);
   if (!prefs.inAppReminders) return;
 
   await addNotification(userId, {
     title: "Bill Added",
-    message: `Your bill for "${providerName}" was added successfully.`,
+    message: `Your bill for "${companyName}" was added successfully.`,
     type: "bill_added",
-    relatedBillId: billId,
-    isRead: false,
-  });
-}
-
-export async function createPaymentNotification(userId: string, providerName: string, amountPaid: number, billId: string) {
-  const prefs = await getUserPreferences(userId);
-  if (!prefs.inAppReminders) return;
-
-  await addNotification(userId, {
-    title: "Payment Recorded",
-    message: `Payment of $${amountPaid.toFixed(2)} for "${providerName}" was recorded.`,
-    type: "payment_success",
     relatedBillId: billId,
     isRead: false,
   });
@@ -585,23 +568,23 @@ export async function checkAndCreateDueDateNotifications(userId: string, bills: 
     if (daysUntil < 0) {
       type = "overdue";
       title = "Bill Overdue";
-      message = `"${bill.providerName}" ($${bill.amount.toFixed(2)}) is ${Math.abs(daysUntil)} day${Math.abs(daysUntil) === 1 ? '' : 's'} overdue.`;
+      message = `"${bill.companyName}" ($${bill.totalAmount.toFixed(2)}) is ${Math.abs(daysUntil)} day${Math.abs(daysUntil) === 1 ? '' : 's'} overdue.`;
     } else if (daysUntil === 0) {
       type = "due_today";
       title = "Bill Due Today";
-      message = `"${bill.providerName}" ($${bill.amount.toFixed(2)}) is due today.`;
+      message = `"${bill.companyName}" ($${bill.totalAmount.toFixed(2)}) is due today.`;
     } else if (daysUntil === 1) {
       type = "due_soon";
       title = "Bill Due Tomorrow";
-      message = `"${bill.providerName}" ($${bill.amount.toFixed(2)}) is due tomorrow.`;
+      message = `"${bill.companyName}" ($${bill.totalAmount.toFixed(2)}) is due tomorrow.`;
     } else if (daysUntil <= 3 && daysUntil > 1) {
       type = "due_soon";
       title = "Bill Due Soon";
-      message = `"${bill.providerName}" ($${bill.amount.toFixed(2)}) is due in ${daysUntil} days.`;
+      message = `"${bill.companyName}" ($${bill.totalAmount.toFixed(2)}) is due in ${daysUntil} days.`;
     } else if (daysUntil === 7) {
       type = "due_soon";
       title = "Bill Due in 7 Days";
-      message = `"${bill.providerName}" ($${bill.amount.toFixed(2)}) is due in 7 days.`;
+      message = `"${bill.companyName}" ($${bill.totalAmount.toFixed(2)}) is due in 7 days.`;
     }
 
     if (type && bill.id) {
@@ -617,19 +600,6 @@ export async function checkAndCreateDueDateNotifications(userId: string, bills: 
       }
     }
   }
-}
-
-export function signInWithGoogle() {
-  const auth = getFirebaseAuth();
-  if (!auth) return Promise.reject(new Error('Firebase not available'));
-  const provider = new GoogleAuthProvider();
-  return signInWithPopup(auth, provider).then(r => r.user);
-}
-
-export function resetPassword(email: string) {
-  const auth = getFirebaseAuth();
-  if (!auth) return Promise.reject(new Error('Firebase not available'));
-  return sendPasswordResetEmail(auth, email);
 }
 
 export type { User };

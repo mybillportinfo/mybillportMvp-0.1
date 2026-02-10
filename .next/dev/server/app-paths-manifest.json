@@ -1,3 +1,4 @@
 {
-  "/page": "app/page.js"
+  "/api/create-payment-intent/route": "app/api/create-payment-intent/route.js",
+  "/app/page": "app/app/page.js"
 }

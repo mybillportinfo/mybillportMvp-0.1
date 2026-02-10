@@ -1,36 +1,26 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Home, Plus, Settings, Loader2, AlertTriangle, Search, X, ChevronDown } from "lucide-react";
+import { ArrowLeft, Home, Plus, Settings, Loader2, AlertTriangle } from "lucide-react";
 import { useAuth } from '../contexts/AuthContext';
-import { addBill, fetchBills, createBillAddedNotification, BillingFrequency } from '../lib/firebase';
-import { searchBillers, canadianBillers, BillerEntry, billCategories } from '../lib/canadianBillers';
+import { addBill, fetchBills, createBillAddedNotification } from '../lib/firebase';
 
 const FREE_PLAN_LIMIT = 3;
 
 export default function AddBillPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [providerName, setProviderName] = useState('');
+  const [companyName, setCompanyName] = useState('');
   const [accountNumber, setAccountNumber] = useState('');
-  const [amount, setAmount] = useState('');
+  const [totalAmount, setTotalAmount] = useState('');
   const [dueDate, setDueDate] = useState('');
-  const [billingFrequency, setBillingFrequency] = useState<BillingFrequency>('monthly');
-  const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [billCount, setBillCount] = useState<number | null>(null);
   const [loadingCount, setLoadingCount] = useState(true);
-
-  const [suggestions, setSuggestions] = useState<BillerEntry[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [selectedSubcategory, setSelectedSubcategory] = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
-  const suggestionsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -44,17 +34,6 @@ export default function AddBillPage() {
     }
   }, [user]);
 
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (suggestionsRef.current && !suggestionsRef.current.contains(e.target as Node) &&
-          inputRef.current && !inputRef.current.contains(e.target as Node)) {
-        setShowSuggestions(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
   const loadBillCount = async () => {
     if (!user) return;
     setLoadingCount(true);
@@ -66,34 +45,6 @@ export default function AddBillPage() {
     } finally {
       setLoadingCount(false);
     }
-  };
-
-  const handleCompanyInput = (value: string) => {
-    setProviderName(value);
-    if (value.trim().length > 0) {
-      const results = searchBillers(value);
-      setSuggestions(results);
-      setShowSuggestions(results.length > 0);
-    } else {
-      setSuggestions([]);
-      setShowSuggestions(false);
-    }
-  };
-
-  const selectBiller = (biller: BillerEntry) => {
-    setProviderName(biller.name);
-    setSelectedCategory(biller.category);
-    setSelectedSubcategory(biller.subcategory);
-    setShowSuggestions(false);
-    setSuggestions([]);
-  };
-
-  const currentCategoryObj = billCategories.find(c => c.id === selectedCategory);
-  const subcategories = currentCategoryObj?.subcategories || [];
-
-  const handleCategoryChange = (catId: string) => {
-    setSelectedCategory(catId);
-    setSelectedSubcategory('');
   };
 
   const isAtLimit = billCount !== null && billCount >= FREE_PLAN_LIMIT;
@@ -112,17 +63,12 @@ export default function AddBillPage() {
       return;
     }
 
-    if (!selectedCategory) {
-      setError('Please select a bill category');
+    if (!companyName.trim()) {
+      setError('Please enter a company name');
       return;
     }
 
-    if (!providerName.trim()) {
-      setError('Please enter a company / provider name');
-      return;
-    }
-
-    if (!amount || parseFloat(amount) <= 0) {
+    if (!totalAmount || parseFloat(totalAmount) <= 0) {
       setError('Please enter a valid amount greater than $0');
       return;
     }
@@ -144,20 +90,15 @@ export default function AddBillPage() {
 
     try {
       const billId = await addBill(user.uid, {
-        category: selectedCategory,
-        subcategory: selectedSubcategory,
-        providerName: providerName.trim(),
+        companyName: companyName.trim(),
         accountNumber: accountNumber.trim(),
         dueDate: selectedDate,
-        amount: parseFloat(amount),
+        totalAmount: parseFloat(totalAmount),
         paidAmount: 0,
-        remainingAmount: parseFloat(amount),
         status: "unpaid",
-        billingFrequency,
-        notes: notes.trim(),
       });
 
-      await createBillAddedNotification(user.uid, providerName.trim(), billId).catch(console.error);
+      await createBillAddedNotification(user.uid, companyName.trim(), billId).catch(console.error);
 
       setSuccess(true);
       setTimeout(() => {
@@ -239,88 +180,14 @@ export default function AddBillPage() {
             )}
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Category *</label>
-              <div className="relative">
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => handleCategoryChange(e.target.value)}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800 appearance-none bg-white"
-                >
-                  <option value="">Select a category...</option>
-                  {billCategories.map(cat => (
-                    <option key={cat.id} value={cat.id}>{cat.label}</option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-              </div>
-            </div>
-
-            {selectedCategory && subcategories.length > 0 && (
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Sub-type</label>
-                <div className="relative">
-                  <select
-                    value={selectedSubcategory}
-                    onChange={(e) => setSelectedSubcategory(e.target.value)}
-                    className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800 appearance-none bg-white"
-                  >
-                    <option value="">Select a sub-type (optional)...</option>
-                    {subcategories.map(sub => (
-                      <option key={sub.id} value={sub.id}>{sub.label}</option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                </div>
-              </div>
-            )}
-
-            <div className="relative">
-              <label className="block text-sm font-medium text-slate-700 mb-1">Company / Provider Name *</label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={providerName}
-                  onChange={(e) => handleCompanyInput(e.target.value)}
-                  onFocus={() => {
-                    if (providerName.trim()) {
-                      const results = searchBillers(providerName);
-                      setSuggestions(results);
-                      setShowSuggestions(results.length > 0);
-                    }
-                  }}
-                  placeholder="Search or type provider name..."
-                  className="w-full pl-10 pr-10 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800"
-                />
-                {providerName && (
-                  <button
-                    type="button"
-                    onClick={() => { setProviderName(''); setSuggestions([]); setShowSuggestions(false); }}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-100 rounded"
-                  >
-                    <X className="w-4 h-4 text-slate-400" />
-                  </button>
-                )}
-              </div>
-              {showSuggestions && suggestions.length > 0 && (
-                <div ref={suggestionsRef} className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                  {suggestions.map((biller, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => selectBiller(biller)}
-                      className="w-full text-left px-4 py-3 hover:bg-slate-50 flex items-center justify-between border-b border-slate-50 last:border-b-0 transition-colors"
-                    >
-                      <span className="font-medium text-slate-800">{biller.name}</span>
-                      <span className="text-xs text-slate-400 capitalize">{biller.category.replace('_', ' ')}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-              <p className="text-xs text-slate-400 mt-1">
-                Search from {canadianBillers.length}+ Canadian billers or type your own
-              </p>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Company Name *</label>
+              <input
+                type="text"
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+                placeholder="e.g. Bell Canada, Hydro One"
+                className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800"
+              />
             </div>
 
             <div>
@@ -345,42 +212,15 @@ export default function AddBillPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Amount Due (CAD) *</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Total Amount (CAD) *</label>
               <input
                 type="number"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                value={totalAmount}
+                onChange={(e) => setTotalAmount(e.target.value)}
                 placeholder="0.00"
                 step="0.01"
                 min="0.01"
                 className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Billing Frequency</label>
-              <div className="relative">
-                <select
-                  value={billingFrequency}
-                  onChange={(e) => setBillingFrequency(e.target.value as BillingFrequency)}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800 appearance-none bg-white"
-                >
-                  <option value="monthly">Monthly</option>
-                  <option value="biweekly">Biweekly</option>
-                  <option value="annual">Annual</option>
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Notes</label>
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Optional notes..."
-                rows={2}
-                className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800 resize-none"
               />
             </div>
 

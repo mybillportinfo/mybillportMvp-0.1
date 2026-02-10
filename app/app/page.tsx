@@ -3,12 +3,104 @@
 import { useEffect, useState } from 'react';
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
-import { Home, Plus, Settings, Loader2, Trash2, AlertTriangle, Bell, DollarSign, CreditCard, Zap, Wifi, Phone, MoreHorizontal, CheckCircle, Building2, ShieldCheck, Landmark, Tv, Car, GraduationCap } from "lucide-react";
+import { Home, Plus, Settings, Loader2, Trash2, AlertTriangle, Bell, DollarSign, CheckCircle, X } from "lucide-react";
 import { useAuth } from '../contexts/AuthContext';
-import { fetchBills, deleteBill, fetchNotifications, checkAndCreateDueDateNotifications, payBill, createPaymentNotification, sortBills, Bill } from '../lib/firebase';
-import { getCategoryLabel } from '../lib/canadianBillers';
+import { fetchBills, deleteBill, fetchNotifications, checkAndCreateDueDateNotifications, sortBills, Bill, updateBillAfterPayment } from '../lib/firebase';
+import { loadStripe, Stripe } from '@stripe/stripe-js';
+import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
 const FREE_PLAN_LIMIT = 3;
+
+// Stripe promise - loaded once from our API
+let stripePromise: Promise<Stripe | null> | null = null;
+function getStripe() {
+  if (!stripePromise) {
+    stripePromise = fetch('/api/stripe-publishable-key')
+      .then(r => r.json())
+      .then(data => {
+        if (data.publishableKey) {
+          return loadStripe(data.publishableKey);
+        }
+        console.error('No Stripe publishable key');
+        return null;
+      })
+      .catch(err => {
+        console.error('Failed to load Stripe:', err);
+        return null;
+      });
+  }
+  return stripePromise;
+}
+
+// Payment form component rendered inside Stripe Elements
+function PaymentForm({ onSuccess, onError, onCancel }: {
+  onSuccess: (paymentIntentId: string) => void;
+  onError: (msg: string) => void;
+  onCancel: () => void;
+}) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [processing, setProcessing] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!stripe || !elements) return;
+
+    setProcessing(true);
+
+    try {
+      const { error, paymentIntent } = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: window.location.href,
+        },
+        redirect: 'if_required',
+      });
+
+      if (error) {
+        onError(error.message || 'Payment failed');
+      } else if (paymentIntent && paymentIntent.status === 'succeeded') {
+        onSuccess(paymentIntent.id);
+      } else {
+        onError('Payment was not completed. Please try again.');
+      }
+    } catch (err: any) {
+      onError(err.message || 'Payment processing error');
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <PaymentElement />
+      <div className="flex gap-3 mt-4">
+        <button
+          type="button"
+          onClick={onCancel}
+          disabled={processing}
+          className="flex-1 py-3 px-4 rounded-lg border border-slate-200 text-slate-600 font-medium hover:bg-slate-50 transition-colors disabled:opacity-50"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          disabled={!stripe || processing}
+          className="flex-1 py-3 px-4 rounded-lg bg-teal-600 text-white font-semibold hover:bg-teal-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+        >
+          {processing ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Processing...
+            </>
+          ) : (
+            'Pay Now'
+          )}
+        </button>
+      </div>
+    </form>
+  );
+}
 
 export default function Dashboard() {
   const { user, loading: authLoading } = useAuth();
@@ -20,8 +112,20 @@ export default function Dashboard() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [unreadNotifCount, setUnreadNotifCount] = useState(0);
   const [dueSoonChecked, setDueSoonChecked] = useState(false);
-  const [payingBillId, setPayingBillId] = useState<string | null>(null);
+
+  // Payment modal state
+  const [paymentModal, setPaymentModal] = useState<{
+    bill: Bill;
+    payType: 'full' | 'partial';
+    clientSecret: string | null;
+    partialAmount: string;
+    step: 'amount' | 'card';
+    idempotencyToken: string;
+  } | null>(null);
+  const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState<string | null>(null);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [stripeInstance, setStripeInstance] = useState<Stripe | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -32,6 +136,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (user) {
       loadBills();
+      getStripe().then(s => setStripeInstance(s));
     }
   }, [user]);
 
@@ -72,60 +177,128 @@ export default function Dashboard() {
     }
   };
 
-  const handlePay = async (bill: Bill, payType: 'full' | 'half') => {
-    if (!bill.id || !user) return;
-    setPayingBillId(bill.id);
-    setError(null);
+  // Open payment modal
+  const openPaymentModal = (bill: Bill, payType: 'full' | 'partial') => {
+    setPaymentError(null);
+    const remaining = bill.totalAmount - bill.paidAmount;
+    const token = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+
+    if (payType === 'full') {
+      setPaymentModal({
+        bill,
+        payType: 'full',
+        clientSecret: null,
+        partialAmount: remaining.toFixed(2),
+        step: 'card',
+        idempotencyToken: token,
+      });
+      createPaymentIntent(bill, 'full', remaining, token);
+    } else {
+      setPaymentModal({
+        bill,
+        payType: 'partial',
+        clientSecret: null,
+        partialAmount: '',
+        step: 'amount',
+        idempotencyToken: token,
+      });
+    }
+  };
+
+  // Create payment intent via our API
+  const createPaymentIntent = async (bill: Bill, payType: string, amount: number, idempotencyToken?: string) => {
+    if (!user) return;
+    setPaymentLoading(true);
+    setPaymentError(null);
 
     try {
-      const result = await payBill(user.uid, bill.id, payType);
+      const response = await fetch('/api/create-payment-intent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          billId: bill.id,
+          userId: user.uid,
+          paymentType: payType,
+          amount,
+          idempotencyToken: idempotencyToken || paymentModal?.idempotencyToken || '',
+        }),
+      });
 
-      await createPaymentNotification(user.uid, bill.providerName, result.paymentAmount, bill.id).catch(console.error);
+      const data = await response.json();
 
-      if (result.newStatus === 'paid') {
-        setPaymentSuccess(`"${bill.providerName}" marked as paid!`);
-      } else {
-        setPaymentSuccess(`$${result.paymentAmount.toFixed(2)} paid for "${bill.providerName}". $${result.newRemainingAmount.toFixed(2)} remaining.`);
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create payment');
       }
-      setTimeout(() => setPaymentSuccess(null), 4000);
 
-      await loadBills();
-    } catch (err) {
-      console.error('Payment error:', err);
-      setError(err instanceof Error ? err.message : 'Payment failed. Please try again.');
+      setPaymentModal(prev => prev ? {
+        ...prev,
+        clientSecret: data.clientSecret,
+        step: 'card',
+        partialAmount: amount.toFixed(2),
+      } : null);
+    } catch (err: any) {
+      setPaymentError(err.message || 'Failed to create payment');
     } finally {
-      setPayingBillId(null);
+      setPaymentLoading(false);
     }
   };
 
-  const getIcon = (category: string) => {
-    switch (category) {
-      case "utilities": return <Zap className="w-5 h-5 text-yellow-600" />;
-      case "telecom": return <Wifi className="w-5 h-5 text-blue-600" />;
-      case "credit_cards": case "financial": return <CreditCard className="w-5 h-5 text-indigo-600" />;
-      case "subscriptions": return <Tv className="w-5 h-5 text-purple-600" />;
-      case "housing": return <Building2 className="w-5 h-5 text-emerald-600" />;
-      case "insurance": return <ShieldCheck className="w-5 h-5 text-sky-600" />;
-      case "government": return <Landmark className="w-5 h-5 text-red-600" />;
-      case "transportation": return <Car className="w-5 h-5 text-orange-600" />;
-      case "education": return <GraduationCap className="w-5 h-5 text-cyan-600" />;
-      default: return <MoreHorizontal className="w-5 h-5 text-gray-600" />;
+  // Handle partial amount submission
+  const handlePartialAmountSubmit = () => {
+    if (!paymentModal) return;
+    const amount = parseFloat(paymentModal.partialAmount);
+    const remaining = paymentModal.bill.totalAmount - paymentModal.bill.paidAmount;
+
+    if (isNaN(amount) || amount <= 0) {
+      setPaymentError('Please enter a valid amount');
+      return;
     }
+    if (amount < 0.50) {
+      setPaymentError('Minimum payment is $0.50 CAD');
+      return;
+    }
+    if (amount > remaining) {
+      setPaymentError(`Amount cannot exceed remaining balance of $${remaining.toFixed(2)}`);
+      return;
+    }
+
+    createPaymentIntent(paymentModal.bill, 'partial', amount);
   };
 
-  const getIconBg = (category: string) => {
-    switch (category) {
-      case "utilities": return "bg-yellow-100";
-      case "telecom": return "bg-blue-100";
-      case "credit_cards": case "financial": return "bg-indigo-100";
-      case "subscriptions": return "bg-purple-100";
-      case "housing": return "bg-emerald-100";
-      case "insurance": return "bg-sky-100";
-      case "government": return "bg-red-100";
-      case "transportation": return "bg-orange-100";
-      case "education": return "bg-cyan-100";
-      default: return "bg-gray-100";
+  // Handle successful payment - update Firestore immediately
+  const handlePaymentSuccess = async (paymentIntentId: string) => {
+    if (!paymentModal || !user) return;
+
+    const billName = paymentModal.bill.companyName || '';
+    const paymentAmount = parseFloat(paymentModal.partialAmount) || 0;
+    const billId = paymentModal.bill.id;
+
+    setPaymentModal(null);
+
+    try {
+      if (billId) {
+        await updateBillAfterPayment(user.uid, billId, paymentAmount, paymentIntentId);
+      }
+      setPaymentSuccess(`Payment of $${paymentAmount.toFixed(2)} for "${billName}" was successful!`);
+      await loadBills();
+    } catch (err: any) {
+      console.error('Failed to update bill after payment:', err);
+      setPaymentSuccess(`Payment for "${billName}" was processed. Refreshing...`);
+      setTimeout(() => loadBills(), 2000);
     }
+
+    setTimeout(() => setPaymentSuccess(null), 6000);
+  };
+
+  // Handle payment error
+  const handlePaymentError = (msg: string) => {
+    setPaymentError(msg);
+  };
+
+  const closePaymentModal = () => {
+    setPaymentModal(null);
+    setPaymentError(null);
+    setPaymentLoading(false);
   };
 
   const getDaysUntilDue = (dueDate: Date) => {
@@ -141,8 +314,8 @@ export default function Dashboard() {
     if (bill.status === "paid") {
       return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Paid</span>;
     }
-    if (bill.status === "partially_paid") {
-      return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">Partially Paid</span>;
+    if (bill.status === "partial") {
+      return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">Partial</span>;
     }
     const daysUntil = getDaysUntilDue(bill.dueDate);
     if (daysUntil < 0) {
@@ -185,7 +358,7 @@ export default function Dashboard() {
   }
 
   const unpaidBills = bills.filter(b => b.status !== 'paid');
-  const totalOwing = unpaidBills.reduce((sum, b) => sum + b.remainingAmount, 0);
+  const totalOwing = unpaidBills.reduce((sum, b) => sum + (b.totalAmount - b.paidAmount), 0);
 
   const greeting = () => {
     const hour = new Date().getHours();
@@ -198,6 +371,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 pb-24">
+      {/* Header */}
       <div className="px-5 pt-12 pb-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
@@ -219,6 +393,7 @@ export default function Dashboard() {
         <p className="text-white text-2xl font-semibold">Here&apos;s your overview</p>
       </div>
 
+      {/* Success message */}
       {paymentSuccess && (
         <div className="px-4 mb-4">
           <div className="bg-green-500/10 border border-green-500/30 text-green-400 px-4 py-3 rounded-lg text-sm flex items-center gap-2">
@@ -228,6 +403,7 @@ export default function Dashboard() {
         </div>
       )}
 
+      {/* Summary cards */}
       <div className="px-4 grid grid-cols-2 gap-3 mb-6">
         <div className="summary-card text-center">
           <p className="text-2xl font-bold text-white">{bills.length}</p>
@@ -257,6 +433,7 @@ export default function Dashboard() {
         </div>
       )}
 
+      {/* Bills list */}
       <div className="px-4 space-y-3">
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-white font-semibold">Your Bills</h2>
@@ -279,18 +456,18 @@ export default function Dashboard() {
         ) : (
           bills.map((bill) => {
             const isConfirming = confirmDeleteId === bill.id;
-            const isPaying = payingBillId === bill.id;
             const isFullyPaid = bill.status === "paid";
-            const isPartiallyPaid = bill.status === "partially_paid";
+            const isPartial = bill.status === "partial";
+            const remaining = bill.totalAmount - bill.paidAmount;
             return (
               <div key={bill.id} className="bg-white rounded-xl p-4">
                 <div className="flex items-start gap-3">
-                  <div className={`w-12 h-12 ${getIconBg(bill.category)} rounded-lg flex items-center justify-center flex-shrink-0`}>
-                    {getIcon(bill.category)}
+                  <div className="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <DollarSign className="w-5 h-5 text-slate-600" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-semibold text-slate-800">{bill.providerName}</p>
+                      <p className="font-semibold text-slate-800">{bill.companyName}</p>
                       {getStatusBadge(bill)}
                     </div>
                     {bill.accountNumber && (
@@ -304,71 +481,42 @@ export default function Dashboard() {
                         </span>
                       )}
                     </div>
-                    <span className="text-[10px] text-slate-400 mt-0.5 inline-block">
-                      {getCategoryLabel(bill.category)}
-                    </span>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <p className="font-bold text-slate-800 text-lg">${bill.amount.toFixed(2)}</p>
+                    <p className="font-bold text-slate-800 text-lg">${bill.totalAmount.toFixed(2)}</p>
                     <p className="text-[10px] text-slate-400">CAD</p>
-                    {isPartiallyPaid && (
+                    {isPartial && (
                       <p className="text-xs text-blue-500 font-medium mt-0.5">
-                        ${bill.remainingAmount.toFixed(2)} left
+                        ${remaining.toFixed(2)} left
                       </p>
                     )}
-                    {isFullyPaid && (
+                    {bill.paidAmount > 0 && (
                       <p className="text-xs text-green-500 font-medium mt-0.5">
-                        Paid
+                        ${bill.paidAmount.toFixed(2)} paid
                       </p>
                     )}
                   </div>
                 </div>
 
+                {/* Payment + delete buttons for unpaid/partial bills */}
                 {!isFullyPaid && (
                   <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 flex-1">
-                      {isPartiallyPaid ? (
-                        <button
-                          onClick={() => handlePay(bill, 'full')}
-                          disabled={isPaying}
-                          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg bg-teal-600 text-white hover:bg-teal-700 transition-colors disabled:opacity-50"
-                        >
-                          {isPaying ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          ) : (
-                            <DollarSign className="w-3.5 h-3.5" />
-                          )}
-                          Pay Remaining (${bill.remainingAmount.toFixed(2)})
-                        </button>
-                      ) : (
-                        <>
-                          <button
-                            onClick={() => handlePay(bill, 'full')}
-                            disabled={isPaying}
-                            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg bg-teal-600 text-white hover:bg-teal-700 transition-colors disabled:opacity-50"
-                          >
-                            {isPaying ? (
-                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            ) : (
-                              <DollarSign className="w-3.5 h-3.5" />
-                            )}
-                            Pay Full
-                          </button>
+                      <button
+                        onClick={() => openPaymentModal(bill, 'full')}
+                        className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg bg-teal-600 text-white hover:bg-teal-700 transition-colors"
+                      >
+                        <DollarSign className="w-3.5 h-3.5" />
+                        {isPartial ? `Pay Remaining ($${remaining.toFixed(2)})` : 'Pay Full'}
+                      </button>
 
-                          <button
-                            onClick={() => handlePay(bill, 'half')}
-                            disabled={isPaying}
-                            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors disabled:opacity-50"
-                          >
-                            {isPaying ? (
-                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            ) : (
-                              <DollarSign className="w-3.5 h-3.5" />
-                            )}
-                            Pay Half
-                          </button>
-                        </>
-                      )}
+                      <button
+                        onClick={() => openPaymentModal(bill, 'partial')}
+                        className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors"
+                      >
+                        <DollarSign className="w-3.5 h-3.5" />
+                        Pay Partial
+                      </button>
                     </div>
 
                     {deletingId === bill.id ? (
@@ -384,11 +532,12 @@ export default function Dashboard() {
                   </div>
                 )}
 
+                {/* Paid state */}
                 {isFullyPaid && (
                   <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
                     <div className="flex items-center gap-2 text-green-600">
                       <CheckCircle className="w-4 h-4" />
-                      <span className="text-sm font-medium">Paid</span>
+                      <span className="text-sm font-medium">Fully Paid</span>
                     </div>
                     {deletingId === bill.id ? (
                       <Loader2 className="w-4 h-4 text-slate-400 animate-spin" />
@@ -403,6 +552,7 @@ export default function Dashboard() {
                   </div>
                 )}
 
+                {/* Delete confirmation */}
                 {isConfirming && (
                   <div className="mt-3 pt-3 border-t border-red-100 flex items-center justify-between bg-red-50 -mx-4 -mb-4 px-4 py-3 rounded-b-xl">
                     <p className="text-sm text-red-600 font-medium">Delete this bill?</p>
@@ -439,6 +589,144 @@ export default function Dashboard() {
         </div>
       )}
 
+      {/* Stripe Payment Modal */}
+      {paymentModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+            {/* Modal header */}
+            <div className="flex items-center justify-between p-5 border-b border-slate-100">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-800">
+                  {paymentModal.payType === 'full' ? 'Pay Full Amount' : 'Pay Partial Amount'}
+                </h3>
+                <p className="text-sm text-slate-500">{paymentModal.bill.companyName}</p>
+              </div>
+              <button onClick={closePaymentModal} className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+                <X className="w-5 h-5 text-slate-400" />
+              </button>
+            </div>
+
+            <div className="p-5">
+              {/* Bill summary */}
+              <div className="bg-slate-50 rounded-lg p-3 mb-4 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Total Amount</span>
+                  <span className="font-medium text-slate-700">${paymentModal.bill.totalAmount.toFixed(2)} CAD</span>
+                </div>
+                {paymentModal.bill.paidAmount > 0 && (
+                  <div className="flex justify-between mt-1">
+                    <span className="text-slate-500">Already Paid</span>
+                    <span className="font-medium text-green-600">${paymentModal.bill.paidAmount.toFixed(2)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between mt-1 pt-1 border-t border-slate-200">
+                  <span className="text-slate-500">Remaining</span>
+                  <span className="font-bold text-slate-800">
+                    ${(paymentModal.bill.totalAmount - paymentModal.bill.paidAmount).toFixed(2)} CAD
+                  </span>
+                </div>
+              </div>
+
+              {paymentError && (
+                <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm mb-4">
+                  {paymentError}
+                </div>
+              )}
+
+              {/* Step 1: Partial amount input */}
+              {paymentModal.step === 'amount' && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                      Payment Amount (CAD) *
+                    </label>
+                    <input
+                      type="number"
+                      value={paymentModal.partialAmount}
+                      onChange={(e) => {
+                        setPaymentError(null);
+                        setPaymentModal(prev => prev ? { ...prev, partialAmount: e.target.value } : null);
+                      }}
+                      placeholder="0.00"
+                      step="0.01"
+                      min="0.50"
+                      max={paymentModal.bill.totalAmount - paymentModal.bill.paidAmount}
+                      className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800"
+                      autoFocus
+                    />
+                    <p className="text-xs text-slate-400 mt-1">
+                      Minimum: $0.50 CAD | Maximum: ${(paymentModal.bill.totalAmount - paymentModal.bill.paidAmount).toFixed(2)} CAD
+                    </p>
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={closePaymentModal}
+                      className="flex-1 py-3 px-4 rounded-lg border border-slate-200 text-slate-600 font-medium hover:bg-slate-50 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handlePartialAmountSubmit}
+                      disabled={paymentLoading}
+                      className="flex-1 py-3 px-4 rounded-lg bg-teal-600 text-white font-semibold hover:bg-teal-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                      {paymentLoading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Loading...
+                        </>
+                      ) : (
+                        'Continue to Payment'
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 2: Stripe card input */}
+              {paymentModal.step === 'card' && paymentLoading && !paymentModal.clientSecret && (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 text-teal-500 animate-spin" />
+                  <span className="ml-2 text-slate-500">Preparing payment...</span>
+                </div>
+              )}
+
+              {paymentModal.step === 'card' && paymentModal.clientSecret && stripeInstance && (
+                <Elements
+                  stripe={stripeInstance}
+                  options={{
+                    clientSecret: paymentModal.clientSecret,
+                    appearance: {
+                      theme: 'stripe',
+                      variables: {
+                        colorPrimary: '#0d9488',
+                        borderRadius: '8px',
+                      },
+                    },
+                  }}
+                >
+                  <PaymentForm
+                    onSuccess={handlePaymentSuccess}
+                    onError={handlePaymentError}
+                    onCancel={closePaymentModal}
+                  />
+                </Elements>
+              )}
+
+              {paymentModal.step === 'card' && !paymentLoading && !paymentModal.clientSecret && !stripeInstance && (
+                <div className="text-center py-8">
+                  <p className="text-red-500 text-sm">Failed to load payment form. Please try again.</p>
+                  <button onClick={closePaymentModal} className="mt-3 text-teal-600 underline text-sm">
+                    Close
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bottom nav */}
       <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur border-t border-slate-700 py-3 px-6">
         <div className="max-w-md mx-auto flex justify-around">
           <Link href="/app" className="nav-item nav-item-active">
