@@ -40,6 +40,7 @@ export const CATEGORIES: Category[] = [
         label: 'Electricity',
         fields: [
           { key: 'billingPeriod', label: 'Billing Period', type: 'text', placeholder: 'e.g. Jan 1 - Jan 31' },
+          { key: 'lastPaymentDate', label: 'Last Payment Date', type: 'text', placeholder: 'e.g. 2026-01-15' },
         ],
       },
       {
@@ -52,6 +53,7 @@ export const CATEGORIES: Category[] = [
         label: 'Water & Sewer',
         fields: [
           { key: 'municipality', label: 'City / Municipality', type: 'text', placeholder: 'e.g. City of Toronto' },
+          { key: 'billingPeriod', label: 'Billing Period', type: 'text', placeholder: 'e.g. Jan 1 - Mar 31' },
         ],
       },
     ],
@@ -93,13 +95,14 @@ export const CATEGORIES: Category[] = [
         label: 'Rent',
         fields: [
           { key: 'unitAddress', label: 'Unit Address', type: 'text', placeholder: 'e.g. Unit 4B, 55 King St' },
+          { key: 'paymentMethod', label: 'Payment Method', type: 'select', options: ['E-Transfer', 'Cheque', 'Pre-authorized Debit', 'Cash', 'Other'] },
         ],
       },
       {
         value: 'mortgage',
         label: 'Mortgage',
         fields: [
-          { key: 'lender', label: 'Lender', type: 'text', placeholder: 'e.g. RBC, TD, MCAP' },
+          { key: 'lender', label: 'Lender', type: 'text', placeholder: 'e.g. RBC, TD, MCAP, First National' },
           { key: 'mortgageAccount', label: 'Mortgage Account #', type: 'text', placeholder: 'Account number' },
         ],
       },
@@ -114,22 +117,32 @@ export const CATEGORIES: Category[] = [
         value: 'credit_card_bank',
         label: 'Credit Card (Bank)',
         fields: [
-          { key: 'bankName', label: 'Bank', type: 'text', placeholder: 'e.g. RBC, TD, BMO' },
+          { key: 'bankName', label: 'Bank', type: 'select', options: ['RBC', 'TD', 'Scotiabank', 'BMO', 'CIBC', 'Tangerine', 'Simplii', 'Other'] },
+          { key: 'cardName', label: 'Card Name', type: 'text', placeholder: 'e.g. Visa Infinite, Mastercard World Elite' },
           { key: 'last4', label: 'Last 4 Digits', type: 'text', placeholder: 'e.g. 4242' },
           { key: 'minimumDue', label: 'Minimum Due ($)', type: 'number', placeholder: '0.00' },
         ],
       },
       {
         value: 'credit_card_retail',
-        label: 'Credit Card (Retail)',
+        label: 'Credit Card (Retail & Co-Branded)',
         fields: [
-          { key: 'retailer', label: 'Retailer', type: 'text', placeholder: 'e.g. Canadian Tire, Walmart' },
-          { key: 'last4', label: 'Last 4 Digits', type: 'text', placeholder: 'e.g. 1234' },
+          { key: 'retailer', label: 'Retailer', type: 'select', options: ['Walmart', 'Canadian Tire Triangle', 'PC Financial', 'Amazon.ca', 'Hudson\'s Bay', 'Best Buy', 'Home Depot', 'Other'] },
+          { key: 'last4', label: 'Card Number (Last 4)', type: 'text', placeholder: 'e.g. 1234' },
+        ],
+      },
+      {
+        value: 'credit_union',
+        label: 'Credit Union',
+        fields: [
+          { key: 'creditUnion', label: 'Credit Union', type: 'select', options: ['Meridian', 'Vancity', 'Coast Capital', 'Desjardins', 'Other'] },
+          { key: 'last4', label: 'Last 4 Digits', type: 'text', placeholder: 'e.g. 5678' },
+          { key: 'minimumDue', label: 'Minimum Due ($)', type: 'number', placeholder: '0.00' },
         ],
       },
       {
         value: 'loan',
-        label: 'Personal / Auto Loan',
+        label: 'Personal Loan',
         fields: [
           { key: 'lender', label: 'Lender', type: 'text', placeholder: 'e.g. TD, Fairstone' },
           { key: 'loanAccount', label: 'Loan Account #', type: 'text', placeholder: 'Account number' },
@@ -157,13 +170,7 @@ export const CATEGORIES: Category[] = [
         fields: [
           { key: 'policyNumber', label: 'Policy Number', type: 'text', placeholder: 'Policy #' },
           { key: 'coverageType', label: 'Coverage Type', type: 'select', options: ['Homeowner', 'Tenant', 'Condo'] },
-        ],
-      },
-      {
-        value: 'life_health',
-        label: 'Life / Health Insurance',
-        fields: [
-          { key: 'policyNumber', label: 'Policy Number', type: 'text', placeholder: 'Policy #' },
+          { key: 'renewalDate', label: 'Renewal Date', type: 'text', placeholder: 'e.g. 2026-06-01' },
         ],
       },
     ],
@@ -187,16 +194,6 @@ export const CATEGORIES: Category[] = [
           { key: 'renewalDate', label: 'Renewal Date', type: 'text', placeholder: 'e.g. 2026-03-15' },
         ],
       },
-      {
-        value: 'gym_fitness',
-        label: 'Gym / Fitness',
-        fields: [],
-      },
-      {
-        value: 'other_membership',
-        label: 'Other Membership',
-        fields: [],
-      },
     ],
   },
   {
@@ -216,13 +213,8 @@ export const CATEGORIES: Category[] = [
         value: 'parking_tolls',
         label: 'Parking / Tolls',
         fields: [
-          { key: 'tollProvider', label: 'Provider', type: 'text', placeholder: 'e.g. 407 ETR' },
+          { key: 'tollProvider', label: 'Provider', type: 'text', placeholder: 'e.g. 407 ETR, City parking permit' },
         ],
-      },
-      {
-        value: 'transit_pass',
-        label: 'Transit Pass',
-        fields: [],
       },
     ],
   },
@@ -254,8 +246,13 @@ export const CATEGORIES: Category[] = [
         ],
       },
       {
-        value: 'other_government',
-        label: 'Other Government',
+        value: 'provincial_tax',
+        label: 'Provincial Taxes / Health Premiums',
+        fields: [],
+      },
+      {
+        value: 'municipal_other',
+        label: 'Municipal (Parking Fines, City Services)',
         fields: [],
       },
     ],
@@ -274,10 +271,17 @@ export const CATEGORIES: Category[] = [
       },
       {
         value: 'tuition',
-        label: 'School / College Tuition',
+        label: 'School / College / University Tuition',
         fields: [
           { key: 'institution', label: 'Institution', type: 'text', placeholder: 'e.g. University of Toronto' },
           { key: 'studentId', label: 'Student ID', type: 'text', placeholder: 'Student #' },
+        ],
+      },
+      {
+        value: 'student_loan_payment',
+        label: 'Student Loan Payment',
+        fields: [
+          { key: 'loanAccount', label: 'Loan Account #', type: 'text', placeholder: 'Account number' },
         ],
       },
     ],
@@ -288,8 +292,13 @@ export const CATEGORIES: Category[] = [
     icon: '📋',
     subcategories: [
       {
+        value: 'gym_fitness',
+        label: 'Gym / Fitness Membership',
+        fields: [],
+      },
+      {
         value: 'home_security',
-        label: 'Home Security / Alarm',
+        label: 'Home Security / Alarm Monitoring',
         fields: [],
       },
       {
