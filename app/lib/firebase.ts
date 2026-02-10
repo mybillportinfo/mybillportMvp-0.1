@@ -99,7 +99,9 @@ function getFirebaseAuth(): Auth | null {
 // Bill status: unpaid (no payment), partial (some paid), paid (fully paid)
 export type BillStatus = "unpaid" | "partial" | "paid";
 
-// Bill data model - FINAL (matches Firestore schema)
+export type BillingCycle = 'monthly' | 'biweekly' | 'annual' | 'one-time';
+
+// Bill data model with category support (backward compatible with old bills)
 export interface Bill {
   id?: string;
   userId: string;
@@ -109,6 +111,10 @@ export interface Bill {
   totalAmount: number;
   paidAmount: number;
   status: BillStatus;
+  category?: string;
+  subcategory?: string;
+  billingCycle?: BillingCycle;
+  metadata?: Record<string, string | number>;
   createdAt: Date;
 }
 
@@ -199,7 +205,8 @@ export async function addBill(userId: string, bill: Omit<Bill, 'id' | 'userId' |
   const db = getFirebaseDb();
   if (!db) throw new Error('Firebase not available');
   const now = Timestamp.now();
-  const docRef = await addDoc(collection(db, "bills"), {
+
+  const billData: Record<string, any> = {
     userId,
     companyName: bill.companyName,
     accountNumber: bill.accountNumber || '',
@@ -208,7 +215,16 @@ export async function addBill(userId: string, bill: Omit<Bill, 'id' | 'userId' |
     paidAmount: 0,
     status: "unpaid",
     createdAt: now,
-  });
+  };
+
+  if (bill.category) billData.category = bill.category;
+  if (bill.subcategory) billData.subcategory = bill.subcategory;
+  if (bill.billingCycle) billData.billingCycle = bill.billingCycle;
+  if (bill.metadata && Object.keys(bill.metadata).length > 0) {
+    billData.metadata = bill.metadata;
+  }
+
+  const docRef = await addDoc(collection(db, "bills"), billData);
   return docRef.id;
 }
 
@@ -261,6 +277,10 @@ export async function fetchBills(userId: string): Promise<Bill[]> {
         totalAmount,
         paidAmount,
         status,
+        category: data.category || undefined,
+        subcategory: data.subcategory || undefined,
+        billingCycle: data.billingCycle || undefined,
+        metadata: data.metadata || undefined,
         createdAt: data.createdAt?.toDate() || new Date(),
       };
     });

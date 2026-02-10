@@ -3,9 +3,10 @@
 import { useEffect, useState } from 'react';
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
-import { Home, Plus, Settings, Loader2, Trash2, AlertTriangle, Bell, DollarSign, CheckCircle, X } from "lucide-react";
+import { Home, Plus, Settings, Loader2, Trash2, AlertTriangle, Bell, DollarSign, CheckCircle, X, Filter } from "lucide-react";
 import { useAuth } from '../contexts/AuthContext';
 import { fetchBills, deleteBill, fetchNotifications, checkAndCreateDueDateNotifications, sortBills, Bill, updateBillAfterPayment } from '../lib/firebase';
+import { CATEGORIES, getCategoryByValue, getSubcategory } from '../lib/categories';
 import { loadStripe, Stripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
@@ -112,6 +113,7 @@ export default function Dashboard() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [unreadNotifCount, setUnreadNotifCount] = useState(0);
   const [dueSoonChecked, setDueSoonChecked] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState('all');
 
   // Payment modal state
   const [paymentModal, setPaymentModal] = useState<{
@@ -357,8 +359,12 @@ export default function Dashboard() {
     );
   }
 
+  const filteredBills = categoryFilter === 'all'
+    ? bills
+    : bills.filter(b => b.category === categoryFilter);
   const unpaidBills = bills.filter(b => b.status !== 'paid');
   const totalOwing = unpaidBills.reduce((sum, b) => sum + (b.totalAmount - b.paidAmount), 0);
+  const usedCategories = [...new Set(bills.map(b => b.category).filter(Boolean))] as string[];
 
   const greeting = () => {
     const hour = new Date().getHours();
@@ -433,12 +439,47 @@ export default function Dashboard() {
         </div>
       )}
 
+      {/* Category filter */}
+      {!loading && usedCategories.length > 0 && (
+        <div className="px-4 mb-4">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
+            <button
+              onClick={() => setCategoryFilter('all')}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+                categoryFilter === 'all'
+                  ? 'bg-teal-600 text-white'
+                  : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+              }`}
+            >
+              All ({bills.length})
+            </button>
+            {usedCategories.map(catVal => {
+              const cat = getCategoryByValue(catVal);
+              const count = bills.filter(b => b.category === catVal).length;
+              return (
+                <button
+                  key={catVal}
+                  onClick={() => setCategoryFilter(catVal)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+                    categoryFilter === catVal
+                      ? 'bg-teal-600 text-white'
+                      : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                  }`}
+                >
+                  {cat?.icon || ''} {cat?.label || catVal} ({count})
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Bills list */}
       <div className="px-4 space-y-3">
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-white font-semibold">Your Bills</h2>
           {!loading && (
-            <span className="text-xs text-slate-500">{bills.length}/{FREE_PLAN_LIMIT} used</span>
+            <span className="text-xs text-slate-500">{filteredBills.length} bill{filteredBills.length !== 1 ? 's' : ''} {categoryFilter !== 'all' ? `in ${getCategoryByValue(categoryFilter)?.label || categoryFilter}` : `(${bills.length}/${FREE_PLAN_LIMIT} used)`}</span>
           )}
         </div>
 
@@ -453,23 +494,36 @@ export default function Dashboard() {
               Add Your First Bill
             </Link>
           </div>
+        ) : filteredBills.length === 0 ? (
+          <div className="bg-slate-800/50 rounded-xl p-6 text-center border border-slate-700">
+            <p className="text-slate-400 mb-2">No bills in this category</p>
+            <button onClick={() => setCategoryFilter('all')} className="text-teal-400 text-sm underline hover:no-underline">Show all bills</button>
+          </div>
         ) : (
-          bills.map((bill) => {
+          filteredBills.map((bill) => {
             const isConfirming = confirmDeleteId === bill.id;
             const isFullyPaid = bill.status === "paid";
             const isPartial = bill.status === "partial";
             const remaining = bill.totalAmount - bill.paidAmount;
+            const billCategory = bill.category ? getCategoryByValue(bill.category) : null;
+            const billSubcategory = bill.category && bill.subcategory ? getSubcategory(bill.category, bill.subcategory) : null;
             return (
               <div key={bill.id} className="bg-white rounded-xl p-4">
                 <div className="flex items-start gap-3">
-                  <div className="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <DollarSign className="w-5 h-5 text-slate-600" />
+                  <div className="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0 text-xl">
+                    {billCategory?.icon || <DollarSign className="w-5 h-5 text-slate-600" />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-semibold text-slate-800">{bill.companyName}</p>
                       {getStatusBadge(bill)}
                     </div>
+                    {billCategory && (
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {billCategory.label}{billSubcategory ? ` \u2022 ${billSubcategory.label}` : ''}
+                        {bill.billingCycle && bill.billingCycle !== 'monthly' ? ` \u2022 ${bill.billingCycle}` : ''}
+                      </p>
+                    )}
                     {bill.accountNumber && (
                       <p className="text-xs text-slate-500 mt-0.5">Acct: {bill.accountNumber}</p>
                     )}

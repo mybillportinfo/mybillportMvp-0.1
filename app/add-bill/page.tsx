@@ -1,21 +1,28 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Home, Plus, Settings, Loader2, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Home, Plus, Settings, Loader2, AlertTriangle, ChevronDown } from "lucide-react";
 import { useAuth } from '../contexts/AuthContext';
 import { addBill, fetchBills, createBillAddedNotification } from '../lib/firebase';
+import { CATEGORIES, BILLING_CYCLES, getCategoryByValue, getSubcategory, type MetadataField } from '../lib/categories';
 
 const FREE_PLAN_LIMIT = 3;
 
 export default function AddBillPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
+
+  const [category, setCategory] = useState('');
+  const [subcategory, setSubcategory] = useState('');
   const [companyName, setCompanyName] = useState('');
   const [accountNumber, setAccountNumber] = useState('');
   const [totalAmount, setTotalAmount] = useState('');
   const [dueDate, setDueDate] = useState('');
+  const [billingCycle, setBillingCycle] = useState('monthly');
+  const [metadataValues, setMetadataValues] = useState<Record<string, string>>({});
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -47,6 +54,28 @@ export default function AddBillPage() {
     }
   };
 
+  const selectedCategory = useMemo(() => getCategoryByValue(category), [category]);
+  const selectedSubcategory = useMemo(
+    () => category && subcategory ? getSubcategory(category, subcategory) : undefined,
+    [category, subcategory]
+  );
+  const dynamicFields: MetadataField[] = selectedSubcategory?.fields || [];
+
+  const handleCategoryChange = (val: string) => {
+    setCategory(val);
+    setSubcategory('');
+    setMetadataValues({});
+  };
+
+  const handleSubcategoryChange = (val: string) => {
+    setSubcategory(val);
+    setMetadataValues({});
+  };
+
+  const handleMetadataChange = (key: string, value: string) => {
+    setMetadataValues(prev => ({ ...prev, [key]: value }));
+  };
+
   const isAtLimit = billCount !== null && billCount >= FREE_PLAN_LIMIT;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -63,8 +92,13 @@ export default function AddBillPage() {
       return;
     }
 
+    if (!category) {
+      setError('Please select a category');
+      return;
+    }
+
     if (!companyName.trim()) {
-      setError('Please enter a company name');
+      setError('Please enter a provider / company name');
       return;
     }
 
@@ -89,6 +123,14 @@ export default function AddBillPage() {
     setIsSubmitting(true);
 
     try {
+      const cleanMetadata: Record<string, string | number> = {};
+      for (const [key, value] of Object.entries(metadataValues)) {
+        if (value.trim()) {
+          const field = dynamicFields.find(f => f.key === key);
+          cleanMetadata[key] = field?.type === 'number' ? parseFloat(value) || 0 : value.trim();
+        }
+      }
+
       const billId = await addBill(user.uid, {
         companyName: companyName.trim(),
         accountNumber: accountNumber.trim(),
@@ -96,6 +138,10 @@ export default function AddBillPage() {
         totalAmount: parseFloat(totalAmount),
         paidAmount: 0,
         status: "unpaid",
+        category,
+        subcategory: subcategory || undefined,
+        billingCycle: billingCycle as any,
+        metadata: Object.keys(cleanMetadata).length > 0 ? cleanMetadata : undefined,
       });
 
       await createBillAddedNotification(user.uid, companyName.trim(), billId).catch(console.error);
@@ -179,17 +225,59 @@ export default function AddBillPage() {
               </div>
             )}
 
+            {/* Category */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Company Name *</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Category *</label>
+              <div className="relative">
+                <select
+                  value={category}
+                  onChange={(e) => handleCategoryChange(e.target.value)}
+                  className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800 appearance-none bg-white"
+                >
+                  <option value="">Select a category</option>
+                  {CATEGORIES.map(cat => (
+                    <option key={cat.value} value={cat.value}>
+                      {cat.icon} {cat.label}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              </div>
+            </div>
+
+            {/* Subcategory */}
+            {selectedCategory && selectedCategory.subcategories.length > 0 && (
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Type</label>
+                <div className="relative">
+                  <select
+                    value={subcategory}
+                    onChange={(e) => handleSubcategoryChange(e.target.value)}
+                    className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800 appearance-none bg-white"
+                  >
+                    <option value="">Select type (optional)</option>
+                    {selectedCategory.subcategories.map(sub => (
+                      <option key={sub.value} value={sub.value}>{sub.label}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                </div>
+              </div>
+            )}
+
+            {/* Provider / Company Name */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Provider / Company Name *</label>
               <input
                 type="text"
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
-                placeholder="e.g. Bell Canada, Hydro One"
+                placeholder="e.g. Bell Canada, Hydro One, Netflix"
                 className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800"
               />
             </div>
 
+            {/* Account Number */}
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Account Number</label>
               <input
@@ -201,6 +289,40 @@ export default function AddBillPage() {
               />
             </div>
 
+            {/* Dynamic metadata fields based on subcategory */}
+            {dynamicFields.map(field => (
+              <div key={field.key}>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  {field.label} {field.required && '*'}
+                </label>
+                {field.type === 'select' && field.options ? (
+                  <div className="relative">
+                    <select
+                      value={metadataValues[field.key] || ''}
+                      onChange={(e) => handleMetadataChange(field.key, e.target.value)}
+                      className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800 appearance-none bg-white"
+                    >
+                      <option value="">Select...</option>
+                      {field.options.map(opt => (
+                        <option key={opt} value={opt}>{opt}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                  </div>
+                ) : (
+                  <input
+                    type={field.type === 'number' ? 'number' : 'text'}
+                    value={metadataValues[field.key] || ''}
+                    onChange={(e) => handleMetadataChange(field.key, e.target.value)}
+                    placeholder={field.placeholder || ''}
+                    step={field.type === 'number' ? '0.01' : undefined}
+                    className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800"
+                  />
+                )}
+              </div>
+            ))}
+
+            {/* Due Date */}
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Due Date *</label>
               <input
@@ -211,8 +333,9 @@ export default function AddBillPage() {
               />
             </div>
 
+            {/* Amount */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Total Amount (CAD) *</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Amount (CAD) *</label>
               <input
                 type="number"
                 value={totalAmount}
@@ -222,6 +345,23 @@ export default function AddBillPage() {
                 min="0.01"
                 className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800"
               />
+            </div>
+
+            {/* Billing Cycle */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Billing Cycle</label>
+              <div className="relative">
+                <select
+                  value={billingCycle}
+                  onChange={(e) => setBillingCycle(e.target.value)}
+                  className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800 appearance-none bg-white"
+                >
+                  {BILLING_CYCLES.map(cycle => (
+                    <option key={cycle.value} value={cycle.value}>{cycle.label}</option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              </div>
             </div>
 
             <button
