@@ -54,8 +54,8 @@ export const CATEGORIES: Category[] = [
       {
         value: 'water_sewer',
         label: 'Water & Sewer',
+        providers: ['City of Toronto', 'Peel Region', 'York Region', 'City of Ottawa', 'City of Vancouver', 'City of Calgary', 'City of Edmonton', 'City of Winnipeg', 'Halifax Water'],
         fields: [
-          { key: 'municipality', label: 'City / Municipality', type: 'text', placeholder: 'e.g. City of Toronto' },
           { key: 'billingPeriod', label: 'Billing Period', type: 'text', placeholder: 'e.g. Jan 1 - Mar 31' },
         ],
       },
@@ -214,9 +214,9 @@ export const CATEGORIES: Category[] = [
       {
         value: 'auto_loan_lease',
         label: 'Auto Loan / Lease',
+        providers: ['TD Auto Finance', 'RBC Auto Finance', 'Scotiabank Dealer Finance', 'BMO Auto Finance', 'Honda Financial Services', 'Toyota Financial Services', 'GM Financial', 'Ford Credit'],
         fields: [
           { key: 'vehicle', label: 'Vehicle', type: 'text', placeholder: 'e.g. 2023 Toyota RAV4' },
-          { key: 'lender', label: 'Lender / Dealer', type: 'text', placeholder: 'e.g. TD Auto Finance' },
         ],
       },
       {
@@ -251,8 +251,8 @@ export const CATEGORIES: Category[] = [
       {
         value: 'property_tax',
         label: 'Property Tax',
+        providers: ['City of Toronto', 'City of Ottawa', 'City of Vancouver', 'City of Calgary', 'City of Edmonton', 'City of Mississauga', 'City of Brampton', 'City of Winnipeg', 'City of Hamilton'],
         fields: [
-          { key: 'municipality', label: 'Municipality', type: 'text', placeholder: 'e.g. City of Ottawa' },
           { key: 'rollNumber', label: 'Roll Number', type: 'text', placeholder: 'Property roll #' },
         ],
       },
@@ -306,11 +306,13 @@ export const CATEGORIES: Category[] = [
       {
         value: 'gym_fitness',
         label: 'Gym / Fitness Membership',
+        providers: ['GoodLife Fitness', 'Anytime Fitness', 'Fit4Less', 'Planet Fitness', 'YMCA', 'LA Fitness'],
         fields: [],
       },
       {
         value: 'home_security',
         label: 'Home Security / Alarm Monitoring',
+        providers: ['ADT', 'Bell Smart Home', 'Rogers Smart Home', 'Telus SmartHome', 'Vivint', 'SimpliSafe'],
         fields: [],
       },
       {
@@ -326,6 +328,7 @@ export const CATEGORIES: Category[] = [
       {
         value: 'pet_insurance',
         label: 'Pet Insurance',
+        providers: ['Trupanion', 'Petsecure', 'Fetch', 'Desjardins Pet Insurance', '24PetWatch'],
         fields: [
           { key: 'petName', label: 'Pet Name', type: 'text', placeholder: 'Name' },
         ],
