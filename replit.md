@@ -7,6 +7,12 @@ BillPort is a Canadian bill management web app with REAL Stripe payments (Paymen
 Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (February 10, 2026)
+- ✅ Provider normalization: every bill now stores providerId + providerName
+- ✅ Provider registry (app/lib/providerRegistry.ts): 120+ Canadian providers mapped to stable IDs
+- ✅ resolveProvider() utility: known providers get registry ID, custom providers get "custom_<slug>"
+- ✅ addBill() validates providerId + providerName are non-empty before Firestore write
+- ✅ fetchBills() backward compatible: old bills get providerId="unknown", providerName=companyName
+- ✅ Bill interface updated: providerId (required), providerName (required), isCustomProvider (optional)
 - ✅ Payments switched to REAL Stripe PaymentIntents (not simulated)
 - ✅ Stripe Elements card entry modal on Dashboard
 - ✅ create-payment-intent API: creates PaymentIntent with idempotency keys

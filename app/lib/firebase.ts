@@ -117,6 +117,9 @@ export interface Bill {
   subcategory?: string;
   billingCycle?: BillingCycle;
   metadata?: Record<string, string | number>;
+  providerId: string;
+  providerName: string;
+  isCustomProvider?: boolean;
   createdAt: Date;
 }
 
@@ -202,6 +205,13 @@ export async function addBill(userId: string, bill: Omit<Bill, 'id' | 'userId' |
     throw new Error('User must be authenticated to add bills');
   }
 
+  if (!bill.providerName || !bill.providerName.trim()) {
+    throw new Error('providerName is required');
+  }
+  if (!bill.providerId || !bill.providerId.trim()) {
+    throw new Error('providerId is required');
+  }
+
   await currentUser.getIdToken(true);
 
   const db = getFirebaseDb();
@@ -216,9 +226,12 @@ export async function addBill(userId: string, bill: Omit<Bill, 'id' | 'userId' |
     totalAmount: bill.totalAmount,
     paidAmount: 0,
     status: "unpaid",
+    providerId: bill.providerId.trim(),
+    providerName: bill.providerName.trim(),
     createdAt: now,
   };
 
+  if (bill.isCustomProvider) billData.isCustomProvider = true;
   if (bill.category) billData.category = bill.category;
   if (bill.subcategory) billData.subcategory = bill.subcategory;
   if (bill.billingCycle) billData.billingCycle = bill.billingCycle;
@@ -283,6 +296,9 @@ export async function fetchBills(userId: string): Promise<Bill[]> {
         subcategory: data.subcategory || undefined,
         billingCycle: data.billingCycle || undefined,
         metadata: data.metadata || undefined,
+        providerId: data.providerId || 'unknown',
+        providerName: data.providerName || companyName,
+        isCustomProvider: data.isCustomProvider || undefined,
         createdAt: data.createdAt?.toDate() || new Date(),
       };
     });

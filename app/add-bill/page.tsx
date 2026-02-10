@@ -7,6 +7,7 @@ import { ArrowLeft, Home, Plus, Settings, Loader2, AlertTriangle, ChevronDown } 
 import { useAuth } from '../contexts/AuthContext';
 import { addBill, fetchBills, createBillAddedNotification } from '../lib/firebase';
 import { CATEGORIES, BILLING_CYCLES, getCategoryByValue, getSubcategory, type MetadataField } from '../lib/categories';
+import { resolveProvider } from '../lib/providerRegistry';
 import ProviderAutocomplete from '../components/ProviderAutocomplete';
 
 const FREE_PLAN_LIMIT = 3;
@@ -151,6 +152,8 @@ export default function AddBillPage() {
         }
       }
 
+      const resolved = resolveProvider(companyName.trim());
+
       const billId = await addBill(user.uid, {
         companyName: companyName.trim(),
         accountNumber: accountNumber.trim(),
@@ -162,6 +165,9 @@ export default function AddBillPage() {
         subcategory: subcategory || undefined,
         billingCycle: billingCycle as any,
         metadata: Object.keys(cleanMetadata).length > 0 ? cleanMetadata : undefined,
+        providerId: resolved.providerId,
+        providerName: resolved.providerName,
+        isCustomProvider: resolved.isCustom || undefined,
       });
 
       await createBillAddedNotification(user.uid, companyName.trim(), billId).catch(console.error);
