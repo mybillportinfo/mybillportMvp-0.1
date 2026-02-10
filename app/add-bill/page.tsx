@@ -17,6 +17,7 @@ export default function AddBillPage() {
   const [category, setCategory] = useState('');
   const [subcategory, setSubcategory] = useState('');
   const [companyName, setCompanyName] = useState('');
+  const [providerMode, setProviderMode] = useState<'select' | 'custom'>('select');
   const [accountNumber, setAccountNumber] = useState('');
   const [totalAmount, setTotalAmount] = useState('');
   const [dueDate, setDueDate] = useState('');
@@ -61,15 +62,32 @@ export default function AddBillPage() {
   );
   const dynamicFields: MetadataField[] = selectedSubcategory?.fields || [];
 
+  const providerList = selectedSubcategory?.providers || [];
+  const hasProviders = providerList.length > 0;
+
   const handleCategoryChange = (val: string) => {
     setCategory(val);
     setSubcategory('');
+    setCompanyName('');
+    setProviderMode('select');
     setMetadataValues({});
   };
 
   const handleSubcategoryChange = (val: string) => {
     setSubcategory(val);
+    setCompanyName('');
+    setProviderMode('select');
     setMetadataValues({});
+  };
+
+  const handleProviderSelect = (val: string) => {
+    if (val === '__other__') {
+      setProviderMode('custom');
+      setCompanyName('');
+    } else {
+      setProviderMode('select');
+      setCompanyName(val);
+    }
   };
 
   const handleMetadataChange = (key: string, value: string) => {
@@ -273,13 +291,41 @@ export default function AddBillPage() {
             {/* Provider / Company Name */}
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Provider / Company Name *</label>
-              <input
-                type="text"
-                value={companyName}
-                onChange={(e) => setCompanyName(e.target.value)}
-                placeholder="e.g. Bell Canada, Hydro One, Netflix"
-                className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800"
-              />
+              {hasProviders ? (
+                <div className="space-y-2">
+                  <div className="relative">
+                    <select
+                      value={providerMode === 'custom' ? '__other__' : companyName}
+                      onChange={(e) => handleProviderSelect(e.target.value)}
+                      className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800 appearance-none bg-white"
+                    >
+                      <option value="">Select provider</option>
+                      {providerList.map(p => (
+                        <option key={p} value={p}>{p}</option>
+                      ))}
+                      <option value="__other__">Other (type your own)</option>
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                  </div>
+                  {providerMode === 'custom' && (
+                    <input
+                      type="text"
+                      value={companyName}
+                      onChange={(e) => setCompanyName(e.target.value)}
+                      placeholder="Enter provider / company name"
+                      className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800"
+                    />
+                  )}
+                </div>
+              ) : (
+                <input
+                  type="text"
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                  placeholder="e.g. Bell Canada, Hydro One, Netflix"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800"
+                />
+              )}
             </div>
 
             {/* Account Number */}

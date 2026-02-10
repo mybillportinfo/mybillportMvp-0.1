@@ -12,6 +12,7 @@ export interface MetadataField {
 export interface Subcategory {
   value: string;
   label: string;
+  providers?: string[];
   fields: MetadataField[];
 }
 
@@ -38,6 +39,7 @@ export const CATEGORIES: Category[] = [
       {
         value: 'electricity',
         label: 'Electricity',
+        providers: ['Hydro One', 'Toronto Hydro', 'Hydro Ottawa', 'Hydro-Québec', 'BC Hydro', 'ENMAX', 'EPCOR', 'Manitoba Hydro', 'SaskPower', 'NB Power', 'Nova Scotia Power'],
         fields: [
           { key: 'billingPeriod', label: 'Billing Period', type: 'text', placeholder: 'e.g. Jan 1 - Jan 31' },
           { key: 'lastPaymentDate', label: 'Last Payment Date', type: 'text', placeholder: 'e.g. 2026-01-15' },
@@ -46,6 +48,7 @@ export const CATEGORIES: Category[] = [
       {
         value: 'natural_gas',
         label: 'Natural Gas',
+        providers: ['Enbridge Gas', 'FortisBC', 'Énergir', 'ATCO Gas'],
         fields: [],
       },
       {
@@ -66,6 +69,7 @@ export const CATEGORIES: Category[] = [
       {
         value: 'mobile',
         label: 'Mobile Phone',
+        providers: ['Bell', 'Rogers', 'Telus', 'Freedom Mobile', 'Videotron', 'SaskTel', 'Fido', 'Koodo', 'Virgin Plus', 'Public Mobile'],
         fields: [
           { key: 'phoneNumber', label: 'Phone Number', type: 'text', placeholder: 'e.g. 416-555-0123' },
           { key: 'planName', label: 'Plan Name', type: 'text', placeholder: 'e.g. Unlimited 50GB' },
@@ -74,6 +78,7 @@ export const CATEGORIES: Category[] = [
       {
         value: 'internet',
         label: 'Internet & Wi-Fi',
+        providers: ['Bell', 'Rogers', 'Telus', 'Shaw', 'Cogeco', 'Eastlink', 'TekSavvy', 'Xplornet', 'Starlink'],
         fields: [
           { key: 'serviceAddress', label: 'Service Address', type: 'text', placeholder: 'e.g. 123 Main St' },
         ],
@@ -81,6 +86,7 @@ export const CATEGORIES: Category[] = [
       {
         value: 'cable_tv',
         label: 'Cable / TV',
+        providers: ['Bell Fibe', 'Rogers Cable', 'Shaw', 'Videotron', 'Telus Optik'],
         fields: [],
       },
     ],
@@ -101,8 +107,8 @@ export const CATEGORIES: Category[] = [
       {
         value: 'mortgage',
         label: 'Mortgage',
+        providers: ['RBC', 'TD', 'BMO', 'CIBC', 'Scotiabank', 'Tangerine', 'Simplii', 'MCAP', 'First National'],
         fields: [
-          { key: 'lender', label: 'Lender', type: 'text', placeholder: 'e.g. RBC, TD, MCAP, First National' },
           { key: 'mortgageAccount', label: 'Mortgage Account #', type: 'text', placeholder: 'Account number' },
         ],
       },
@@ -116,8 +122,8 @@ export const CATEGORIES: Category[] = [
       {
         value: 'credit_card_bank',
         label: 'Credit Card (Bank)',
+        providers: ['RBC', 'TD', 'Scotiabank', 'BMO', 'CIBC', 'Tangerine', 'Simplii'],
         fields: [
-          { key: 'bankName', label: 'Bank', type: 'select', options: ['RBC', 'TD', 'Scotiabank', 'BMO', 'CIBC', 'Tangerine', 'Simplii', 'Other'] },
           { key: 'cardName', label: 'Card Name', type: 'text', placeholder: 'e.g. Visa Infinite, Mastercard World Elite' },
           { key: 'last4', label: 'Last 4 Digits', type: 'text', placeholder: 'e.g. 4242' },
           { key: 'minimumDue', label: 'Minimum Due ($)', type: 'number', placeholder: '0.00' },
@@ -126,16 +132,16 @@ export const CATEGORIES: Category[] = [
       {
         value: 'credit_card_retail',
         label: 'Credit Card (Retail & Co-Branded)',
+        providers: ['Walmart', 'Canadian Tire Triangle', 'PC Financial', 'Amazon.ca', 'Hudson\'s Bay', 'Best Buy', 'Home Depot'],
         fields: [
-          { key: 'retailer', label: 'Retailer', type: 'select', options: ['Walmart', 'Canadian Tire Triangle', 'PC Financial', 'Amazon.ca', 'Hudson\'s Bay', 'Best Buy', 'Home Depot', 'Other'] },
           { key: 'last4', label: 'Card Number (Last 4)', type: 'text', placeholder: 'e.g. 1234' },
         ],
       },
       {
         value: 'credit_union',
         label: 'Credit Union',
+        providers: ['Meridian', 'Vancity', 'Coast Capital', 'Desjardins'],
         fields: [
-          { key: 'creditUnion', label: 'Credit Union', type: 'select', options: ['Meridian', 'Vancity', 'Coast Capital', 'Desjardins', 'Other'] },
           { key: 'last4', label: 'Last 4 Digits', type: 'text', placeholder: 'e.g. 5678' },
           { key: 'minimumDue', label: 'Minimum Due ($)', type: 'number', placeholder: '0.00' },
         ],
@@ -143,8 +149,8 @@ export const CATEGORIES: Category[] = [
       {
         value: 'loan',
         label: 'Personal Loan',
+        providers: ['TD', 'Scotiabank', 'BMO', 'RBC', 'CIBC', 'Fairstone'],
         fields: [
-          { key: 'lender', label: 'Lender', type: 'text', placeholder: 'e.g. TD, Fairstone' },
           { key: 'loanAccount', label: 'Loan Account #', type: 'text', placeholder: 'Account number' },
         ],
       },
@@ -158,6 +164,7 @@ export const CATEGORIES: Category[] = [
       {
         value: 'car_insurance',
         label: 'Car Insurance',
+        providers: ['Intact', 'Aviva', 'TD Insurance', 'Desjardins', 'Co-operators', 'Economical', 'Sonnet', 'ICBC', 'SGI', 'MPI'],
         fields: [
           { key: 'policyNumber', label: 'Policy Number', type: 'text', placeholder: 'Policy #' },
           { key: 'vehicle', label: 'Vehicle', type: 'text', placeholder: 'e.g. 2022 Honda Civic' },
@@ -167,6 +174,7 @@ export const CATEGORIES: Category[] = [
       {
         value: 'home_tenant',
         label: 'Home / Tenant Insurance',
+        providers: ['Intact', 'Aviva', 'TD Insurance', 'Desjardins', 'Co-operators', 'Economical', 'Sonnet'],
         fields: [
           { key: 'policyNumber', label: 'Policy Number', type: 'text', placeholder: 'Policy #' },
           { key: 'coverageType', label: 'Coverage Type', type: 'select', options: ['Homeowner', 'Tenant', 'Condo'] },
@@ -183,6 +191,7 @@ export const CATEGORIES: Category[] = [
       {
         value: 'streaming',
         label: 'Streaming & Media',
+        providers: ['Netflix', 'Disney+', 'Prime Video', 'Crave', 'Spotify', 'Apple Music', 'YouTube Premium'],
         fields: [
           { key: 'renewalDate', label: 'Renewal Date', type: 'text', placeholder: 'e.g. 2026-03-15' },
         ],
@@ -190,6 +199,7 @@ export const CATEGORIES: Category[] = [
       {
         value: 'software',
         label: 'Software & Cloud',
+        providers: ['Google One', 'iCloud', 'Microsoft 365', 'Adobe', 'Norton', 'McAfee'],
         fields: [
           { key: 'renewalDate', label: 'Renewal Date', type: 'text', placeholder: 'e.g. 2026-03-15' },
         ],
@@ -212,9 +222,8 @@ export const CATEGORIES: Category[] = [
       {
         value: 'parking_tolls',
         label: 'Parking / Tolls',
-        fields: [
-          { key: 'tollProvider', label: 'Provider', type: 'text', placeholder: 'e.g. 407 ETR, City parking permit' },
-        ],
+        providers: ['407 ETR'],
+        fields: [],
       },
     ],
   },
@@ -226,6 +235,7 @@ export const CATEGORIES: Category[] = [
       {
         value: 'federal_tax',
         label: 'CRA Tax Installments',
+        providers: ['CRA (Canada Revenue Agency)'],
         fields: [
           { key: 'taxYear', label: 'Tax Year', type: 'text', placeholder: 'e.g. 2025' },
         ],
@@ -233,6 +243,7 @@ export const CATEGORIES: Category[] = [
       {
         value: 'student_loan',
         label: 'Student Loan (NSLSC)',
+        providers: ['NSLSC'],
         fields: [
           { key: 'loanAccount', label: 'Loan Account #', type: 'text', placeholder: 'Account number' },
         ],
@@ -280,6 +291,7 @@ export const CATEGORIES: Category[] = [
       {
         value: 'student_loan_payment',
         label: 'Student Loan Payment',
+        providers: ['NSLSC'],
         fields: [
           { key: 'loanAccount', label: 'Loan Account #', type: 'text', placeholder: 'Account number' },
         ],
