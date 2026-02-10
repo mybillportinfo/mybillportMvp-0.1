@@ -17,6 +17,8 @@ import {
   Timestamp,
   Firestore,
   runTransaction,
+  writeBatch,
+  serverTimestamp,
 } from "firebase/firestore";
 import {
   getAuth,
@@ -620,6 +622,50 @@ export async function checkAndCreateDueDateNotifications(userId: string, bills: 
       }
     }
   }
+}
+
+// ONE-TIME MIGRATION: Assign default category to bills missing one
+export async function migrateBillsAddCategory(): Promise<{ updated: number; skipped: number; total: number }> {
+  const auth = getFirebaseAuth();
+  if (!auth?.currentUser) {
+    throw new Error('Must be authenticated to run migration');
+  }
+
+  await auth.currentUser.getIdToken(true);
+
+  const db = getFirebaseDb();
+  if (!db) throw new Error('Firebase not available');
+
+  const billsSnapshot = await getDocs(collection(db, 'bills'));
+  const total = billsSnapshot.size;
+  let updated = 0;
+  let skipped = 0;
+
+  const batch = writeBatch(db);
+  const MAX_BATCH = 500;
+
+  billsSnapshot.forEach((docSnap) => {
+    const data = docSnap.data();
+    if (!data.category) {
+      if (updated < MAX_BATCH) {
+        batch.update(doc(db, 'bills', docSnap.id), {
+          category: 'miscellaneous',
+          subcategory: 'other',
+          migratedAt: serverTimestamp(),
+        });
+        updated++;
+      }
+    } else {
+      skipped++;
+    }
+  });
+
+  if (updated > 0) {
+    await batch.commit();
+  }
+
+  console.log(`Migration complete: ${updated} updated, ${skipped} skipped, ${total} total`);
+  return { updated, skipped, total };
 }
 
 export type { User };
