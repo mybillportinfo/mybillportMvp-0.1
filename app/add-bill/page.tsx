@@ -102,6 +102,11 @@ export default function AddBillPage() {
       return;
     }
 
+    if (!accountNumber.trim()) {
+      setError('Please enter an account number');
+      return;
+    }
+
     if (!totalAmount || parseFloat(totalAmount) <= 0) {
       setError('Please enter a valid amount greater than $0');
       return;
@@ -284,7 +289,8 @@ export default function AddBillPage() {
                 type="text"
                 value={accountNumber}
                 onChange={(e) => setAccountNumber(e.target.value)}
-                placeholder="Enter your account number (optional)"
+                placeholder="Enter your account number"
+                required
                 className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800"
               />
             </div>
