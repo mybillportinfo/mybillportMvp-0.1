@@ -7,6 +7,9 @@ BillPort is a Canadian bill management web app. Users can add bills, track them 
 Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (February 13, 2026)
+- ✅ Edit Bill feature: pencil icon on every bill card opens modal to update biller name, account number, amount, due date
+- ✅ updateBill() in firebase.ts with ownership check, validation, and auto status recalculation
+- ✅ Edit modal matches app theme (white modal, teal accents, same styling as Mark Paid modal)
 - ✅ "Mark as Paid" feature: green button on each unpaid bill, opens modal with method/confirmation/notes
 - ✅ Payment history: subcollection bills/{billId}/payments stores each payment record
 - ✅ Payment history accordion on paid bill cards (History button expands/collapses)
@@ -121,7 +124,7 @@ Preferred communication style: Simple, everyday language.
 - ❌ No Plaid, no bank logins
 - ❌ No Gmail parsing
 - ❌ No SMS/email/push notifications
-- ❌ No edit bill
+- ✅ Edit bill (biller name, account number, amount, due date)
 - ❌ No real-time bank sync
 
 ## External Dependencies

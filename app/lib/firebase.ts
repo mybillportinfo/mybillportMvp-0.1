@@ -351,6 +351,61 @@ export function sortBills(bills: Bill[]): Bill[] {
   });
 }
 
+export async function updateBill(
+  billId: string,
+  userId: string,
+  updates: {
+    companyName?: string;
+    accountNumber?: string;
+    dueDate?: Date;
+    totalAmount?: number;
+    category?: string;
+    subcategory?: string;
+    billingCycle?: BillingCycle;
+    notes?: string;
+  }
+): Promise<void> {
+  const auth = getFirebaseAuth();
+  if (!auth) throw new Error('Firebase not available');
+  const currentUser = auth.currentUser;
+  if (!currentUser) throw new Error('User must be authenticated');
+
+  const db = getFirebaseDb();
+  if (!db) throw new Error('Firebase not available');
+
+  const billRef = doc(db, "bills", billId);
+  const billSnap = await getDoc(billRef);
+  if (!billSnap.exists()) throw new Error('Bill not found');
+  if (billSnap.data().userId !== userId) throw new Error('Unauthorized');
+
+  const updateData: Record<string, any> = { updatedAt: serverTimestamp() };
+
+  if (updates.companyName !== undefined) {
+    updateData.companyName = updates.companyName;
+    updateData.providerName = updates.companyName;
+  }
+  if (updates.accountNumber !== undefined) updateData.accountNumber = updates.accountNumber;
+  if (updates.dueDate !== undefined) updateData.dueDate = Timestamp.fromDate(new Date(updates.dueDate));
+  if (updates.totalAmount !== undefined) {
+    if (updates.totalAmount <= 0) throw new Error('Amount must be greater than 0');
+    updateData.totalAmount = updates.totalAmount;
+    const currentPaid = Number(billSnap.data().paidAmount) || 0;
+    if (currentPaid >= updates.totalAmount && updates.totalAmount > 0) {
+      updateData.status = 'paid';
+    } else if (currentPaid > 0) {
+      updateData.status = 'partial';
+    } else {
+      updateData.status = 'unpaid';
+    }
+  }
+  if (updates.category !== undefined) updateData.category = updates.category;
+  if (updates.subcategory !== undefined) updateData.subcategory = updates.subcategory;
+  if (updates.billingCycle !== undefined) updateData.billingCycle = updates.billingCycle;
+  if (updates.notes !== undefined) updateData.notes = updates.notes;
+
+  await updateDoc(billRef, updateData);
+}
+
 export async function deleteBill(billId: string) {
   const auth = getFirebaseAuth();
   if (!auth) throw new Error('Firebase not available');
