@@ -671,12 +671,12 @@ export async function markBillAsPaid(
   const currentUser = auth.currentUser;
   if (!currentUser) throw new Error('User must be authenticated');
 
-  await currentUser.getIdToken(true);
   const db = getFirebaseDb();
   if (!db) throw new Error('Firebase not available');
 
   const billRef = doc(db, "bills", billId);
   const now = Timestamp.now();
+  const paymentAmount = Math.max(amount, 0);
 
   const result = await runTransaction(db, async (transaction) => {
     const billDoc = await transaction.get(billRef);
@@ -685,10 +685,12 @@ export async function markBillAsPaid(
     const data = billDoc.data();
     if (data.userId !== userId) throw new Error('Unauthorized');
 
-    const totalAmount = data.totalAmount || 0;
-    const currentPaidAmount = data.paidAmount ?? 0;
+    const totalAmount = Number(data.totalAmount) || Number(data.amount) || 0;
+    const currentPaidAmount = Number(data.paidAmount) || Number(data.amountPaid) || 0;
+    const actualPayment = paymentAmount > 0 ? paymentAmount : Math.max(totalAmount - currentPaidAmount, 0);
+
     const newPaidAmount = Math.min(
-      Math.round((currentPaidAmount + amount) * 100) / 100,
+      Math.round((currentPaidAmount + actualPayment) * 100) / 100,
       totalAmount
     );
 
@@ -705,16 +707,16 @@ export async function markBillAsPaid(
       status: newStatus,
       paidAmount: newPaidAmount,
       paidAt: now,
-      lastPaymentAmount: amount,
+      lastPaymentAmount: actualPayment,
       lastPaymentDate: now,
     });
 
-    return { newPaidAmount, newStatus };
+    return { newPaidAmount, newStatus, actualPayment };
   });
 
   await addDoc(collection(db, "bills", billId, "payments"), {
     paidAt: now,
-    amount,
+    amount: result.actualPayment,
     method: method || null,
     confirmationCode: confirmationCode || '',
     recordedVia: 'manual',
@@ -725,7 +727,7 @@ export async function markBillAsPaid(
   await addDoc(collection(db, "payments"), {
     userId,
     billId,
-    amountPaid: amount,
+    amountPaid: result.actualPayment,
     paymentType: result.newStatus === 'paid' ? 'full' : 'partial',
     method: method || null,
     recordedVia: 'manual',
@@ -734,13 +736,13 @@ export async function markBillAsPaid(
 
   await addNotification(userId, {
     title: "Payment Recorded",
-    message: `Your payment of $${amount.toFixed(2)} has been marked as paid.`,
+    message: `Your payment of $${result.actualPayment.toFixed(2)} has been marked as paid.`,
     type: "payment_success",
     relatedBillId: billId,
     isRead: false,
   }).catch(console.error);
 
-  return result;
+  return { newPaidAmount: result.newPaidAmount, newStatus: result.newStatus };
 }
 
 export async function getPaymentHistory(billId: string): Promise<BillPaymentRecord[]> {

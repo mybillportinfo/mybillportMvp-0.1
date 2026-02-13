@@ -95,7 +95,7 @@ export default function Dashboard() {
     if (!bill.id) return;
 
     setMarkPaidLoading(true);
-    const remaining = bill.totalAmount - bill.paidAmount;
+    const remaining = Math.max(bill.totalAmount - (bill.paidAmount || 0), 0);
     try {
       const result = await markBillAsPaid(
         bill.id,
@@ -356,7 +356,7 @@ export default function Dashboard() {
             const isConfirming = confirmDeleteId === bill.id;
             const isFullyPaid = bill.status === "paid";
             const isPartial = bill.status === "partial";
-            const remaining = bill.totalAmount - bill.paidAmount;
+            const remaining = Math.max(bill.totalAmount - (bill.paidAmount || 0), 0);
             const billCategory = bill.category ? getCategoryByValue(bill.category) : null;
             const billSubcategory = bill.category && bill.subcategory ? getSubcategory(bill.category, bill.subcategory) : null;
             const showingHistory = paymentHistoryBillId === bill.id;
@@ -377,17 +377,19 @@ export default function Dashboard() {
                         {bill.billingCycle && bill.billingCycle !== 'monthly' ? ` \u2022 ${bill.billingCycle}` : ''}
                       </p>
                     )}
-                    {bill.accountNumber && (
-                      <p className="text-xs text-slate-500 mt-0.5">Acct: {bill.accountNumber}</p>
-                    )}
                     <div className="flex items-center gap-3 mt-1">
-                      <span className="text-xs text-slate-400">{formatDueDate(bill.dueDate)}</span>
+                      <span className="text-xs text-slate-400">Due: {formatDueDate(bill.dueDate)}</span>
                       {!isFullyPaid && (
                         <span className={`text-xs font-medium ${getDueDateColor(bill)}`}>
                           {getDueDateText(bill)}
                         </span>
                       )}
                     </div>
+                    {!isFullyPaid && remaining > 0 && (
+                      <p className="text-xs font-medium text-slate-600 mt-0.5">
+                        Amount due: <span className="text-teal-600">${remaining.toFixed(2)}</span>
+                      </p>
+                    )}
                   </div>
                   <div className="text-right flex-shrink-0">
                     <p className="font-bold text-slate-800 text-lg">${bill.totalAmount.toFixed(2)}</p>
@@ -593,7 +595,11 @@ export default function Dashboard() {
             <div className="flex items-center justify-between p-5 border-b border-slate-100">
               <div>
                 <h3 className="text-lg font-semibold text-slate-800">Mark as Paid</h3>
-                <p className="text-sm text-slate-500">{markPaidModal.bill.companyName} &mdash; ${markPaidModal.bill.totalAmount.toFixed(2)} CAD</p>
+                <p className="text-sm text-slate-500">{markPaidModal.bill.companyName}</p>
+                <p className="text-sm text-teal-600 font-medium">
+                  ${(markPaidModal.bill.totalAmount - markPaidModal.bill.paidAmount).toFixed(2)} due
+                  {' \u2022 '}{formatDueDate(markPaidModal.bill.dueDate)}
+                </p>
               </div>
               <button onClick={() => setMarkPaidModal(null)} className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
                 <X className="w-5 h-5 text-slate-400" />
