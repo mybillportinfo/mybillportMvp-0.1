@@ -7,11 +7,18 @@ BillPort is a Canadian bill management web app. Users can add bills, track them 
 Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (February 13, 2026)
+- ✅ "Mark as Paid" feature: green button on each unpaid bill, opens modal with method/confirmation/notes
+- ✅ Payment history: subcollection bills/{billId}/payments stores each payment record
+- ✅ Payment history accordion on paid bill cards (History button expands/collapses)
+- ✅ markBillAsPaid() uses Firestore transaction, writes to subcollection + top-level payments
+- ✅ getPaymentHistory() reads from subcollection ordered by paidAt desc
+- ✅ Success toast notification after marking paid
+- ✅ Firebase Auth persistence already set to browserLocalPersistence (stay logged in)
 - ✅ Payment flow changed: removed in-app Stripe Elements, now redirects to biller's official payment page
 - ✅ Payment URL registry (app/lib/paymentUrls.ts): 100+ Canadian billers with direct payment URLs
 - ✅ New /payment page: mobile-first, shows biller name + "Pay Now on [Biller] Website" button
 - ✅ Fallback: if biller not in registry, "Find Payment Page" button searches Google
-- ✅ Dashboard simplified: single "Pay" button per bill (no partial payment, no Stripe modal)
+- ✅ Dashboard simplified: single "Pay" button per bill + "Mark Paid" button
 - ✅ Removed Stripe Elements and payment modal from dashboard
 - ✅ Privacy Policy updated: PIPEDA-compliant, Firebase/Google Cloud disclosure, cookies, contact info
 - ✅ Terms of Service updated: removed Plaid/Gmail references, accurate to actual features
@@ -81,9 +88,10 @@ Preferred communication style: Simple, everyday language.
 - Google search fallback via getGoogleSearchUrl()
 
 ### Firestore Collections
-- `bills` - userId, companyName, accountNumber, dueDate, totalAmount, paidAmount, status, createdAt
+- `bills` - userId, companyName, accountNumber, dueDate, totalAmount, paidAmount, status, paidAt, lastPaymentAmount, lastPaymentDate, createdAt
+- `bills/{billId}/payments` - (subcollection) paidAt, amount, method, confirmationCode, recordedVia, notes, userId
 - `notifications` - userId, title, message, type, relatedBillId, isRead, createdAt
-- `payments` - userId, billId, amountPaid, paymentType, stripePaymentIntentId, timestamp
+- `payments` - (top-level audit trail) userId, billId, amountPaid, paymentType, method, recordedVia, timestamp
 - `userPreferences` - inAppReminders (boolean)
 
 ### Bill Status Values

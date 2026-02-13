@@ -136,14 +136,30 @@ export interface AppNotification {
   createdAt: Date;
 }
 
+export type PaymentMethod = 'online' | 'mail' | 'in-person' | 'other';
+
 export interface Payment {
   id?: string;
   userId: string;
   billId: string;
   amountPaid: number;
   paymentType: string;
+  method?: PaymentMethod;
+  confirmationCode?: string;
+  notes?: string;
+  recordedVia: 'manual' | 'auto';
   stripePaymentIntentId?: string;
   timestamp: Date;
+}
+
+export interface BillPaymentRecord {
+  id?: string;
+  paidAt: Date;
+  amount: number;
+  method: PaymentMethod | null;
+  confirmationCode?: string;
+  recordedVia: 'manual';
+  notes?: string;
 }
 
 export interface UserPreferences {
@@ -638,6 +654,123 @@ export async function checkAndCreateDueDateNotifications(userId: string, bills: 
       }
     }
   }
+}
+
+// --- Mark Bill as Paid + Payment History (subcollection) ---
+
+export async function markBillAsPaid(
+  billId: string,
+  userId: string,
+  amount: number,
+  method: PaymentMethod = 'online',
+  confirmationCode?: string,
+  notes?: string
+): Promise<{ newPaidAmount: number; newStatus: BillStatus }> {
+  const auth = getFirebaseAuth();
+  if (!auth) throw new Error('Firebase not available');
+  const currentUser = auth.currentUser;
+  if (!currentUser) throw new Error('User must be authenticated');
+
+  await currentUser.getIdToken(true);
+  const db = getFirebaseDb();
+  if (!db) throw new Error('Firebase not available');
+
+  const billRef = doc(db, "bills", billId);
+  const now = Timestamp.now();
+
+  const result = await runTransaction(db, async (transaction) => {
+    const billDoc = await transaction.get(billRef);
+    if (!billDoc.exists()) throw new Error('Bill not found');
+
+    const data = billDoc.data();
+    if (data.userId !== userId) throw new Error('Unauthorized');
+
+    const totalAmount = data.totalAmount || 0;
+    const currentPaidAmount = data.paidAmount ?? 0;
+    const newPaidAmount = Math.min(
+      Math.round((currentPaidAmount + amount) * 100) / 100,
+      totalAmount
+    );
+
+    let newStatus: BillStatus;
+    if (newPaidAmount >= totalAmount) {
+      newStatus = 'paid';
+    } else if (newPaidAmount > 0) {
+      newStatus = 'partial';
+    } else {
+      newStatus = 'unpaid';
+    }
+
+    transaction.update(billRef, {
+      status: newStatus,
+      paidAmount: newPaidAmount,
+      paidAt: now,
+      lastPaymentAmount: amount,
+      lastPaymentDate: now,
+    });
+
+    return { newPaidAmount, newStatus };
+  });
+
+  await addDoc(collection(db, "bills", billId, "payments"), {
+    paidAt: now,
+    amount,
+    method: method || null,
+    confirmationCode: confirmationCode || '',
+    recordedVia: 'manual',
+    notes: notes || '',
+    userId,
+  });
+
+  await addDoc(collection(db, "payments"), {
+    userId,
+    billId,
+    amountPaid: amount,
+    paymentType: result.newStatus === 'paid' ? 'full' : 'partial',
+    method: method || null,
+    recordedVia: 'manual',
+    timestamp: now,
+  });
+
+  await addNotification(userId, {
+    title: "Payment Recorded",
+    message: `Your payment of $${amount.toFixed(2)} has been marked as paid.`,
+    type: "payment_success",
+    relatedBillId: billId,
+    isRead: false,
+  }).catch(console.error);
+
+  return result;
+}
+
+export async function getPaymentHistory(billId: string): Promise<BillPaymentRecord[]> {
+  const auth = getFirebaseAuth();
+  if (!auth) return [];
+  const currentUser = auth.currentUser;
+  if (!currentUser) return [];
+
+  await currentUser.getIdToken(true);
+  const db = getFirebaseDb();
+  if (!db) return [];
+
+  const q = query(
+    collection(db, "bills", billId, "payments"),
+    orderBy("paidAt", "desc")
+  );
+  const snapshot = await getDocs(q);
+
+  return snapshot.docs.map(d => {
+    const data = d.data();
+    return {
+      id: d.id,
+      paidAt: data.paidAt?.toDate() || new Date(),
+      amount: data.amount || 0,
+      method: data.method || null,
+      confirmationCode: data.confirmationCode || undefined,
+      recordedVia: 'manual' as const,
+      notes: data.notes || undefined,
+    };
+  });
 }
 
 // ONE-TIME MIGRATION: Assign default category to bills missing one
