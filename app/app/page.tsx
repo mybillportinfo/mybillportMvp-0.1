@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from 'next/navigation';
 import { Home, Plus, Settings, Loader2, Trash2, AlertTriangle, Bell, DollarSign, CheckCircle, ExternalLink, Check, X, Clock, ChevronDown, ChevronUp, Pencil } from "lucide-react";
 import { useAuth } from '../contexts/AuthContext';
-import { fetchBills, deleteBill, fetchNotifications, checkAndCreateDueDateNotifications, sortBills, Bill, markBillAsPaid, getPaymentHistory, BillPaymentRecord, PaymentMethod, updateBill, BillingCycle } from '../lib/firebase';
+import { fetchBills, deleteBill, fetchNotifications, checkAndCreateDueDateNotifications, sortBills, Bill, markBillAsPaid, getPaymentHistory, BillPaymentRecord, PaymentMethod, updateBill, BillingCycle, applyRecurringDetection, persistRecurringFlags, detectRecurringPatterns, dismissAmountAlert, RecurringFrequency } from '../lib/firebase';
 import { CATEGORIES, getCategoryByValue, getSubcategory } from '../lib/categories';
 
 const FREE_PLAN_LIMIT = 3;
@@ -63,7 +63,13 @@ export default function Dashboard() {
     setError(null);
     try {
       const userBills = await fetchBills(user.uid);
-      setBills(sortBills(userBills));
+      const withRecurring = applyRecurringDetection(userBills);
+      setBills(sortBills(withRecurring));
+
+      const detections = detectRecurringPatterns(userBills);
+      detections.forEach((det, billId) => {
+        persistRecurringFlags(billId, det).catch(console.error);
+      });
 
       if (!dueSoonChecked && userBills.length > 0) {
         setDueSoonChecked(true);
@@ -91,6 +97,16 @@ export default function Dashboard() {
       setError('Failed to delete bill. Please try again.');
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const handleDismissAmountAlert = async (bill: Bill) => {
+    if (!bill.id || !user) return;
+    try {
+      await dismissAmountAlert(bill.id, user.uid);
+      setBills(prev => prev.map(b => b.id === bill.id ? { ...b, amountDeviationFlag: false } : b));
+    } catch (err) {
+      console.error('Failed to dismiss alert:', err);
     }
   };
 
@@ -333,6 +349,23 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {(() => {
+        const recurringBills = bills.filter(b => b.isRecurring && b.status !== 'paid');
+        const recurringTotal = recurringBills.reduce((sum, b) => sum + Math.max(b.totalAmount - (b.paidAmount || 0), 0), 0);
+        if (recurringBills.length === 0) return null;
+        return (
+          <div className="px-4 mb-4">
+            <div className="summary-card flex items-center gap-3">
+              <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center text-lg">🔄</div>
+              <div>
+                <p className="text-white font-semibold">{recurringBills.length} Recurring Bill{recurringBills.length !== 1 ? 's' : ''}</p>
+                <p className="text-xs text-slate-400">${recurringTotal.toFixed(2)} upcoming recurring</p>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {isAtLimit && (
         <div className="px-4 mb-4">
           <div className="bg-amber-500/10 border border-amber-500/30 text-amber-400 px-4 py-3 rounded-lg text-sm flex items-center gap-2">
@@ -430,6 +463,11 @@ export default function Dashboard() {
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-semibold text-slate-800">{bill.companyName}</p>
                       {getStatusBadge(bill)}
+                      {bill.isRecurring && (
+                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-purple-100 text-purple-700" title={`Recurring bill – ${Math.round((bill.recurringConfidence || 0) * 100)}% confidence`}>
+                          🔄 {bill.recurringFrequency === 'monthly' ? 'Monthly' : bill.recurringFrequency === 'quarterly' ? 'Quarterly' : bill.recurringFrequency === 'yearly' ? 'Yearly' : 'Recurring'}
+                        </span>
+                      )}
                     </div>
                     {billCategory && (
                       <p className="text-xs text-slate-500 mt-0.5">
@@ -466,6 +504,26 @@ export default function Dashboard() {
                     )}
                   </div>
                 </div>
+
+                {bill.amountDeviationFlag && bill.isRecurring && bill.amountDeviationPercent !== undefined && (
+                  <div className={`mt-2 px-3 py-2 rounded-lg text-xs flex items-center justify-between ${
+                    (bill.amountDeviationPercent || 0) > 0 ? 'bg-red-50 border border-red-200' : 'bg-amber-50 border border-amber-200'
+                  }`}>
+                    <div className="flex items-center gap-1.5">
+                      <AlertTriangle className={`w-3.5 h-3.5 flex-shrink-0 ${(bill.amountDeviationPercent || 0) > 0 ? 'text-red-500' : 'text-amber-500'}`} />
+                      <span className={(bill.amountDeviationPercent || 0) > 0 ? 'text-red-700' : 'text-amber-700'}>
+                        {(bill.amountDeviationPercent || 0) > 0 ? 'Increased' : 'Decreased'} {Math.abs(bill.amountDeviationPercent || 0).toFixed(1)}% from avg ${(bill.avgRecurringAmount || 0).toFixed(2)}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => handleDismissAmountAlert(bill)}
+                      className="text-slate-400 hover:text-slate-600 ml-2"
+                      title="Dismiss"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
 
                 {/* Pay button + Mark as Paid + delete for unpaid/partial bills */}
                 {!isFullyPaid && (

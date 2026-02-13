@@ -103,7 +103,8 @@ export type BillStatus = "unpaid" | "partial" | "paid";
 
 export type BillingCycle = 'monthly' | 'biweekly' | 'annual' | 'one-time';
 
-// Bill data model with category support (backward compatible with old bills)
+export type RecurringFrequency = 'monthly' | 'quarterly' | 'yearly';
+
 export interface Bill {
   id?: string;
   userId: string;
@@ -121,6 +122,12 @@ export interface Bill {
   providerName: string;
   isCustomProvider?: boolean;
   createdAt: Date;
+  isRecurring?: boolean;
+  recurringFrequency?: RecurringFrequency;
+  recurringConfidence?: number;
+  avgRecurringAmount?: number;
+  amountDeviationPercent?: number;
+  amountDeviationFlag?: boolean;
 }
 
 export type NotificationType = "bill_added" | "due_soon" | "due_today" | "overdue" | "payment_success";
@@ -316,6 +323,12 @@ export async function fetchBills(userId: string): Promise<Bill[]> {
         providerName: data.providerName || companyName,
         isCustomProvider: data.isCustomProvider || undefined,
         createdAt: data.createdAt?.toDate() || new Date(),
+        isRecurring: data.isRecurring ?? undefined,
+        recurringFrequency: data.recurringFrequency ?? undefined,
+        recurringConfidence: data.recurringConfidence ?? undefined,
+        avgRecurringAmount: data.avgRecurringAmount ?? undefined,
+        amountDeviationPercent: data.amountDeviationPercent ?? undefined,
+        amountDeviationFlag: data.amountDeviationFlag ?? undefined,
       };
     });
 
@@ -872,6 +885,198 @@ export async function migrateBillsAddCategory(): Promise<{ updated: number; skip
 
   console.log(`Migration complete: ${updated} updated, ${skipped} skipped, ${total} total`);
   return { updated, skipped, total };
+}
+
+// --- Recurring Intelligence Engine ---
+
+export interface RecurringDetection {
+  isRecurring: boolean;
+  frequency: RecurringFrequency | null;
+  confidence: number;
+  avgAmount: number;
+  deviationPercent: number | null;
+  deviationFlag: boolean;
+}
+
+export function detectRecurringPatterns(bills: Bill[]): Map<string, RecurringDetection> {
+  const results = new Map<string, RecurringDetection>();
+  const grouped = new Map<string, Bill[]>();
+
+  for (const bill of bills) {
+    const key = (bill.providerId && bill.providerId !== 'unknown')
+      ? bill.providerId
+      : bill.companyName.toLowerCase().trim();
+    if (!grouped.has(key)) grouped.set(key, []);
+    grouped.get(key)!.push(bill);
+  }
+
+  for (const [, group] of grouped) {
+    if (group.length < 2) {
+      for (const b of group) {
+        if (b.id) results.set(b.id, { isRecurring: false, frequency: null, confidence: 0, avgAmount: b.totalAmount, deviationPercent: null, deviationFlag: false });
+      }
+      continue;
+    }
+
+    const sorted = [...group].sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+    const intervals: number[] = [];
+    for (let i = 1; i < sorted.length; i++) {
+      const dayDiff = Math.round((new Date(sorted[i].dueDate).getTime() - new Date(sorted[i - 1].dueDate).getTime()) / (1000 * 60 * 60 * 24));
+      if (dayDiff > 0) intervals.push(dayDiff);
+    }
+
+    let frequency: RecurringFrequency | null = null;
+    let matchingIntervals = 0;
+
+    if (intervals.length > 0) {
+      const avg = intervals.reduce((s, v) => s + v, 0) / intervals.length;
+      if (avg >= 25 && avg <= 35) {
+        frequency = 'monthly';
+        matchingIntervals = intervals.filter(d => d >= 25 && d <= 35).length;
+      } else if (avg >= 80 && avg <= 100) {
+        frequency = 'quarterly';
+        matchingIntervals = intervals.filter(d => d >= 80 && d <= 100).length;
+      } else if (avg >= 350 && avg <= 380) {
+        frequency = 'yearly';
+        matchingIntervals = intervals.filter(d => d >= 350 && d <= 380).length;
+      }
+    }
+
+    const confidence = intervals.length > 0 && frequency
+      ? (matchingIntervals / intervals.length) * (Math.min(sorted.length, 5) / 5)
+      : 0;
+    const isRecurring = confidence >= 0.5 && frequency !== null;
+
+    const amounts = sorted.map(b => b.totalAmount);
+    const avgAmount = amounts.reduce((s, v) => s + v, 0) / amounts.length;
+    const recentAmounts = amounts.slice(-3);
+    const recentAvg = recentAmounts.reduce((s, v) => s + v, 0) / recentAmounts.length;
+
+    for (const bill of sorted) {
+      const diff = Math.abs(bill.totalAmount - recentAvg);
+      const pctDiff = recentAvg > 0 ? ((bill.totalAmount - recentAvg) / recentAvg) * 100 : 0;
+      const deviationFlag = isRecurring && (diff > recentAvg * 0.15 || diff > 10);
+
+      if (bill.id) {
+        results.set(bill.id, {
+          isRecurring,
+          frequency,
+          confidence: Math.round(confidence * 100) / 100,
+          avgAmount: Math.round(recentAvg * 100) / 100,
+          deviationPercent: Math.round(pctDiff * 10) / 10,
+          deviationFlag: bill === sorted[sorted.length - 1] ? deviationFlag : false,
+        });
+      }
+    }
+  }
+
+  return results;
+}
+
+export function applyRecurringDetection(bills: Bill[]): Bill[] {
+  const detections = detectRecurringPatterns(bills);
+  return bills.map(bill => {
+    if (!bill.id) return bill;
+    const det = detections.get(bill.id);
+    if (!det) return bill;
+
+    const isRecurring = bill.recurringConfidence === 1.0 ? true : det.isRecurring;
+    const recurringFrequency = bill.recurringConfidence === 1.0 ? (bill.recurringFrequency || det.frequency || undefined) : (det.frequency || undefined);
+    const recurringConfidence = bill.recurringConfidence === 1.0 ? 1.0 : det.confidence;
+
+    const amountDeviationFlag = bill.amountDeviationFlag === false ? false : det.deviationFlag;
+
+    return {
+      ...bill,
+      isRecurring,
+      recurringFrequency,
+      recurringConfidence,
+      avgRecurringAmount: det.avgAmount,
+      amountDeviationPercent: det.deviationPercent ?? undefined,
+      amountDeviationFlag,
+    };
+  });
+}
+
+export async function persistRecurringFlags(billId: string, detection: RecurringDetection): Promise<void> {
+  const db = getFirebaseDb();
+  if (!db) return;
+
+  const updateData: Record<string, any> = {
+    isRecurring: detection.isRecurring,
+    recurringConfidence: detection.confidence,
+    avgRecurringAmount: detection.avgAmount,
+    lastAnalyzedAt: serverTimestamp(),
+  };
+  if (detection.frequency) updateData.recurringFrequency = detection.frequency;
+  if (detection.deviationPercent !== null) updateData.amountDeviationPercent = detection.deviationPercent;
+  updateData.amountDeviationFlag = detection.deviationFlag;
+
+  await updateDoc(doc(db, "bills", billId), updateData);
+}
+
+export async function confirmRecurring(billId: string, userId: string, frequency: RecurringFrequency): Promise<void> {
+  const db = getFirebaseDb();
+  if (!db) throw new Error('Firebase not available');
+
+  const billRef = doc(db, "bills", billId);
+  const billSnap = await getDoc(billRef);
+  if (!billSnap.exists()) throw new Error('Bill not found');
+  if (billSnap.data().userId !== userId) throw new Error('Unauthorized');
+
+  await updateDoc(billRef, {
+    isRecurring: true,
+    recurringFrequency: frequency,
+    recurringConfidence: 1.0,
+    lastAnalyzedAt: serverTimestamp(),
+  });
+}
+
+export async function dismissAmountAlert(billId: string, userId: string): Promise<void> {
+  const db = getFirebaseDb();
+  if (!db) throw new Error('Firebase not available');
+
+  const billRef = doc(db, "bills", billId);
+  const billSnap = await getDoc(billRef);
+  if (!billSnap.exists()) throw new Error('Bill not found');
+  if (billSnap.data().userId !== userId) throw new Error('Unauthorized');
+
+  await updateDoc(billRef, {
+    amountDeviationFlag: false,
+  });
+}
+
+export function checkForRecurringProvider(bills: Bill[], companyName: string, providerId?: string): { found: boolean; count: number; frequency: RecurringFrequency | null } {
+  const key = providerId && providerId !== 'unknown'
+    ? providerId
+    : companyName.toLowerCase().trim();
+
+  const matches = bills.filter(b => {
+    const bKey = (b.providerId && b.providerId !== 'unknown')
+      ? b.providerId
+      : b.companyName.toLowerCase().trim();
+    return bKey === key;
+  });
+
+  if (matches.length === 0) return { found: false, count: 0, frequency: null };
+
+  const sorted = [...matches].sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+  let frequency: RecurringFrequency | null = 'monthly';
+
+  if (sorted.length >= 2) {
+    const intervals: number[] = [];
+    for (let i = 1; i < sorted.length; i++) {
+      const d = Math.round((new Date(sorted[i].dueDate).getTime() - new Date(sorted[i - 1].dueDate).getTime()) / (1000 * 60 * 60 * 24));
+      if (d > 0) intervals.push(d);
+    }
+    if (intervals.length > 0) {
+      const avg = intervals.reduce((s, v) => s + v, 0) / intervals.length;
+      if (avg >= 80 && avg <= 100) frequency = 'quarterly';
+      else if (avg >= 350 && avg <= 380) frequency = 'yearly';
+    }
+  }
+
+  return { found: true, count: matches.length, frequency };
 }
 
 export type { User };

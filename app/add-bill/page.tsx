@@ -3,9 +3,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Home, Plus, Settings, Loader2, AlertTriangle, ChevronDown } from "lucide-react";
+import { ArrowLeft, Home, Plus, Settings, Loader2, AlertTriangle, ChevronDown, X } from "lucide-react";
 import { useAuth } from '../contexts/AuthContext';
-import { addBill, fetchBills, createBillAddedNotification } from '../lib/firebase';
+import { addBill, fetchBills, createBillAddedNotification, checkForRecurringProvider, confirmRecurring, Bill, RecurringFrequency } from '../lib/firebase';
 import { CATEGORIES, BILLING_CYCLES, getCategoryByValue, getSubcategory, type MetadataField } from '../lib/categories';
 import { resolveProvider } from '../lib/providerRegistry';
 import ProviderAutocomplete from '../components/ProviderAutocomplete';
@@ -30,6 +30,13 @@ export default function AddBillPage() {
   const [success, setSuccess] = useState(false);
   const [billCount, setBillCount] = useState<number | null>(null);
   const [loadingCount, setLoadingCount] = useState(true);
+  const [existingBills, setExistingBills] = useState<Bill[]>([]);
+  const [recurringModal, setRecurringModal] = useState<{
+    billId: string;
+    billerName: string;
+    frequency: RecurringFrequency;
+    matchCount: number;
+  } | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -49,6 +56,7 @@ export default function AddBillPage() {
     try {
       const bills = await fetchBills(user.uid);
       setBillCount(bills.length);
+      setExistingBills(bills);
     } catch {
       setBillCount(null);
     } finally {
@@ -171,6 +179,18 @@ export default function AddBillPage() {
       });
 
       await createBillAddedNotification(user.uid, companyName.trim(), billId).catch(console.error);
+
+      const recurringCheck = checkForRecurringProvider(existingBills, companyName.trim(), resolved.providerId);
+      if (recurringCheck.found && recurringCheck.count >= 1) {
+        setRecurringModal({
+          billId,
+          billerName: companyName.trim(),
+          frequency: recurringCheck.frequency || 'monthly',
+          matchCount: recurringCheck.count + 1,
+        });
+        setSuccess(true);
+        return;
+      }
 
       setSuccess(true);
       setTimeout(() => {
@@ -417,6 +437,66 @@ export default function AddBillPage() {
           </form>
         )}
       </div>
+
+      {recurringModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md">
+            <div className="flex items-center justify-between p-5 border-b border-slate-100">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-800">Recurring Bill Detected</h3>
+                <p className="text-sm text-slate-500">{recurringModal.billerName}</p>
+              </div>
+              <button onClick={() => { setRecurringModal(null); router.push('/app'); }} className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+                <X className="w-5 h-5 text-slate-400" />
+              </button>
+            </div>
+            <div className="p-5 space-y-4">
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 text-center">
+                <p className="text-3xl mb-2">🔄</p>
+                <p className="text-sm text-purple-800">
+                  We noticed you have <span className="font-bold">{recurringModal.matchCount} bills</span> for <span className="font-bold">{recurringModal.billerName}</span>.
+                </p>
+                <p className="text-sm text-purple-600 mt-1">
+                  Would you like BillPort to track this as a <span className="font-semibold">{recurringModal.frequency}</span> recurring bill?
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => { setRecurringModal(null); router.push('/app'); }}
+                  className="flex-1 py-3 px-4 rounded-lg border border-slate-200 text-slate-600 font-medium hover:bg-slate-50 transition-colors"
+                >
+                  Not Now
+                </button>
+                <button
+                  onClick={async () => {
+                    if (user && recurringModal) {
+                      try {
+                        await confirmRecurring(recurringModal.billId, user.uid, recurringModal.frequency);
+                        const resolved = resolveProvider(recurringModal.billerName);
+                        for (const b of existingBills) {
+                          if (!b.id) continue;
+                          const matchById = resolved.providerId && b.providerId === resolved.providerId && resolved.providerId !== 'unknown';
+                          const matchByName = b.companyName.toLowerCase().trim() === recurringModal.billerName.toLowerCase().trim();
+                          if (matchById || matchByName) {
+                            await confirmRecurring(b.id, user.uid, recurringModal.frequency).catch(console.error);
+                          }
+                        }
+                      } catch (err) {
+                        console.error('Failed to confirm recurring:', err);
+                      }
+                    }
+                    setRecurringModal(null);
+                    router.push('/app');
+                  }}
+                  className="flex-1 py-3 px-4 rounded-lg bg-purple-600 text-white font-semibold hover:bg-purple-700 transition-colors"
+                >
+                  Yes, Auto-Track
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur border-t border-slate-700 py-3 px-6">
         <div className="max-w-md mx-auto flex justify-around">

@@ -7,6 +7,17 @@ BillPort is a Canadian bill management web app. Users can add bills, track them 
 Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (February 13, 2026)
+- ✅ Recurring Intelligence Engine: auto-detects recurring bills when same biller appears 2+ times
+- ✅ detectRecurringPatterns() analyzes due date intervals to classify monthly/quarterly/yearly frequency
+- ✅ Confidence scoring: (matching intervals / total) * (min(occurrences,5) / 5), threshold 0.5
+- ✅ Amount change alerts: flags when recurring bill deviates >15% or >$10 from rolling average
+- ✅ Recurring badge (purple pill with 🔄) on bill cards showing detected frequency
+- ✅ Amount change alert banner (red for increase, amber for decrease) with dismiss button
+- ✅ Recurring bills summary card on dashboard showing count + total upcoming recurring
+- ✅ Recurring confirmation modal in add-bill flow when 2nd bill for same provider is added
+- ✅ confirmRecurring() and dismissAmountAlert() Firestore persistence functions
+- ✅ applyRecurringDetection() enriches bills with recurring flags on every load
+- ✅ persistRecurringFlags() saves detection results to Firestore in background
 - ✅ Edit Bill feature: pencil icon on every bill card opens modal to update biller name, account number, amount, due date
 - ✅ updateBill() in firebase.ts with ownership check, validation, and auto status recalculation
 - ✅ Edit modal matches app theme (white modal, teal accents, same styling as Mark Paid modal)
