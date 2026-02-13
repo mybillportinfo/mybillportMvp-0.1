@@ -120,15 +120,6 @@ function PaymentContent() {
                 </div>
               )}
 
-              <button
-                onClick={() => {
-                  setSelectedBiller('');
-                  setSearchInput('');
-                }}
-                className="mt-6 text-sm text-slate-400 hover:text-slate-600 transition-colors"
-              >
-                Choose a different biller
-              </button>
             </div>
           ) : (
             <div>
