@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export const metadata = {
   title: 'Privacy Policy - BillPort',
-  description: 'Learn how BillPort protects your personal information and data.',
+  description: 'Learn how BillPort protects your personal information and data under PIPEDA.',
 };
 
 export default function Privacy() {
@@ -23,44 +23,80 @@ export default function Privacy() {
           </div>
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Privacy Policy</h1>
-            <p className="text-gray-500">BillPort Inc.</p>
+            <p className="text-gray-500">BillPort</p>
           </div>
         </div>
         
-        <p className="text-gray-500 mb-8 pb-6 border-b border-gray-200">Last updated: January 30, 2026</p>
+        <p className="text-gray-500 mb-8 pb-6 border-b border-gray-200">Last updated: February 13, 2026</p>
 
         <div className="space-y-8 text-gray-700 leading-relaxed">
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">Introduction</h2>
-            <p>BillPort (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our bill management application and website (collectively, the &quot;Service&quot;). Please read this privacy policy carefully. By using the Service, you consent to the practices described in this policy.</p>
+            <h2 className="text-xl font-semibold text-gray-900 mb-3">1. Introduction</h2>
+            <p>BillPort (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) respects your privacy and is committed to protecting your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website mybillport.com (the &quot;Site&quot;) or use our application (the &quot;App&quot;).</p>
+            <p className="mt-3">By using the Site or App, you consent to the practices described in this policy.</p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">1. Information We Collect</h2>
-            <p className="mb-3">We collect information you provide directly to us, including:</p>
+            <h2 className="text-xl font-semibold text-gray-900 mb-3">2. Information We Collect</h2>
+            
+            <h3 className="text-lg font-medium text-gray-800 mb-2 mt-4">2.1 Information You Provide Directly</h3>
             <ul className="list-disc ml-6 space-y-2">
-              <li><strong>Account Information:</strong> Your name, email address, and password when you create an account</li>
-              <li><strong>Bill Information:</strong> Details about bills you add, including company names, amounts, due dates, and categories</li>
-              <li><strong>Authentication Data:</strong> Information from third-party sign-in services (Google, Apple) if you choose to use them</li>
-              <li><strong>Communication Data:</strong> Information you provide when contacting our support team</li>
+              <li><strong>Account Information:</strong> When you sign up for our waitlist, newsletter, or create an account, we collect your name and email address.</li>
+              <li><strong>Bill Information:</strong> When you use the App, you may enter details about your bills (e.g., provider name, due date, amount, account number). This information is stored only to provide our bill-tracking service.</li>
+              <li><strong>Communications:</strong> If you contact us (via email or support form), we collect your message and contact details.</li>
+            </ul>
+
+            <h3 className="text-lg font-medium text-gray-800 mb-2 mt-4">2.2 Information Collected Automatically</h3>
+            <ul className="list-disc ml-6 space-y-2">
+              <li><strong>Usage Data:</strong> When you visit our Site or App, we may collect technical data such as your IP address, device type, browser type, operating system, and pages visited. This helps us improve our services.</li>
+              <li><strong>Cookies:</strong> We may use cookies and similar tracking technologies to enhance your experience. You can adjust your browser settings to refuse cookies, but this may affect functionality.</li>
+            </ul>
+
+            <h3 className="text-lg font-medium text-gray-800 mb-2 mt-4">2.3 Information from Third Parties</h3>
+            <p>We do <strong>not</strong> currently connect to your bank accounts or financial institutions. All bill information is provided directly by you.</p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-gray-900 mb-3">3. How We Use Your Information</h2>
+            <p className="mb-3">We use your information for the following purposes:</p>
+            <ul className="list-disc ml-6 space-y-2">
+              <li>To provide and maintain the App and Site.</li>
+              <li>To send you smart reminders about your upcoming bills.</li>
+              <li>To communicate with you about updates, security alerts, and support.</li>
+              <li>To send you promotional emails (if you have opted in). You can unsubscribe at any time.</li>
+              <li>To improve and personalize your experience.</li>
+              <li>To comply with legal obligations.</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">2. How We Use Your Information</h2>
-            <p className="mb-3">We use the information we collect to:</p>
+            <h2 className="text-xl font-semibold text-gray-900 mb-3">4. Sharing Your Information</h2>
+            <p className="mb-3">We <strong>do not sell, rent, or trade</strong> your personal information. We may share information only in these limited circumstances:</p>
             <ul className="list-disc ml-6 space-y-2">
-              <li>Provide, maintain, and improve our bill management services</li>
-              <li>Send you bill reminders and due date notifications via email</li>
-              <li>Process your requests and respond to your inquiries</li>
-              <li>Send you technical notices and security alerts</li>
-              <li>Analyze usage patterns to improve our Service</li>
-              <li>Comply with legal obligations</li>
+              <li><strong>Service Providers:</strong> We use third-party services to operate our business (e.g., cloud hosting, email delivery, payment processing). These providers are contractually bound to protect your data and use it only to provide services to us.</li>
+              <li><strong>Legal Requirements:</strong> We may disclose information if required by law, or to protect the rights, property, or safety of BillPort, our users, or others.</li>
+              <li><strong>Business Transfers:</strong> In the event of a merger, acquisition, or sale of assets, your information may be transferred. We will notify you of any such change.</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">3. Google API Services Disclosure</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-3">5. Data Storage &amp; Security</h2>
+            
+            <h3 className="text-lg font-medium text-gray-800 mb-2 mt-4">5.1 Where Your Data Is Stored</h3>
+            <p>Your information is stored on secure servers operated by our cloud service providers. Currently, we use <strong>Firebase (Google Cloud)</strong>. Data may be processed and stored in <strong>Canada</strong> and the <strong>United States</strong>. When data is transferred to the U.S., it is protected by standard contractual clauses approved by the European Commission and equivalent mechanisms recognized by Canadian law.</p>
+
+            <h3 className="text-lg font-medium text-gray-800 mb-2 mt-4">5.2 Security Measures</h3>
+            <p className="mb-3">We implement reasonable administrative, technical, and physical safeguards to protect your information from unauthorized access, disclosure, alteration, or destruction. These include:</p>
+            <ul className="list-disc ml-6 space-y-2">
+              <li>Encryption in transit using SSL/TLS</li>
+              <li>Access controls and authentication</li>
+              <li>Regular security reviews</li>
+            </ul>
+            <p className="mt-3">However, no method of transmission over the Internet or electronic storage is 100% secure. While we strive to protect your information, we cannot guarantee absolute security.</p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-gray-900 mb-3">6. Google API Services Disclosure</h2>
             <p className="mb-3">BillPort&apos;s use and transfer of information received from Google APIs adheres to the <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Google API Services User Data Policy</a>, including the Limited Use requirements.</p>
             <p className="mb-3">When you sign in with Google:</p>
             <ul className="list-disc ml-6 space-y-2">
@@ -72,75 +108,60 @@ export default function Privacy() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">4. Data Storage and Security</h2>
-            <p className="mb-3">We implement industry-standard security measures to protect your personal information:</p>
+            <h2 className="text-xl font-semibold text-gray-900 mb-3">7. Retention of Your Information</h2>
+            <p>We retain your personal information only as long as necessary to fulfill the purposes outlined in this policy, or as required by law. When no longer needed, we securely delete or anonymize it.</p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-gray-900 mb-3">8. Your Rights &amp; Choices</h2>
+            <p className="mb-3">You have the following rights regarding your personal information:</p>
             <ul className="list-disc ml-6 space-y-2">
-              <li>All data is encrypted in transit using TLS/SSL</li>
-              <li>Passwords are hashed and salted using secure algorithms</li>
-              <li>We use secure cloud infrastructure with regular security audits</li>
-              <li>Access to personal data is restricted to authorized personnel only</li>
+              <li><strong>Access &amp; Correction:</strong> You may request access to the personal information we hold about you, and ask us to correct any inaccuracies.</li>
+              <li><strong>Deletion:</strong> You may request deletion of your account and associated data.</li>
+              <li><strong>Withdraw Consent:</strong> You may withdraw consent for certain processing (e.g., marketing emails) at any time.</li>
+              <li><strong>Opt-out of Communications:</strong> You can unsubscribe from promotional emails by clicking the &quot;unsubscribe&quot; link in any email.</li>
+              <li><strong>Data Portability:</strong> Request your data in a portable format.</li>
             </ul>
-            <p className="mt-3">While we strive to protect your information, no method of transmission over the Internet is 100% secure.</p>
+            <p className="mt-3">To exercise any of these rights, please contact us at <strong>mybillportinfo@gmail.com</strong>.</p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">5. Data Sharing and Disclosure</h2>
-            <p className="mb-3">We do not sell, trade, or rent your personal information to third parties. We may share information only in the following circumstances:</p>
-            <ul className="list-disc ml-6 space-y-2">
-              <li><strong>Service Providers:</strong> With trusted third-party service providers who assist us in operating our Service (e.g., email delivery, hosting)</li>
-              <li><strong>Legal Requirements:</strong> When required by law or to respond to legal process</li>
-              <li><strong>Protection of Rights:</strong> To protect the rights, property, or safety of BillPort, our users, or others</li>
-              <li><strong>Business Transfers:</strong> In connection with a merger, acquisition, or sale of assets</li>
-            </ul>
+            <h2 className="text-xl font-semibold text-gray-900 mb-3">9. Cookies and Tracking</h2>
+            <p className="mb-3">We use essential cookies to maintain your session and remember your preferences. We do not use third-party advertising cookies or tracking technologies for marketing purposes.</p>
+            <p>You can adjust your browser settings to refuse cookies, but this may affect the functionality of our Site and App.</p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">6. Your Rights and Choices</h2>
-            <p className="mb-3">You have the following rights regarding your personal data:</p>
-            <ul className="list-disc ml-6 space-y-2">
-              <li><strong>Access:</strong> Request a copy of your personal data</li>
-              <li><strong>Correction:</strong> Update or correct inaccurate information</li>
-              <li><strong>Deletion:</strong> Request deletion of your account and associated data</li>
-              <li><strong>Opt-out:</strong> Unsubscribe from marketing communications</li>
-              <li><strong>Data Portability:</strong> Request your data in a portable format</li>
-            </ul>
-            <p className="mt-3">To exercise these rights, contact us at mybillportinfo@gmail.com or through your account settings.</p>
+            <h2 className="text-xl font-semibold text-gray-900 mb-3">10. Children&apos;s Privacy</h2>
+            <p>Our services are not directed to individuals under the age of 13 (or the applicable age of majority in your province). We do not knowingly collect personal information from children. If you believe we have inadvertently collected such information, please contact us so we can delete it.</p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">7. Cookies and Tracking</h2>
-            <p>We use essential cookies to maintain your session and remember your preferences. We do not use third-party advertising cookies or tracking technologies for marketing purposes.</p>
+            <h2 className="text-xl font-semibold text-gray-900 mb-3">11. International Users</h2>
+            <p>BillPort is based in Canada. If you are accessing our Service from outside Canada, please be aware that your information may be transferred to, stored, and processed in Canada and the United States. By using our Service, you consent to such transfer.</p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">8. Children&apos;s Privacy</h2>
-            <p>Our Service is not intended for children under 13 years of age. We do not knowingly collect personal information from children under 13. If we learn we have collected such information, we will delete it promptly.</p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">9. International Users</h2>
-            <p>BillPort is based in Canada. If you are accessing our Service from outside Canada, please be aware that your information may be transferred to, stored, and processed in Canada. By using our Service, you consent to such transfer.</p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">10. Changes to This Policy</h2>
-            <p>We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the &quot;Last updated&quot; date. Your continued use of the Service after any changes constitutes acceptance of the new Privacy Policy.</p>
+            <h2 className="text-xl font-semibold text-gray-900 mb-3">12. Changes to This Privacy Policy</h2>
+            <p>We may update this Privacy Policy from time to time. We will notify you of any material changes by posting the new policy on this page with an updated &quot;Last Updated&quot; date. We encourage you to review this policy periodically.</p>
           </section>
 
           <section className="pb-8 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">11. Contact Us</h2>
-            <p className="mb-3">If you have questions about this Privacy Policy or our privacy practices, please contact us:</p>
+            <h2 className="text-xl font-semibold text-gray-900 mb-3">13. Contact Us</h2>
+            <p className="mb-3">If you have questions, concerns, or requests regarding this Privacy Policy or our privacy practices, please contact us:</p>
             <div className="bg-gray-50 rounded-lg p-4">
-              <p><strong>BillPort Inc.</strong></p>
+              <p><strong>BillPort</strong></p>
               <p>Email: mybillportinfo@gmail.com</p>
               <p>Website: www.mybillport.com</p>
             </div>
           </section>
         </div>
 
+        <p className="mt-6 text-center text-sm text-gray-400">&copy; 2026 BillPort. All rights reserved.</p>
+
         <div className="mt-8 pt-6 border-t border-gray-200 flex justify-between items-center text-sm text-gray-500">
-          <Link href="/" className="hover:text-gray-900 transition-colors">← Back to Home</Link>
-          <Link href="/terms" className="hover:text-gray-900 transition-colors">Terms of Service →</Link>
+          <Link href="/" className="hover:text-gray-900 transition-colors">&larr; Back to Home</Link>
+          <Link href="/terms" className="hover:text-gray-900 transition-colors">Terms of Service &rarr;</Link>
         </div>
       </div>
     </div>

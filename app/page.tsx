@@ -88,7 +88,7 @@ export default function LandingPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/app">
                 <button className="btn-accent rounded-full px-8 py-4 text-lg shadow-lg flex items-center gap-2 mx-auto">
-                  Get Started Free
+                  Get Early Access
                   <ArrowRight className="w-5 h-5" />
                 </button>
               </Link>
@@ -226,7 +226,7 @@ export default function LandingPage() {
               Start managing your bills today
             </h2>
             <p className="text-lg text-slate-400 max-w-2xl mx-auto mb-8">
-              Join thousands of Canadians who&apos;ve taken control of their bills.
+              Take control of your bills with a simple, trusted Canadian app.
             </p>
 
             {isSubmitted ? (
@@ -283,12 +283,13 @@ export default function LandingPage() {
               </div>
               <span className="font-semibold text-xl text-white">BillPort</span>
             </div>
-            <div className="flex gap-6 text-slate-400 text-sm">
+            <div className="flex flex-wrap gap-4 text-slate-400 text-sm">
               <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
               <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
+              <a href="mailto:mybillportinfo@gmail.com" className="hover:text-white transition-colors">Contact</a>
             </div>
             <p className="text-slate-500 text-sm">
-              Made with care in Canada
+              &copy; 2026 BillPort. Made with care in Canada.
             </p>
           </div>
         </div>
