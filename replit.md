@@ -82,8 +82,8 @@ Preferred communication style: Simple, everyday language.
 5. If biller is not found: "Find Payment Page" button searches Google for "[Biller] pay bill Canada"
 
 ### Payment URL Registry (app/lib/paymentUrls.ts)
-- 100+ Canadian billers with direct payment/account URLs
-- Categories: Utilities (electricity, gas, water), Telecom, Government, Insurance, Banking, Subscriptions, Transportation
+- 274 Canadian billers with direct payment/account URLs
+- Categories: Utilities (electricity, gas, water), Telecom (mobile/internet/cable), Government (federal/provincial/municipal), Insurance (auto/home/life - public + private), Banking (credit cards/loans), Mortgage Lenders, Transportation (toll/transit), Education (student loans), Subscriptions (digital), Property Management, Miscellaneous Recurring
 - Case-insensitive fuzzy matching via getPaymentUrl()
 - Google search fallback via getGoogleSearchUrl()
 
