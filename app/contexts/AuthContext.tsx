@@ -8,6 +8,7 @@ import {
   registerUser,
   logoutUser,
   signInWithGoogle,
+  handleGoogleRedirectResult,
   isMfaError,
 } from '../lib/firebase';
 import { getAdditionalUserInfo } from 'firebase/auth';
@@ -32,6 +33,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    handleGoogleRedirectResult().then((result) => {
+      if (result?.user) {
+        const additionalInfo = getAdditionalUserInfo(result);
+        if (additionalInfo?.isNewUser) {
+          fetch('/api/send-welcome-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: result.user.email, displayName: result.user.displayName || undefined }),
+          }).catch(() => {});
+          trackUserSignup('google');
+        } else {
+          trackUserLogin('google');
+        }
+      }
+    }).catch(() => {});
+
     const unsubscribe = subscribeToAuth((user) => {
       setUser(user);
       setLoading(false);
@@ -108,7 +125,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
       const message = err instanceof Error ? err.message : 'Google sign-in failed';
-      setError(getAuthErrorMessage(message));
+      if (message.includes('auth/popup-blocked') || message.includes('auth/popup-closed-by-user') || message.includes('auth/cancelled-popup-request')) {
+        setError('Google sign-in was cancelled or blocked. Please try again.');
+      } else if (message.includes('auth/invalid-credential') || message.includes('auth/unauthorized-domain')) {
+        setError('Google sign-in could not be completed. Please try again or use email sign-in.');
+      } else {
+        setError(getAuthErrorMessage(message));
+      }
       throw err;
     } finally {
       setLoading(false);

@@ -33,6 +33,8 @@ import {
   Auth,
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   sendPasswordResetEmail,
   getAdditionalUserInfo,
 } from "firebase/auth";
@@ -269,11 +271,31 @@ export function subscribeToAuth(callback: (user: User | null) => void) {
   return onAuthStateChanged(auth, callback);
 }
 
-export function signInWithGoogle() {
+function isMobileDevice(): boolean {
+  if (typeof window === 'undefined') return false;
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
+export async function signInWithGoogle() {
   const auth = getFirebaseAuth();
   if (!auth) return Promise.reject(new Error('Firebase not available'));
   const provider = new GoogleAuthProvider();
+
+  if (isMobileDevice()) {
+    await signInWithRedirect(auth, provider);
+    return getRedirectResult(auth) as any;
+  }
   return signInWithPopup(auth, provider);
+}
+
+export async function handleGoogleRedirectResult() {
+  const auth = getFirebaseAuth();
+  if (!auth) return null;
+  try {
+    return await getRedirectResult(auth);
+  } catch {
+    return null;
+  }
 }
 
 export function resetPassword(email: string) {
