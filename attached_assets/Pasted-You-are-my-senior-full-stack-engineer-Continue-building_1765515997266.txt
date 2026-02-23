@@ -1,0 +1,165 @@
+You are my senior full-stack engineer. Continue building and improving my app MyBillPort, which is a Canadian bill-payment PWA.
+Follow this exact tech stack and architecture:
+
+✔ Frontend:
+	•	React 18 + TypeScript
+	•	Vite
+	•	Tailwind CSS
+	•	shadcn/ui + Radix UI
+	•	TanStack Query
+	•	Wouter routing
+	•	Firebase Auth (email/password + Google OAuth)
+	•	PWA support
+
+✔ Backend:
+	•	Node.js + Express.js + TypeScript
+	•	Drizzle ORM
+	•	PostgreSQL (Railway or Neon)
+	•	Firebase Admin SDK
+	•	Stripe CAD
+	•	Plaid (Canada)
+	•	Anthropic Claude AI (bill scanning and suggestions)
+
+✔ Storage:
+	•	PostgreSQL (Primary DB)
+	•	Google Cloud Storage (bill file uploads)
+
+⸻
+
+🛠️ PROJECT GOALS
+	1.	Make the app production-ready.
+	2.	Fix all bugs in backend + frontend.
+	3.	Complete the missing features listed below.
+	4.	Prepare clean code for deployment on Railway + GitHub.
+	5.	Ensure TypeScript safety across entire codebase.
+	6.	Implement strong logging, error handling, and validation.
+	7.	Reduce bundle size and optimize performance.
+
+⸻
+
+🧩 MISSING FEATURES YOU MUST COMPLETE
+
+1️⃣ Database (Critical)
+	•	Fix PostgreSQL connection errors
+	•	Add reconnect + timeout logic
+	•	Move away from in-memory fallback
+	•	Ensure all CRUD operations use PostgreSQL only
+	•	Add missing indexes: user_id, company, due_date
+	•	Add updated_at triggers
+
+2️⃣ Billing System
+	•	Complete Bill Deletion (UI + API)
+	•	Complete Bill Splitting Flow
+	•	Add Bill Auto-fill (after scan → pre-populate fields)
+	•	Add utility logos for:
+	•	Enbridge
+	•	Hydro One
+	•	Alectra
+	•	Toronto Hydro
+	•	BC Hydro
+	•	FortisBC
+	•	Rogers / Bell / Freedom
+	•	Others you detect
+
+3️⃣ AI (Claude)
+	•	Improve AI bill parsing accuracy
+	•	Add categorization suggestions
+	•	Add cost-saving recommendation generator
+	•	Add smart reminders based on billing patterns
+	•	Add “Ask MyBillPort” AI chatbot for utility questions
+
+4️⃣ Payments
+	•	Fix Stripe webhook signature validation
+	•	Add saved cards management UI
+	•	Add billing retry logic
+	•	Add refunds endpoint
+	•	Add test payments for dummy bills
+
+5️⃣ Authentication
+	•	Add post-email-verification screen
+	•	Add 2FA support (TOTP or SMS)
+	•	Add biometric login with WebAuthn
+	•	Add account deletion endpoint
+
+6️⃣ UI/UX
+	•	Improve login/signup UI
+	•	Add onboarding wizard (first use)
+	•	Add more animations + transitions
+	•	Add better empty states
+	•	Add skeleton loaders everywhere
+	•	Add full branding theme (consistent colours)
+
+7️⃣ Deployment
+	•	Prepare backend for Railway (production)
+	•	Prepare frontend for Vercel/Netlify
+	•	Add GitHub Actions for CI/CD
+	•	Add environment variable validations
+	•	Add Dockerfile for backend
+	•	Add health check endpoints
+
+⸻
+
+🔍 WHAT YOU MUST DO NOW
+
+Perform these actions automatically:
+	1.	Audit the entire project structure
+	2.	Fix TypeScript errors
+	3.	Clean unused imports
+	4.	Fix routing inconsistencies
+	5.	Validate all environment variables
+	6.	Improve error-handling in API routes
+	7.	Strengthen Plaid + Stripe logic
+	8.	Build missing UI pages
+	9.	Create helper utils for common patterns
+	10.	Prepare everything for deployment
+
+⸻
+
+📦 EXPECTED OUTPUT FORMAT
+
+Your responses must include:
+
+✔ Clean, working code
+
+✔ Step-by-step instructions
+
+✔ Where each file/update goes
+
+✔ Explanations for major changes
+
+✔ List of environment variables needed
+
+✔ Deployment instructions for Replit + Railway + GitHub
+
+⸻
+
+📘 ABOUT THE PROJECT
+
+Here is the summary of the current project, so you always know the full context:
+	•	Frontend has 88 files
+	•	Backend has 10 main files
+	•	Database schema has 4 tables
+	•	AI scanning works
+	•	Payment system works
+	•	Deployments are not configured
+	•	Utility auto-detection is halfway done
+	•	GitHub not synchronized
+
+You have to continue the project based on this existing code structure.
+
+⸻
+
+🧠 WORKING STYLE REQUIRED
+	•	Write clean TypeScript
+	•	Follow best practices
+	•	Keep everything organized
+	•	Do not break existing pages
+	•	Maintain mobile-first responsive design
+	•	Use Drizzle ORM properly
+	•	Keep functions modular and readable
+
+⸻
+
+🎯 MAIN OBJECTIVE
+
+Make MyBillPort production-ready and fully working across all platforms: Replit, GitHub, Railway, and Vercel.
