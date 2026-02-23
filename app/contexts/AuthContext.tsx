@@ -103,6 +103,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     try {
       const credential = await signInWithGoogle();
+      if (!credential) {
+        return;
+      }
       const additionalInfo = getAdditionalUserInfo(credential);
       const isNewUser = additionalInfo?.isNewUser ?? false;
       const googleUser = credential.user;

@@ -271,21 +271,22 @@ export function subscribeToAuth(callback: (user: User | null) => void) {
   return onAuthStateChanged(auth, callback);
 }
 
-function isMobileDevice(): boolean {
-  if (typeof window === 'undefined') return false;
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-}
-
 export async function signInWithGoogle() {
   const auth = getFirebaseAuth();
   if (!auth) return Promise.reject(new Error('Firebase not available'));
   const provider = new GoogleAuthProvider();
 
-  if (isMobileDevice()) {
-    await signInWithRedirect(auth, provider);
-    return getRedirectResult(auth) as any;
+  try {
+    return await signInWithPopup(auth, provider);
+  } catch (popupError: any) {
+    if (popupError?.code === 'auth/popup-blocked' ||
+        popupError?.code === 'auth/popup-closed-by-user' ||
+        popupError?.code === 'auth/cancelled-popup-request') {
+      await signInWithRedirect(auth, provider);
+      return null as any;
+    }
+    throw popupError;
   }
-  return signInWithPopup(auth, provider);
 }
 
 export async function handleGoogleRedirectResult() {
