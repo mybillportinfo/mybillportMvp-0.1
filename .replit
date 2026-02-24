@@ -49,3 +49,4 @@ integrations = ["javascript_anthropic:1.0.0", "javascript_database:1.0.0", "fire
 [userenv.shared]
 APP_URL = "https://mybillport.com"
 VITE_GOOGLE_CLIENT_ID = "484703321344-nmen1eghd7oli53p5kckulcvtdv2skaf.apps.googleusercontent.com"
+NEXT_PUBLIC_GOOGLE_CLIENT_ID = "484703321344-nmen1eghd7oli53p5kckulcvtdv2skaf.apps.googleusercontent.com"

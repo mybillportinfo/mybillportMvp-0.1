@@ -35,6 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     handleGoogleRedirectResult().then((result) => {
       if (result?.user) {
+        console.log('Google redirect sign-in successful:', result.user.email);
         const additionalInfo = getAdditionalUserInfo(result);
         if (additionalInfo?.isNewUser) {
           fetch('/api/send-welcome-email', {
@@ -47,7 +48,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           trackUserLogin('google');
         }
       }
-    }).catch(() => {});
+    }).catch((err: any) => {
+      console.error('Google redirect result error:', err?.code, err?.message);
+      if (err?.code === 'auth/invalid-credential') {
+        setError('Google sign-in failed. The Google provider may not be properly configured. Please try email sign-in or contact support.');
+      } else if (err?.message) {
+        setError(`Google sign-in error: ${err.message}`);
+      }
+      setLoading(false);
+    });
 
     const unsubscribe = subscribeToAuth((user) => {
       setUser(user);
