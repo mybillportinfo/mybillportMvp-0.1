@@ -15,6 +15,22 @@ export default function Login() {
 
   const { user, login, error, clearError } = useAuth();
   const router = useRouter();
+  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+  const urlError = searchParams?.get('error');
+
+  useEffect(() => {
+    if (urlError) {
+      const errorMap: Record<string, string> = {
+        google_init_failed: 'Could not start Google sign-in. Please try again.',
+        no_code: 'Google sign-in was cancelled.',
+        no_id_token: 'Google sign-in failed. Please try again.',
+        invalid_token: 'Google sign-in failed. Please try again.',
+        auth_failed: 'Google sign-in failed. Please try again or use email.',
+      };
+      setGoogleError(errorMap[urlError] || 'Google sign-in failed. Please try again.');
+      window.history.replaceState({}, '', '/login');
+    }
+  }, [urlError]);
 
   useEffect(() => {
     if (user) {

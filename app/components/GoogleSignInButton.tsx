@@ -1,9 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { signInWithGoogle, signInWithGoogleCredential, loadGoogleGIS } from '../lib/firebase';
-import { getAdditionalUserInfo } from 'firebase/auth';
-import { trackUserLogin, trackUserSignup } from '../lib/analyticsService';
 
 interface GoogleSignInButtonProps {
   onSuccess?: () => void;
@@ -11,116 +8,13 @@ interface GoogleSignInButtonProps {
   disabled?: boolean;
 }
 
-export default function GoogleSignInButton({ onSuccess, onError, disabled }: GoogleSignInButtonProps) {
+export default function GoogleSignInButton({ onError, disabled }: GoogleSignInButtonProps) {
   const [loading, setLoading] = useState(false);
 
-  const sendWelcomeEmail = async (email: string | null, displayName: string | null) => {
-    if (!email) return;
-    try {
-      await fetch('/api/send-welcome-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, displayName: displayName || undefined }),
-      });
-    } catch {}
-  };
-
-  const handleResult = async (result: any) => {
-    const additionalInfo = getAdditionalUserInfo(result);
-    if (additionalInfo?.isNewUser) {
-      await sendWelcomeEmail(result.user.email, result.user.displayName);
-      trackUserSignup('google');
-    } else {
-      trackUserLogin('google');
-    }
-    onSuccess?.();
-  };
-
-  const tryGISFallback = (): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-      if (!clientId) {
-        reject(new Error('Google Client ID not configured'));
-        return;
-      }
-
-      loadGoogleGIS().then(() => {
-        const google = (window as any).google;
-        if (!google?.accounts?.id) {
-          reject(new Error('Google sign-in not available'));
-          return;
-        }
-
-        google.accounts.id.initialize({
-          client_id: clientId,
-          callback: async (response: any) => {
-            if (!response?.credential) {
-              reject(new Error('No credential received'));
-              return;
-            }
-            try {
-              const result = await signInWithGoogleCredential(response.credential);
-              await handleResult(result);
-              resolve();
-            } catch (err: any) {
-              reject(err);
-            }
-          },
-          auto_select: false,
-          cancel_on_tap_outside: false,
-        });
-
-        google.accounts.id.prompt((notification: any) => {
-          if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-            reject(new Error('Google sign-in was not available. Please try again or use email sign-in.'));
-          }
-        });
-      }).catch(reject);
-    });
-  };
-
-  const handleClick = async () => {
+  const handleClick = () => {
     if (loading || disabled) return;
     setLoading(true);
-
-    try {
-      const result = await signInWithGoogle();
-      if (result) {
-        await handleResult(result);
-      }
-    } catch (err: any) {
-      const code = err?.code || '';
-      const msg = err?.message || '';
-
-      if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
-        setLoading(false);
-        return;
-      }
-
-      if (code === 'auth/popup-blocked') {
-        try {
-          await tryGISFallback();
-        } catch (gisErr: any) {
-          onError?.(gisErr?.message || 'Google sign-in failed. Please try email sign-in.');
-        }
-        setLoading(false);
-        return;
-      }
-
-      if (code === 'auth/invalid-credential' || code === 'auth/internal-error' || code === 'auth/unauthorized-domain') {
-        try {
-          await tryGISFallback();
-        } catch (gisErr: any) {
-          onError?.('Google sign-in is not available on this domain. Please use email sign-in.');
-        }
-        setLoading(false);
-        return;
-      }
-
-      onError?.(msg || 'Google sign-in failed');
-    }
-
-    setLoading(false);
+    window.location.href = '/api/auth/google';
   };
 
   return (
@@ -140,7 +34,7 @@ export default function GoogleSignInButton({ onSuccess, onError, disabled }: Goo
           <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
         </svg>
       )}
-      <span>{loading ? 'Signing in...' : 'Continue with Google'}</span>
+      <span>{loading ? 'Redirecting...' : 'Continue with Google'}</span>
     </button>
   );
 }
