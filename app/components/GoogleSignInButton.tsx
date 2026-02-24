@@ -12,7 +12,25 @@ export default function GoogleSignInButton({ disabled }: GoogleSignInButtonProps
   const handleClick = () => {
     if (loading || disabled) return;
     setLoading(true);
-    window.location.href = '/api/auth/google';
+
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    if (!clientId) {
+      window.location.href = '/api/auth/google';
+      return;
+    }
+
+    const redirectUri = `${window.location.origin}/api/gmail/callback`;
+    const params = new URLSearchParams({
+      client_id: clientId,
+      redirect_uri: redirectUri,
+      response_type: 'code',
+      scope: 'openid email profile',
+      access_type: 'offline',
+      prompt: 'select_account',
+      state: 'signin',
+    });
+
+    window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
   };
 
   return (
