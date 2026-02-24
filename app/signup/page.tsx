@@ -90,8 +90,6 @@ export default function Signup() {
 
           <div className="space-y-3 mb-6">
             <GoogleSignInButton
-              onSuccess={() => router.push('/app')}
-              onError={(err) => setLocalError(err)}
               disabled={isSubmitting}
             />
           </div>

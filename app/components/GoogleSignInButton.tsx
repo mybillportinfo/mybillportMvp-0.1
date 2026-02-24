@@ -3,12 +3,10 @@
 import { useState } from 'react';
 
 interface GoogleSignInButtonProps {
-  onSuccess?: () => void;
-  onError?: (error: string) => void;
   disabled?: boolean;
 }
 
-export default function GoogleSignInButton({ onError, disabled }: GoogleSignInButtonProps) {
+export default function GoogleSignInButton({ disabled }: GoogleSignInButtonProps) {
   const [loading, setLoading] = useState(false);
 
   const handleClick = () => {
