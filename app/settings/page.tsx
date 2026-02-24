@@ -230,7 +230,7 @@ export default function SettingsPage() {
       if (data.authUrl) {
         window.location.href = data.authUrl;
       } else {
-        setGmailError('Failed to get authorization URL');
+        setGmailError(data.error || 'Failed to get authorization URL');
       }
     } catch {
       setGmailError('Failed to connect Gmail');

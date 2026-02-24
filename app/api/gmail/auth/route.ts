@@ -10,15 +10,26 @@ export async function GET(request: NextRequest) {
     const authResult = await verifyFirebaseToken(authHeader);
 
     if (!authResult.valid) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: authResult.error || 'Unauthorized' }, { status: 401 });
+    }
+
+    const clientId = process.env.GMAIL_CLIENT_ID;
+    const clientSecret = process.env.GMAIL_CLIENT_SECRET;
+
+    if (!clientId || !clientSecret) {
+      console.error('Gmail auth error: Missing GMAIL_CLIENT_ID or GMAIL_CLIENT_SECRET');
+      return NextResponse.json(
+        { error: 'Gmail OAuth is not configured. Please set GMAIL_CLIENT_ID and GMAIL_CLIENT_SECRET.' },
+        { status: 500 }
+      );
     }
 
     const authUrl = getAuthUrl(authResult.uid!);
     return NextResponse.json({ authUrl });
   } catch (error: any) {
-    console.error('Gmail auth error:', error);
+    console.error('Gmail auth error:', error?.message || error);
     return NextResponse.json(
-      { error: 'Failed to generate Gmail authorization URL' },
+      { error: error?.message || 'Failed to generate Gmail authorization URL' },
       { status: 500 }
     );
   }
