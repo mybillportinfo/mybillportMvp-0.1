@@ -130,8 +130,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const message = err instanceof Error ? err.message : 'Google sign-in failed';
       if (message.includes('auth/popup-blocked') || message.includes('auth/popup-closed-by-user') || message.includes('auth/cancelled-popup-request')) {
         setError('Google sign-in was cancelled or blocked. Please try again.');
-      } else if (message.includes('auth/invalid-credential') || message.includes('auth/unauthorized-domain')) {
-        setError('Google sign-in could not be completed. Please try again or use email sign-in.');
+      } else if (message.includes('auth/unauthorized-domain')) {
+        setError('This domain is not authorized for Google sign-in. Please contact support.');
+      } else if (message.includes('auth/invalid-credential')) {
+        setError('Google sign-in failed. Please try again or use email sign-in.');
+      } else if (message.includes('auth/internal-error')) {
+        setError('Google sign-in encountered a temporary issue. Please try again.');
       } else {
         setError(getAuthErrorMessage(message));
       }

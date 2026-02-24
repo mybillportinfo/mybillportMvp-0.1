@@ -275,10 +275,13 @@ export async function signInWithGoogle() {
   const auth = getFirebaseAuth();
   if (!auth) return Promise.reject(new Error('Firebase not available'));
   const provider = new GoogleAuthProvider();
+  provider.addScope('email');
+  provider.addScope('profile');
 
   try {
     return await signInWithPopup(auth, provider);
   } catch (popupError: any) {
+    console.error('Google sign-in error:', popupError?.code, popupError?.message);
     if (popupError?.code === 'auth/popup-blocked' ||
         popupError?.code === 'auth/popup-closed-by-user' ||
         popupError?.code === 'auth/cancelled-popup-request') {
