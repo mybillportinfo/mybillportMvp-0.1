@@ -104,6 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const credential = await signInWithGoogle();
       if (!credential) {
+        setLoading(false);
         return;
       }
       const additionalInfo = getAdditionalUserInfo(credential);
@@ -122,26 +123,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         trackUserLogin('google');
       }
     } catch (err: unknown) {
+      setLoading(false);
       if (isMfaError(err)) {
         setError('Your account has multi-factor authentication enabled, which is no longer supported. Please contact support at hello@mybillport.com to reset your account security settings.');
-        setLoading(false);
         return;
       }
       const message = err instanceof Error ? err.message : 'Google sign-in failed';
       if (message.includes('auth/popup-blocked') || message.includes('auth/popup-closed-by-user') || message.includes('auth/cancelled-popup-request')) {
-        setError('Google sign-in was cancelled or blocked. Please try again.');
+        return;
+      } else if (message.includes('auth/invalid-credential') || message.includes('auth/internal-error')) {
+        return;
       } else if (message.includes('auth/unauthorized-domain')) {
         setError('This domain is not authorized for Google sign-in. Please contact support.');
-      } else if (message.includes('auth/invalid-credential')) {
-        setError('Google sign-in failed. Please try again or use email sign-in.');
-      } else if (message.includes('auth/internal-error')) {
-        setError('Google sign-in encountered a temporary issue. Please try again.');
       } else {
         setError(getAuthErrorMessage(message));
       }
-      throw err;
-    } finally {
-      setLoading(false);
     }
   };
 
