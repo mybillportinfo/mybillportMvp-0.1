@@ -33,3 +33,4 @@ export async function GET() {
     return NextResponse.redirect(`${appUrl}/login?error=google_init_failed`);
   }
 }
+
