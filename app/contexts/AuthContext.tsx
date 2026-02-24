@@ -7,11 +7,8 @@ import {
   loginUser,
   registerUser,
   logoutUser,
-  signInWithGoogle,
-  handleGoogleRedirectResult,
   isMfaError,
 } from '../lib/firebase';
-import { getAdditionalUserInfo } from 'firebase/auth';
 import { trackUserLogin, trackUserSignup } from '../lib/analyticsService';
 
 interface AuthContextType {
@@ -20,7 +17,7 @@ interface AuthContextType {
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string) => Promise<void>;
-  loginWithGoogle: () => Promise<void>;
+  loginWithGoogle: () => void;
   logout: () => Promise<void>;
   clearError: () => void;
 }
@@ -33,31 +30,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    handleGoogleRedirectResult().then((result) => {
-      if (result?.user) {
-        console.log('Google redirect sign-in successful:', result.user.email);
-        const additionalInfo = getAdditionalUserInfo(result);
-        if (additionalInfo?.isNewUser) {
-          fetch('/api/send-welcome-email', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: result.user.email, displayName: result.user.displayName || undefined }),
-          }).catch(() => {});
-          trackUserSignup('google');
-        } else {
-          trackUserLogin('google');
-        }
-      }
-    }).catch((err: any) => {
-      console.error('Google redirect result error:', err?.code, err?.message);
-      if (err?.code === 'auth/invalid-credential') {
-        setError('Google sign-in failed. The Google provider may not be properly configured. Please try email sign-in or contact support.');
-      } else if (err?.message) {
-        setError(`Google sign-in error: ${err.message}`);
-      }
-      setLoading(false);
-    });
-
     const unsubscribe = subscribeToAuth((user) => {
       setUser(user);
       setLoading(false);
@@ -107,47 +79,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const loginWithGoogleFn = async () => {
+  const loginWithGoogleFn = () => {
     setError(null);
-    setLoading(true);
-    try {
-      const credential = await signInWithGoogle();
-      if (!credential) {
-        setLoading(false);
-        return;
-      }
-      const additionalInfo = getAdditionalUserInfo(credential);
-      const isNewUser = additionalInfo?.isNewUser ?? false;
-      const googleUser = credential.user;
-      if (isNewUser) {
-        try {
-          await fetch('/api/send-welcome-email', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: googleUser.email, displayName: googleUser.displayName || undefined }),
-          });
-        } catch {}
-        trackUserSignup('google');
-      } else {
-        trackUserLogin('google');
-      }
-    } catch (err: unknown) {
-      setLoading(false);
-      if (isMfaError(err)) {
-        setError('Your account has multi-factor authentication enabled, which is no longer supported. Please contact support at hello@mybillport.com to reset your account security settings.');
-        return;
-      }
-      const message = err instanceof Error ? err.message : 'Google sign-in failed';
-      if (message.includes('auth/popup-blocked') || message.includes('auth/popup-closed-by-user') || message.includes('auth/cancelled-popup-request')) {
-        return;
-      } else if (message.includes('auth/invalid-credential') || message.includes('auth/internal-error')) {
-        return;
-      } else if (message.includes('auth/unauthorized-domain')) {
-        setError('This domain is not authorized for Google sign-in. Please contact support.');
-      } else {
-        setError(getAuthErrorMessage(message));
-      }
-    }
+    window.location.href = '/api/auth/google';
   };
 
   const logout = async () => {

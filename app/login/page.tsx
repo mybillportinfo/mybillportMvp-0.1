@@ -26,8 +26,9 @@ export default function Login() {
         no_id_token: 'Google sign-in failed. Please try again.',
         invalid_token: 'Google sign-in failed. Please try again.',
         auth_failed: 'Google sign-in failed. Please try again or use email.',
+        access_denied: 'Google sign-in was cancelled.',
       };
-      setGoogleError(errorMap[urlError] || 'Google sign-in failed. Please try again.');
+      setGoogleError(errorMap[urlError] || `Google sign-in error: ${decodeURIComponent(urlError)}`);
       window.history.replaceState({}, '', '/login');
     }
   }, [urlError]);
