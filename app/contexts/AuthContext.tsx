@@ -8,6 +8,7 @@ import {
   registerUser,
   logoutUser,
   isMfaError,
+  signInWithGoogle as firebaseSignInWithGoogle,
 } from '../lib/firebase';
 import { trackUserLogin, trackUserSignup } from '../lib/analyticsService';
 
@@ -79,24 +80,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const loginWithGoogleFn = () => {
+  const loginWithGoogleFn = async () => {
     setError(null);
-    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-    if (!clientId) {
-      window.location.href = '/api/auth/google';
-      return;
+    setLoading(true);
+    try {
+      const result = await firebaseSignInWithGoogle();
+      if (result?.user) {
+        trackUserLogin('google');
+        try {
+          const isNew = result.user.metadata.creationTime === result.user.metadata.lastSignInTime;
+          if (isNew) {
+            await fetch('/api/send-welcome-email', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: result.user.email, displayName: result.user.displayName || undefined }),
+            });
+          }
+        } catch {}
+      }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Google sign-in failed';
+      setError(getAuthErrorMessage(message));
+    } finally {
+      setLoading(false);
     }
-    const redirectUri = `${window.location.origin}/api/gmail/callback`;
-    const params = new URLSearchParams({
-      client_id: clientId,
-      redirect_uri: redirectUri,
-      response_type: 'code',
-      scope: 'openid email profile',
-      access_type: 'offline',
-      prompt: 'select_account',
-      state: 'signin',
-    });
-    window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
   };
 
   const logout = async () => {
