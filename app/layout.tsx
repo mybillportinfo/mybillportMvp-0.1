@@ -20,6 +20,10 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link rel="icon" href="/favicon.ico" />
+        <script
+          src="https://www.google.com/recaptcha/enterprise.js?render=6Lfby0ksAAAAAPcrsjoe3qZjjD03IxkvRW8pZanp"
+          async
+        />
       </head>
       <body className={inter.className}>
         <Providers>

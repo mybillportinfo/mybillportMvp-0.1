@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Mail, Lock, Loader2, Receipt, DollarSign } from "lucide-react";
 import { useAuth } from '../contexts/AuthContext';
 import GoogleSignInButton from '../components/GoogleSignInButton';
+import { useRecaptcha } from '../hooks/useRecaptcha';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -14,6 +15,7 @@ export default function Login() {
   const [googleError, setGoogleError] = useState<string | null>(null);
 
   const { user, login, error, clearError } = useAuth();
+  const { executeRecaptcha } = useRecaptcha();
   const router = useRouter();
   const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
   const urlError = searchParams?.get('error');
@@ -45,6 +47,21 @@ export default function Login() {
     setIsSubmitting(true);
     clearError();
     try {
+      try {
+        const token = await executeRecaptcha('LOGIN');
+        const res = await fetch('/api/recaptcha/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token, action: 'LOGIN' }),
+        });
+        const result = await res.json();
+        if (!result.success && !result.skipped) {
+          setGoogleError('Security check failed. Please try again.');
+          setIsSubmitting(false);
+          return;
+        }
+      } catch {
+      }
       await login(email, password);
       router.push('/app');
     } catch {
