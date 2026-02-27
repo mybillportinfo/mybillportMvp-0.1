@@ -302,17 +302,8 @@ export async function signInWithGoogle() {
   const provider = new GoogleAuthProvider();
   provider.addScope('email');
   provider.addScope('profile');
-  try {
-    return await signInWithPopup(auth, provider);
-  } catch (popupError: any) {
-    console.error('Google sign-in popup error:', popupError?.code);
-    if (popupError?.code === 'auth/popup-blocked' ||
-        popupError?.code === 'auth/popup-closed-by-user' ||
-        popupError?.code === 'auth/cancelled-popup-request') {
-      throw popupError;
-    }
-    throw popupError;
-  }
+  provider.setCustomParameters({ prompt: 'select_account' });
+  await signInWithRedirect(auth, provider);
 }
 
 export async function handleGoogleRedirectResult() {

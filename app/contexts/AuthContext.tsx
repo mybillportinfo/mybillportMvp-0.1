@@ -9,6 +9,7 @@ import {
   logoutUser,
   isMfaError,
   signInWithGoogle as firebaseSignInWithGoogle,
+  handleGoogleRedirectResult,
 } from '../lib/firebase';
 import { trackUserLogin, trackUserSignup } from '../lib/analyticsService';
 
@@ -36,6 +37,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
     return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    handleGoogleRedirectResult().then((result) => {
+      if (result?.user) {
+        trackUserLogin('google');
+        try {
+          const isNew = result.user.metadata.creationTime === result.user.metadata.lastSignInTime;
+          if (isNew) {
+            fetch('/api/send-welcome-email', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: result.user.email, displayName: result.user.displayName || undefined }),
+            }).catch(() => {});
+          }
+        } catch {}
+      }
+    }).catch(() => {});
   }, []);
 
   const login = async (email: string, password: string) => {
@@ -82,27 +101,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loginWithGoogleFn = async () => {
     setError(null);
-    setLoading(true);
     try {
-      const result = await firebaseSignInWithGoogle();
-      if (result?.user) {
-        trackUserLogin('google');
-        try {
-          const isNew = result.user.metadata.creationTime === result.user.metadata.lastSignInTime;
-          if (isNew) {
-            await fetch('/api/send-welcome-email', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ email: result.user.email, displayName: result.user.displayName || undefined }),
-            });
-          }
-        } catch {}
-      }
+      await firebaseSignInWithGoogle();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Google sign-in failed';
-      setError(getAuthErrorMessage(message));
-    } finally {
-      setLoading(false);
+      setError(getGoogleAuthErrorMessage(message));
     }
   };
 
@@ -173,4 +176,23 @@ function getAuthErrorMessage(errorMessage: string): string {
     return 'Unable to connect to authentication service. Please refresh and try again.';
   }
   return errorMessage;
+}
+
+function getGoogleAuthErrorMessage(errorMessage: string): string {
+  if (errorMessage.includes('auth/account-exists-with-different-credential')) {
+    return 'An account already exists with this email. Try signing in with your email and password instead.';
+  }
+  if (errorMessage.includes('auth/too-many-requests')) {
+    return 'Too many attempts. Please try again later.';
+  }
+  if (errorMessage.includes('auth/user-disabled')) {
+    return 'This account has been disabled. Please contact support.';
+  }
+  if (errorMessage.includes('Firebase not available')) {
+    return 'Unable to connect to authentication service. Please refresh and try again.';
+  }
+  if (errorMessage.includes('auth/')) {
+    return 'Google sign-in failed. Please try again.';
+  }
+  return 'Google sign-in failed. Please try again.';
 }
