@@ -9,6 +9,7 @@ import {
   logoutUser,
   isMfaError,
   signInWithGoogle as firebaseSignInWithGoogle,
+  signInWithGoogleCredential,
   handleGoogleRedirectResult,
 } from '../lib/firebase';
 import { trackUserLogin, trackUserSignup } from '../lib/analyticsService';
@@ -20,6 +21,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string) => Promise<void>;
   loginWithGoogle: () => void;
+  loginWithGoogleToken: (idToken: string) => Promise<void>;
   logout: () => Promise<void>;
   clearError: () => void;
 }
@@ -126,6 +128,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const loginWithGoogleToken = async (idToken: string) => {
+    setError(null);
+    setLoading(true);
+    try {
+      const result = await signInWithGoogleCredential(idToken);
+      if (result?.user) {
+        trackUserLogin('google');
+        try {
+          const isNew = result.user.metadata.creationTime === result.user.metadata.lastSignInTime;
+          if (isNew) {
+            fetch('/api/send-welcome-email', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: result.user.email, displayName: result.user.displayName || undefined }),
+            }).catch(() => {});
+          }
+        } catch {}
+      }
+    } catch (err: unknown) {
+      const errCode = (err as any)?.code || '';
+      const message = err instanceof Error ? err.message : 'Google sign-in failed';
+      setError(getGoogleAuthErrorMessage(errCode || message));
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = async () => {
     setError(null);
     try {
@@ -143,6 +173,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider value={{
       user, loading, error, login, signup,
       loginWithGoogle: loginWithGoogleFn,
+      loginWithGoogleToken,
       logout, clearError,
     }}>
       {children}
