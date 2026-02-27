@@ -54,7 +54,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         } catch {}
       }
-    }).catch(() => {});
+    }).catch((err: any) => {
+      const message = err?.message || 'Google sign-in failed';
+      setError(getGoogleAuthErrorMessage(message));
+    });
   }, []);
 
   const login = async (email: string, password: string) => {
@@ -102,10 +105,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loginWithGoogleFn = async () => {
     setError(null);
     try {
-      await firebaseSignInWithGoogle();
+      const result = await firebaseSignInWithGoogle();
+      if (result?.user) {
+        trackUserLogin('google');
+        try {
+          const isNew = result.user.metadata.creationTime === result.user.metadata.lastSignInTime;
+          if (isNew) {
+            fetch('/api/send-welcome-email', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: result.user.email, displayName: result.user.displayName || undefined }),
+            }).catch(() => {});
+          }
+        } catch {}
+      }
     } catch (err: unknown) {
+      const errCode = (err as any)?.code || '';
       const message = err instanceof Error ? err.message : 'Google sign-in failed';
-      setError(getGoogleAuthErrorMessage(message));
+      setError(getGoogleAuthErrorMessage(errCode || message));
     }
   };
 
@@ -180,19 +197,28 @@ function getAuthErrorMessage(errorMessage: string): string {
 
 function getGoogleAuthErrorMessage(errorMessage: string): string {
   if (errorMessage.includes('auth/account-exists-with-different-credential')) {
-    return 'An account already exists with this email. Try signing in with your email and password instead.';
+    return 'An account already exists with this email. Try signing in with email and password instead.';
   }
   if (errorMessage.includes('auth/too-many-requests')) {
-    return 'Too many attempts. Please try again later.';
+    return 'Too many sign-in attempts. Please try again later.';
   }
   if (errorMessage.includes('auth/user-disabled')) {
     return 'This account has been disabled. Please contact support.';
   }
-  if (errorMessage.includes('Firebase not available')) {
-    return 'Unable to connect to authentication service. Please refresh and try again.';
+  if (errorMessage.includes('auth/popup-closed-by-user') || errorMessage.includes('auth/cancelled-popup-request')) {
+    return 'Sign-in was cancelled. Please try again.';
   }
-  if (errorMessage.includes('auth/')) {
-    return 'Google sign-in failed. Please try again.';
+  if (errorMessage.includes('auth/popup-blocked')) {
+    return 'Pop-up was blocked. Please allow pop-ups for this site and try again.';
+  }
+  if (errorMessage.includes('auth/invalid-credential') || errorMessage.includes('auth/invalid-action-code')) {
+    return 'Google sign-in failed. Please make sure your Google account is verified and try again.';
+  }
+  if (errorMessage.includes('auth/network-request-failed')) {
+    return 'Network error. Please check your connection and try again.';
+  }
+  if (errorMessage.includes('Firebase not available')) {
+    return 'Unable to connect. Please refresh and try again.';
   }
   return 'Google sign-in failed. Please try again.';
 }

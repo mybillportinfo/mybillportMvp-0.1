@@ -303,18 +303,25 @@ export async function signInWithGoogle() {
   provider.addScope('email');
   provider.addScope('profile');
   provider.setCustomParameters({ prompt: 'select_account' });
-  await signInWithRedirect(auth, provider);
+  try {
+    return await signInWithPopup(auth, provider);
+  } catch (popupError: any) {
+    if (
+      popupError?.code === 'auth/popup-blocked' ||
+      popupError?.code === 'auth/popup-closed-by-user' ||
+      popupError?.code === 'auth/cancelled-popup-request'
+    ) {
+      await signInWithRedirect(auth, provider);
+      return null;
+    }
+    throw popupError;
+  }
 }
 
 export async function handleGoogleRedirectResult() {
   const auth = getFirebaseAuth();
   if (!auth) return null;
-  try {
-    return await getRedirectResult(auth);
-  } catch (err: any) {
-    console.error('Google redirect result error:', err?.code, err?.message);
-    return null;
-  }
+  return await getRedirectResult(auth);
 }
 
 export function resetPassword(email: string) {
