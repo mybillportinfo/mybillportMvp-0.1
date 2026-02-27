@@ -2,7 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Receipt, DollarSign, Mail, CheckCircle } from "lucide-react";
+import {
+  ArrowRight, Receipt, DollarSign, Mail, CheckCircle,
+  Bell, ShieldCheck, TrendingUp, Clock, Eye, Zap
+} from "lucide-react";
 
 export default function LandingPage() {
   const [email, setEmail] = useState("");
@@ -17,176 +20,234 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b1220] text-[#0f172a]" style={{ fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, sans-serif" }}>
+    <div className="min-h-screen bg-[#060d1a] text-white" style={{ fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, sans-serif" }}>
 
       {/* Nav */}
-      <header className="sticky top-0 z-50 bg-[#0b1220]/90 backdrop-blur border-b border-[#1f2937]">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-sky-500 flex items-center justify-center">
-              <div className="relative">
-                <Receipt className="text-white w-4 h-4" />
-                <DollarSign className="text-white w-2.5 h-2.5 absolute -bottom-0.5 -right-0.5" />
-              </div>
+      <header className="sticky top-0 z-50 bg-[#060d1a]/95 backdrop-blur-md border-b border-white/5">
+        <div className="max-w-5xl mx-auto px-5 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center shadow-[0_0_12px_rgba(20,184,166,0.4)]">
+              <Receipt className="text-white w-4 h-4" />
             </div>
-            <span className="font-bold text-xl text-[#e5e7eb] tracking-tight">MyBillPort</span>
+            <span className="font-bold text-lg text-white tracking-tight">MyBillPort</span>
           </div>
-          <nav className="hidden sm:flex items-center gap-6 text-sm text-[#9ca3af]">
+          <nav className="hidden sm:flex items-center gap-7 text-sm text-slate-400">
+            <a href="#features" className="hover:text-white transition-colors">Features</a>
             <a href="#how" className="hover:text-white transition-colors">How it works</a>
-            <a href="#benefits" className="hover:text-white transition-colors">Benefits</a>
             <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
           </nav>
           <Link href="/login">
-            <button className="bg-gradient-to-r from-green-500 to-sky-500 text-[#020617] font-semibold text-sm px-5 py-2 rounded-full hover:opacity-90 transition-opacity flex items-center gap-1.5">
-              Open App <ArrowRight className="w-4 h-4" />
+            <button className="bg-teal-500 hover:bg-teal-400 text-white font-semibold text-sm px-5 py-2.5 rounded-full transition-colors flex items-center gap-1.5">
+              Get started free
             </button>
           </Link>
         </div>
       </header>
 
-      <div className="max-w-5xl mx-auto px-4 py-12 md:py-20 space-y-20">
-
-        {/* Hero */}
-        <section className="text-center space-y-6 pt-4">
-          <p className="text-xs font-semibold tracking-widest uppercase text-green-400">
-            Early access · AI bill assistant
-          </p>
-          <h1 className="text-3xl md:text-5xl font-bold text-[#f9fafb] leading-tight max-w-3xl mx-auto">
-            Cut your bills with an AI that actually watches them
+      {/* Hero */}
+      <section className="pt-20 pb-24 px-5 text-center relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-radial from-teal-900/20 via-transparent to-transparent pointer-events-none" />
+        <div className="max-w-3xl mx-auto relative space-y-6">
+          <div className="inline-flex items-center gap-2 bg-teal-500/10 border border-teal-500/20 text-teal-400 text-xs font-semibold px-4 py-1.5 rounded-full tracking-wide uppercase">
+            Built for Canadians · Free to start
+          </div>
+          <h1 className="text-4xl md:text-6xl font-extrabold text-white leading-[1.1] tracking-tight">
+            Every bill you pay.<br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-400">
+              One place to manage them.
+            </span>
           </h1>
-          <p className="text-base md:text-lg text-[#d1d5db] max-w-xl mx-auto leading-relaxed">
-            MyBillPort scans your bills, spots spikes, and surfaces savings opportunities in minutes —
-            before your provider quietly hikes the price. No bank connection required to start.
+          <p className="text-lg md:text-xl text-slate-400 leading-relaxed max-w-xl mx-auto">
+            Stop juggling due dates, hunting for invoices, and getting blindsided by price increases.
+            MyBillPort keeps all your Canadian bills organised, visible, and on time.
           </p>
           <div className="flex flex-wrap justify-center gap-3 pt-2">
             <Link href="/login">
-              <button className="bg-gradient-to-r from-green-500 to-sky-500 text-[#020617] font-semibold px-7 py-3 rounded-full hover:opacity-90 transition-opacity flex items-center gap-2">
-                Get early access <ArrowRight className="w-4 h-4" />
+              <button className="bg-teal-500 hover:bg-teal-400 text-white font-bold px-8 py-4 rounded-full transition-colors flex items-center gap-2 text-base shadow-lg shadow-teal-900/40">
+                Start for free <ArrowRight className="w-5 h-5" />
               </button>
             </Link>
             <a href="#how">
-              <button className="border border-[#4b5563] text-[#e5e7eb] font-medium px-7 py-3 rounded-full hover:bg-[#1f2937] transition-colors">
+              <button className="border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 font-medium px-8 py-4 rounded-full transition-colors text-base">
                 See how it works
               </button>
             </a>
           </div>
-          <p className="text-xs text-[#6b7280]">
-            Built in Canada for people who are done being surprised by their bills.
+          <p className="text-xs text-slate-500 pt-1">
+            No credit card required · No bank login needed · Cancel anytime
           </p>
-        </section>
+        </div>
+      </section>
 
-        {/* How it works */}
-        <section id="how" className="space-y-8 scroll-mt-20">
-          <div>
-            <h2 className="text-xl md:text-2xl font-bold text-[#f9fafb] mb-2">How MyBillPort works</h2>
-            <p className="text-sm text-[#9ca3af]">
-              Think of it as a bill analyst on your side — fast, focused, and always watching for bad surprises.
+      {/* Trust bar */}
+      <div className="border-y border-white/5 bg-white/[0.02] py-5 px-5">
+        <div className="max-w-4xl mx-auto flex flex-wrap justify-center gap-6 md:gap-12 text-sm text-slate-500">
+          {["100+ Canadian billers supported", "Reminders before every due date", "Secure · Private · No data selling", "Rogers · Bell · Hydro · and more"].map((t) => (
+            <div key={t} className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-teal-500 flex-shrink-0" />
+              <span>{t}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="max-w-5xl mx-auto px-5 space-y-28 py-24">
+
+        {/* Features */}
+        <section id="features" className="scroll-mt-20 space-y-12">
+          <div className="text-center space-y-3 max-w-2xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-bold text-white">
+              Built around how Canadians actually pay bills
+            </h2>
+            <p className="text-slate-400 text-base leading-relaxed">
+              No bloated dashboards. No confusing charts. Just a clear, calm view of what you owe and when it's due.
             </p>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {[
               {
-                step: "1",
-                title: "Bring your bills in",
-                body: "Snap a photo or upload a PDF and let AI extract the details, or enter a bill manually in under 30 seconds.",
+                icon: Eye,
+                title: "See everything at a glance",
+                body: "All your bills — hydro, internet, phone, insurance — on one clean dashboard. No more logging into five different portals.",
               },
               {
-                step: "2",
-                title: "MBP reads and understands",
-                body: "MyBillPort detects sudden increases, promo expiries, and classifies each bill by category.",
+                icon: Bell,
+                title: "Reminders that actually help",
+                body: "Get notified 7 days out, 2 days out, and the day a bill is due. Never pay a late fee again.",
               },
               {
-                step: "3",
-                title: "Get clear, simple insights",
-                body: "See exactly which bills jumped, which look overpriced, and what to say when you call your provider.",
+                icon: TrendingUp,
+                title: "Spot price increases early",
+                body: "MyBillPort flags when a bill is higher than usual so you can call your provider before the charge hits.",
               },
               {
-                step: "4",
-                title: "Turn insight into savings",
-                body: "Use negotiation scripts or upgrade to a concierge audit and let us handle the hard calls for you.",
+                icon: Zap,
+                title: "Pay in one click",
+                body: "Direct links to every major Canadian biller's payment page. Find your bill, click Pay, done.",
               },
-            ].map((item) => (
-              <div key={item.step} className="bg-[#020617] border border-[#1f2937] rounded-2xl p-5 space-y-3 hover:border-[#374151] transition-colors">
-                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-green-500 to-sky-500 flex items-center justify-center text-xs font-bold text-[#020617]">
-                  {item.step}
+              {
+                icon: Clock,
+                title: "Track what's paid and what's pending",
+                body: "Clear status on every bill — Unpaid, Partial, Paid, Overdue. You'll always know exactly where you stand.",
+              },
+              {
+                icon: ShieldCheck,
+                title: "Private and secure by design",
+                body: "Your data stays yours. We never sell your information or connect to your bank account.",
+              },
+            ].map((f) => (
+              <div key={f.title} className="bg-[#0d1a2d] border border-white/5 rounded-2xl p-6 space-y-4 hover:border-teal-500/20 transition-colors group">
+                <div className="w-10 h-10 bg-teal-500/10 group-hover:bg-teal-500/20 rounded-xl flex items-center justify-center transition-colors">
+                  <f.icon className="w-5 h-5 text-teal-400" />
                 </div>
-                <h3 className="text-sm font-semibold text-[#e5e7eb]">{item.title}</h3>
-                <p className="text-xs text-[#9ca3af] leading-relaxed">{item.body}</p>
+                <h3 className="text-base font-semibold text-white">{f.title}</h3>
+                <p className="text-sm text-slate-400 leading-relaxed">{f.body}</p>
               </div>
             ))}
           </div>
         </section>
 
-        {/* Benefits */}
-        <section id="benefits" className="space-y-8 scroll-mt-20">
-          <h2 className="text-xl md:text-2xl font-bold text-[#f9fafb]">Why people use MyBillPort</h2>
-          <div className="grid sm:grid-cols-3 gap-4">
+        {/* How it works */}
+        <section id="how" className="scroll-mt-20 space-y-12">
+          <div className="text-center space-y-3 max-w-2xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-bold text-white">Up and running in minutes</h2>
+            <p className="text-slate-400 text-base">No lengthy setup. No tutorials. Just add your first bill and go.</p>
+          </div>
+          <div className="grid sm:grid-cols-3 gap-6">
             {[
               {
-                title: "Stop quiet overpayments",
-                body: "MBP watches for fee creep and price hikes so you don't wake up to a bill that's 20% higher for no reason.",
+                step: "01",
+                title: "Add your bills",
+                body: "Upload a PDF or photo and we extract the details automatically — or type it in manually. Either way takes under a minute.",
               },
               {
-                title: "Know your true recurring burn",
-                body: "See, in one place, what's locked-in, what's negotiable, and what you can cancel this month to free up cash.",
+                step: "02",
+                title: "We watch the due dates",
+                body: "MyBillPort tracks every due date and sends you reminders so nothing slips through the cracks, even during busy months.",
               },
               {
-                title: "Save time and headspace",
-                body: "No more hunting through portals and PDFs. MyBillPort pulls out the signal and shows you where to act.",
+                step: "03",
+                title: "Pay and mark as done",
+                body: "Click the Pay button to go straight to your biller's website. Mark it paid and move on with your day.",
               },
-            ].map((item) => (
-              <div key={item.title} className="bg-[#020617] border border-[#1f2937] rounded-2xl p-5 space-y-3 hover:border-[#374151] transition-colors">
-                <h3 className="text-sm font-semibold text-[#e5e7eb]">{item.title}</h3>
-                <p className="text-xs text-[#9ca3af] leading-relaxed">{item.body}</p>
+            ].map((s) => (
+              <div key={s.step} className="relative bg-[#0d1a2d] border border-white/5 rounded-2xl p-7 space-y-4">
+                <span className="text-5xl font-black text-teal-500/15 leading-none block">{s.step}</span>
+                <h3 className="text-base font-semibold text-white">{s.title}</h3>
+                <p className="text-sm text-slate-400 leading-relaxed">{s.body}</p>
               </div>
             ))}
           </div>
         </section>
 
         {/* Pricing */}
-        <section id="pricing" className="space-y-8 scroll-mt-20">
-          <div>
-            <h2 className="text-xl md:text-2xl font-bold text-[#f9fafb] mb-2">Simple, fair pricing</h2>
-            <p className="text-sm text-[#9ca3af]">
-              During our pilot, access is free while we learn from early users and tune the experience.
+        <section id="pricing" className="scroll-mt-20 space-y-12">
+          <div className="text-center space-y-3 max-w-2xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-bold text-white">Straightforward pricing</h2>
+            <p className="text-slate-400 text-base">
+              Start free. Upgrade only when it makes sense for you.
             </p>
           </div>
-          <div className="grid sm:grid-cols-3 gap-4">
-            <div className="bg-[#020617] border border-[#1f2937] rounded-2xl p-6 space-y-3">
-              <h3 className="text-sm font-semibold text-[#e5e7eb]">Free (Pilot)</h3>
-              <p className="text-3xl font-bold text-[#e5e7eb]">$0</p>
-              <p className="text-xs text-[#9ca3af] leading-relaxed">
-                Track bills, upload documents, and get core AI insights while we're in early access.
-              </p>
+          <div className="grid sm:grid-cols-3 gap-5 items-start">
+            <div className="bg-[#0d1a2d] border border-white/5 rounded-2xl p-7 space-y-5">
+              <div>
+                <p className="text-sm font-semibold text-slate-400 mb-1">Starter</p>
+                <p className="text-4xl font-extrabold text-white">Free</p>
+                <p className="text-xs text-slate-500 mt-1">Forever · No credit card</p>
+              </div>
+              <ul className="space-y-2.5 text-sm text-slate-300">
+                {["Track up to 10 bills", "Due date reminders", "One-click payment links", "100+ Canadian billers", "PDF & photo bill upload"].map((i) => (
+                  <li key={i} className="flex items-center gap-2.5">
+                    <CheckCircle className="w-4 h-4 text-teal-400 flex-shrink-0" />
+                    {i}
+                  </li>
+                ))}
+              </ul>
               <Link href="/login">
-                <button className="w-full mt-2 border border-[#4b5563] text-[#e5e7eb] text-sm font-medium py-2 rounded-full hover:bg-[#1f2937] transition-colors">
+                <button className="w-full border border-teal-500/40 text-teal-400 hover:bg-teal-500/10 font-semibold py-3 rounded-full transition-colors text-sm">
                   Get started free
                 </button>
               </Link>
             </div>
 
-            <div className="bg-[#020617] border-2 border-green-500/60 rounded-2xl p-6 space-y-3 relative">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-green-500 to-sky-500 text-[#020617] text-xs font-bold px-3 py-1 rounded-full">
+            <div className="bg-[#0d1a2d] border-2 border-teal-500/50 rounded-2xl p-7 space-y-5 relative shadow-[0_0_30px_rgba(20,184,166,0.08)]">
+              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-teal-500 text-white text-xs font-bold px-3 py-1 rounded-full">
                 Most popular
               </div>
-              <h3 className="text-sm font-semibold text-green-300">Pro (Coming soon)</h3>
-              <p className="text-3xl font-bold text-green-300">$5–9<span className="text-base font-normal text-[#9ca3af]"> / mo</span></p>
-              <p className="text-xs text-[#9ca3af] leading-relaxed">
-                Deeper forecasting, more accounts, and priority support once we prove consistent savings.
-              </p>
-              <button disabled className="w-full mt-2 bg-gradient-to-r from-green-500/30 to-sky-500/30 text-green-300 text-sm font-medium py-2 rounded-full cursor-not-allowed opacity-60">
+              <div>
+                <p className="text-sm font-semibold text-teal-400 mb-1">Pro</p>
+                <p className="text-4xl font-extrabold text-white">$7<span className="text-xl font-medium text-slate-400"> /mo</span></p>
+                <p className="text-xs text-slate-500 mt-1">Coming soon during pilot</p>
+              </div>
+              <ul className="space-y-2.5 text-sm text-slate-300">
+                {["Everything in Starter", "Unlimited bills", "Gmail auto-import", "Price spike alerts", "Recurring bill detection", "Priority support"].map((i) => (
+                  <li key={i} className="flex items-center gap-2.5">
+                    <CheckCircle className="w-4 h-4 text-teal-400 flex-shrink-0" />
+                    {i}
+                  </li>
+                ))}
+              </ul>
+              <button disabled className="w-full bg-teal-500/30 text-teal-300 font-semibold py-3 rounded-full text-sm cursor-not-allowed opacity-70">
                 Coming soon
               </button>
             </div>
 
-            <div className="bg-[#020617] border border-[#1f2937] rounded-2xl p-6 space-y-3">
-              <h3 className="text-sm font-semibold text-[#e5e7eb]">Concierge audit</h3>
-              <p className="text-3xl font-bold text-[#e5e7eb]">$29+<span className="text-base font-normal text-[#9ca3af]"> once</span></p>
-              <p className="text-xs text-[#9ca3af] leading-relaxed">
-                A one-time bill audit where we review your key bills and help unlock the top savings.
-              </p>
+            <div className="bg-[#0d1a2d] border border-white/5 rounded-2xl p-7 space-y-5">
+              <div>
+                <p className="text-sm font-semibold text-slate-400 mb-1">Concierge</p>
+                <p className="text-4xl font-extrabold text-white">$29<span className="text-xl font-medium text-slate-400">+</span></p>
+                <p className="text-xs text-slate-500 mt-1">One-time fee</p>
+              </div>
+              <ul className="space-y-2.5 text-sm text-slate-300">
+                {["Personal bill review", "Find overpriced services", "Negotiation scripts included", "Expert recommendations", "Money-back if no savings found"].map((i) => (
+                  <li key={i} className="flex items-center gap-2.5">
+                    <CheckCircle className="w-4 h-4 text-teal-400 flex-shrink-0" />
+                    {i}
+                  </li>
+                ))}
+              </ul>
               <a href="mailto:mybillportinfo@gmail.com">
-                <button className="w-full mt-2 border border-[#4b5563] text-[#e5e7eb] text-sm font-medium py-2 rounded-full hover:bg-[#1f2937] transition-colors">
+                <button className="w-full border border-white/10 text-slate-300 hover:bg-white/5 font-semibold py-3 rounded-full transition-colors text-sm">
                   Contact us
                 </button>
               </a>
@@ -194,63 +255,66 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* CTA / Waitlist */}
-        <section className="bg-[#020617] border border-[#1f2937] rounded-2xl p-8 md:p-12 text-center space-y-6">
-          <h2 className="text-2xl md:text-3xl font-bold text-[#f9fafb]">
-            Start managing your bills today
+        {/* Final CTA */}
+        <section className="bg-gradient-to-br from-teal-900/30 to-cyan-900/10 border border-teal-500/15 rounded-3xl p-10 md:p-16 text-center space-y-6">
+          <h2 className="text-3xl md:text-4xl font-bold text-white">
+            Your bills aren't going anywhere.<br />
+            <span className="text-teal-400">Your stress can.</span>
           </h2>
-          <p className="text-[#9ca3af] max-w-md mx-auto text-sm leading-relaxed">
-            Take control of your bills with a simple, trusted Canadian app. Free to start — no credit card needed.
+          <p className="text-slate-400 max-w-md mx-auto text-base leading-relaxed">
+            Join Canadians who've taken back control of their bills. Free to start, takes two minutes to set up.
           </p>
           {submitted ? (
             <div className="flex flex-col items-center gap-3">
-              <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
+              <div className="w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center">
                 <CheckCircle className="w-6 h-6 text-white" />
               </div>
-              <p className="text-green-400 font-medium">You're on the list! We'll be in touch.</p>
+              <p className="text-teal-400 font-medium">You're on the list — we'll be in touch.</p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-5">
               <Link href="/login">
-                <button className="bg-gradient-to-r from-green-500 to-sky-500 text-[#020617] font-semibold px-8 py-3 rounded-full hover:opacity-90 transition-opacity inline-flex items-center gap-2">
-                  Get early access <ArrowRight className="w-4 h-4" />
+                <button className="bg-teal-500 hover:bg-teal-400 text-white font-bold px-10 py-4 rounded-full transition-colors inline-flex items-center gap-2 text-base shadow-lg shadow-teal-900/50">
+                  Start managing your bills free <ArrowRight className="w-5 h-5" />
                 </button>
               </Link>
-              <p className="text-xs text-[#6b7280]">Or join the waitlist for updates</p>
-              <form onSubmit={handleWaitlist} className="flex flex-col sm:flex-row gap-2 justify-center max-w-sm mx-auto">
-                <input
-                  type="email"
-                  placeholder="your@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="flex-1 bg-[#0f172a] border border-[#374151] text-white placeholder:text-[#4b5563] rounded-full px-4 py-2.5 text-sm focus:outline-none focus:border-green-500"
-                />
-                <button type="submit" className="bg-[#1f2937] hover:bg-[#374151] text-white rounded-full px-5 py-2.5 text-sm font-medium flex items-center gap-1.5 justify-center transition-colors">
-                  <Mail className="w-4 h-4" /> Subscribe
-                </button>
-              </form>
+              <div>
+                <p className="text-xs text-slate-500 mb-3">Or get notified when new features drop</p>
+                <form onSubmit={handleWaitlist} className="flex flex-col sm:flex-row gap-2 justify-center max-w-sm mx-auto">
+                  <input
+                    type="email"
+                    placeholder="your@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="flex-1 bg-white/5 border border-white/10 text-white placeholder:text-slate-600 rounded-full px-5 py-3 text-sm focus:outline-none focus:border-teal-500/50"
+                  />
+                  <button type="submit" className="bg-white/10 hover:bg-white/15 text-white rounded-full px-5 py-3 text-sm font-medium flex items-center gap-1.5 justify-center transition-colors">
+                    <Mail className="w-4 h-4" /> Notify me
+                  </button>
+                </form>
+              </div>
             </div>
           )}
         </section>
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-[#1f2937] mt-8">
-        <div className="max-w-5xl mx-auto px-4 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-green-400 to-sky-500 flex items-center justify-center">
+      <footer className="border-t border-white/5">
+        <div className="max-w-5xl mx-auto px-5 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center">
               <Receipt className="text-white w-3.5 h-3.5" />
             </div>
-            <span className="font-bold text-[#e5e7eb]">MyBillPort</span>
+            <span className="font-bold text-white tracking-tight">MyBillPort</span>
           </div>
-          <div className="flex gap-5 text-sm text-[#9ca3af]">
-            <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
-            <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
+          <div className="flex gap-6 text-sm text-slate-500">
+            <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
+            <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
             <a href="mailto:mybillportinfo@gmail.com" className="hover:text-white transition-colors">Contact</a>
           </div>
-          <p className="text-xs text-[#6b7280]">
-            © {new Date().getFullYear()} MyBillPort · Not a bank. We help you understand and optimise your bills.
+          <p className="text-xs text-slate-600">
+            © {new Date().getFullYear()} MyBillPort · Made in Canada
           </p>
         </div>
       </footer>
