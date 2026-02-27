@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyFirebaseToken } from '../../../lib/authVerify';
-import { deleteGmailTokens } from '../../../lib/gmailService';
+import { getGmailTokens, deleteGmailTokens, revokeGmailToken } from '../../../lib/gmailService';
 
 export const runtime = 'nodejs';
 
@@ -13,7 +13,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    await deleteGmailTokens(authResult.uid);
+    const userId = authResult.uid;
+    const tokens = await getGmailTokens(userId);
+
+    if (tokens?.accessToken) {
+      await revokeGmailToken(tokens.accessToken);
+    }
+
+    await deleteGmailTokens(userId);
+
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error('Gmail disconnect error:', error);

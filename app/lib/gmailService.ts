@@ -137,6 +137,16 @@ export async function getGmailTokens(userId: string): Promise<GmailTokenData | n
   return doc.data() as GmailTokenData;
 }
 
+export async function revokeGmailToken(accessToken: string): Promise<void> {
+  try {
+    await fetch(`https://oauth2.googleapis.com/revoke?token=${encodeURIComponent(accessToken)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    });
+  } catch {
+  }
+}
+
 export async function deleteGmailTokens(userId: string): Promise<void> {
   const db = getAdminDb();
   await db.collection('userGmailTokens').doc(userId).delete();
