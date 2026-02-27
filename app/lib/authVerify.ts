@@ -61,6 +61,10 @@ export async function verifyFirebaseToken(authHeader: string | null): Promise<{
     };
   } catch (error: any) {
     const code = error?.code || '';
+    console.error('[authVerify] verifyIdToken failed:', code, error?.message || error);
+    if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+      console.error('[authVerify] FIREBASE_SERVICE_ACCOUNT_KEY is not set — Admin SDK cannot verify tokens');
+    }
     if (code === 'auth/id-token-expired') {
       return { valid: false, error: 'Token expired' };
     }
