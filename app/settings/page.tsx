@@ -408,7 +408,7 @@ export default function SettingsPage() {
             </div>
           ) : (
             <div className="space-y-2">
-              <p className="text-xs text-slate-500">Connect your Gmail to automatically find and import bills from your inbox. We only read emails from known Canadian billers.</p>
+              <p className="text-xs text-slate-500">Connect your Gmail to automatically find and import bills from your inbox. We only read bill-related emails — your privacy is protected.</p>
               <button
                 onClick={handleConnectGmail}
                 disabled={gmailLoading}

@@ -115,7 +115,7 @@ function PaymentContent() {
                     Find Payment Page
                   </button>
                   <p className="text-xs text-slate-400 text-center">
-                    Searches Google for &quot;{selectedBiller} pay bill Canada&quot;
+                    Searches Google for &quot;{selectedBiller} pay bill online&quot;
                   </p>
                 </div>
               )}

@@ -49,7 +49,7 @@ export default function LandingPage() {
         <div className="absolute inset-0 bg-gradient-radial from-teal-900/20 via-transparent to-transparent pointer-events-none" />
         <div className="max-w-3xl mx-auto relative space-y-6">
           <div className="inline-flex items-center gap-2 bg-teal-500/10 border border-teal-500/20 text-teal-400 text-xs font-semibold px-4 py-1.5 rounded-full tracking-wide uppercase">
-            Built for Canadians · Free to start
+            Early access · Free to start
           </div>
           <h1 className="text-4xl md:text-6xl font-extrabold text-white leading-[1.1] tracking-tight">
             Every bill you pay.<br />
@@ -59,7 +59,7 @@ export default function LandingPage() {
           </h1>
           <p className="text-lg md:text-xl text-slate-400 leading-relaxed max-w-xl mx-auto">
             Stop juggling due dates, hunting for invoices, and getting blindsided by price increases.
-            MyBillPort keeps all your Canadian bills organised, visible, and on time.
+            MyBillPort keeps all your bills organised, visible, and on time.
           </p>
           <div className="flex flex-wrap justify-center gap-3 pt-2">
             <Link href="/login">
@@ -82,7 +82,7 @@ export default function LandingPage() {
       {/* Trust bar */}
       <div className="border-y border-white/5 bg-white/[0.02] py-5 px-5">
         <div className="max-w-4xl mx-auto flex flex-wrap justify-center gap-6 md:gap-12 text-sm text-slate-500">
-          {["100+ Canadian billers supported", "Reminders before every due date", "Secure · Private · No data selling", "Rogers · Bell · Hydro · and more"].map((t) => (
+          {["100+ billers supported worldwide", "Reminders before every due date", "Secure · Private · No data selling", "Rogers · Bell · Telus · and more"].map((t) => (
             <div key={t} className="flex items-center gap-2">
               <CheckCircle className="w-4 h-4 text-teal-500 flex-shrink-0" />
               <span>{t}</span>
@@ -97,7 +97,7 @@ export default function LandingPage() {
         <section id="features" className="scroll-mt-20 space-y-12">
           <div className="text-center space-y-3 max-w-2xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold text-white">
-              Built around how Canadians actually pay bills
+              Built around how people actually pay bills
             </h2>
             <p className="text-slate-400 text-base leading-relaxed">
               No bloated dashboards. No confusing charts. Just a clear, calm view of what you owe and when it's due.
@@ -123,7 +123,7 @@ export default function LandingPage() {
               {
                 icon: Zap,
                 title: "Pay in one click",
-                body: "Direct links to every major Canadian biller's payment page. Find your bill, click Pay, done.",
+                body: "Direct links to your biller's payment page. Find your bill, click Pay, done.",
               },
               {
                 icon: Clock,
@@ -196,7 +196,7 @@ export default function LandingPage() {
                 <p className="text-xs text-slate-500 mt-1">Forever · No credit card</p>
               </div>
               <ul className="space-y-2.5 text-sm text-slate-300">
-                {["Track up to 10 bills", "Due date reminders", "One-click payment links", "100+ Canadian billers", "PDF & photo bill upload"].map((i) => (
+                {["Track up to 10 bills", "Due date reminders", "One-click payment links", "100+ billers supported", "PDF & photo bill upload"].map((i) => (
                   <li key={i} className="flex items-center gap-2.5">
                     <CheckCircle className="w-4 h-4 text-teal-400 flex-shrink-0" />
                     {i}
@@ -262,7 +262,7 @@ export default function LandingPage() {
             <span className="text-teal-400">Your stress can.</span>
           </h2>
           <p className="text-slate-400 max-w-md mx-auto text-base leading-relaxed">
-            Join Canadians who've taken back control of their bills. Free to start, takes two minutes to set up.
+            Join thousands who've taken back control of their bills. Free to start, takes two minutes to set up.
           </p>
           {submitted ? (
             <div className="flex flex-col items-center gap-3">
@@ -314,7 +314,7 @@ export default function LandingPage() {
             <a href="mailto:mybillportinfo@gmail.com" className="hover:text-white transition-colors">Contact</a>
           </div>
           <p className="text-xs text-slate-600">
-            © {new Date().getFullYear()} MyBillPort · Made in Canada
+            © {new Date().getFullYear()} MyBillPort · All rights reserved
           </p>
         </div>
       </footer>

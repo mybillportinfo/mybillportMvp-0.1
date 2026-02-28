@@ -67,8 +67,8 @@ export default function Terms() {
             <h2 className="text-xl font-semibold text-gray-900 mb-3">5. Payment Processing</h2>
             <p className="mb-3">Bill payments are processed through <strong>Stripe</strong>, a third-party payment processor. By making payments through our Service, you agree to <a href="https://stripe.com/legal" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Stripe&apos;s Terms of Service</a>.</p>
             <ul className="list-disc ml-6 space-y-2">
-              <li>All payments are in Canadian Dollars (CAD)</li>
-              <li>The minimum payment amount is $0.50 CAD</li>
+              <li>Payments are processed in your local currency where supported</li>
+              <li>The minimum payment amount may vary by region</li>
               <li>We are not responsible for payment processing errors by Stripe</li>
               <li>You are responsible for ensuring sufficient funds are available</li>
             </ul>
@@ -98,7 +98,7 @@ export default function Terms() {
 
           <section>
             <h2 className="text-xl font-semibold text-gray-900 mb-3">8. Intellectual Property</h2>
-            <p>All content, features, and functionality of the Service (including but not limited to text, graphics, logos, and software) are owned by BillPort and are protected by Canadian and international copyright, trademark, and other intellectual property laws.</p>
+            <p>All content, features, and functionality of the Service (including but not limited to text, graphics, logos, and software) are owned by BillPort and are protected by applicable international copyright, trademark, and other intellectual property laws.</p>
           </section>
 
           <section>
@@ -114,7 +114,7 @@ export default function Terms() {
 
           <section>
             <h2 className="text-xl font-semibold text-gray-900 mb-3">11. Governing Law</h2>
-            <p>These Terms are governed by and construed in accordance with the laws of the Province of Ontario and the federal laws of Canada applicable therein. Any disputes shall be resolved in the courts of Ontario, Canada.</p>
+            <p>These Terms are governed by and construed in accordance with applicable law. Any disputes shall be resolved through binding arbitration or the courts of competent jurisdiction as determined by your location.</p>
           </section>
 
           <section className="pb-8 border-b border-gray-200">

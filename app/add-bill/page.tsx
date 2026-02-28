@@ -536,7 +536,7 @@ export default function AddBillPage() {
                   {hasProviders ? (
                     <ProviderAutocomplete providers={providerList} value={companyName} onChange={setCompanyName} placeholder="Search or type provider name" />
                   ) : (
-                    <input type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="e.g. Bell Canada, Hydro One, Netflix" className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800" />
+                    <input type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="e.g. Rogers, Netflix, Hydro One" className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800" />
                   )}
                   {extractedData.matchedProviderName && extractedData.matchedProviderName !== companyName && (
                     <p className="text-xs text-teal-600 mt-1">Matched: {extractedData.matchedProviderName}</p>
@@ -673,7 +673,7 @@ export default function AddBillPage() {
               {hasProviders ? (
                 <ProviderAutocomplete providers={providerList} value={companyName} onChange={setCompanyName} placeholder="Search or type provider name" />
               ) : (
-                <input type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="e.g. Bell Canada, Hydro One, Netflix" className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800" />
+                <input type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="e.g. Rogers, Netflix, Hydro One" className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800" />
               )}
             </div>
 

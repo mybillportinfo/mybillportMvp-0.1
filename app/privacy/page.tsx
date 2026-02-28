@@ -83,7 +83,7 @@ export default function Privacy() {
             <h2 className="text-xl font-semibold text-gray-900 mb-3">5. Data Storage &amp; Security</h2>
             
             <h3 className="text-lg font-medium text-gray-800 mb-2 mt-4">5.1 Where Your Data Is Stored</h3>
-            <p>Your information is stored on secure servers operated by our cloud service providers. Currently, we use <strong>Firebase (Google Cloud)</strong>. Data may be processed and stored in <strong>Canada</strong> and the <strong>United States</strong>. When data is transferred to the U.S., it is protected by standard contractual clauses approved by the European Commission and equivalent mechanisms recognized by Canadian law.</p>
+            <p>Your information is stored on secure servers operated by our cloud service providers. Currently, we use <strong>Firebase (Google Cloud)</strong>. Data may be processed and stored in the <strong>United States</strong> and other jurisdictions where our providers operate. When data is transferred internationally, it is protected by standard contractual clauses and equivalent mechanisms recognized by applicable law.</p>
 
             <h3 className="text-lg font-medium text-gray-800 mb-2 mt-4">5.2 Security Measures</h3>
             <p className="mb-3">We implement reasonable administrative, technical, and physical safeguards to protect your information from unauthorized access, disclosure, alteration, or destruction. These include:</p>
@@ -138,7 +138,7 @@ export default function Privacy() {
 
           <section>
             <h2 className="text-xl font-semibold text-gray-900 mb-3">11. International Users</h2>
-            <p>BillPort is based in Canada. If you are accessing our Service from outside Canada, please be aware that your information may be transferred to, stored, and processed in Canada and the United States. By using our Service, you consent to such transfer.</p>
+            <p>MyBillPort is a global service. Your information may be transferred to, stored, and processed in the United States and other countries where our service providers operate. By using our Service, you consent to such international transfers in accordance with this Privacy Policy.</p>
           </section>
 
           <section>
