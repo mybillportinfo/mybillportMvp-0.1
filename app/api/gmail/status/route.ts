@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     const status = await getGmailConnectionStatus(authResult.uid);
     return NextResponse.json(status);
   } catch (error: any) {
-    console.error('Gmail status error:', error);
+    console.error({ route: '/api/gmail/status', step: 'handler', error: error.message });
     return NextResponse.json({ error: 'Failed to check Gmail status' }, { status: 500 });
   }
 }

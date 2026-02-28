@@ -6,28 +6,29 @@ export const runtime = 'nodejs';
 
 export async function GET(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization');
-    const authResult = await verifyFirebaseToken(authHeader);
-
-    if (!authResult.valid) {
-      return NextResponse.json({ error: authResult.error || 'Unauthorized' }, { status: 401 });
-    }
-
     const clientId = process.env.GMAIL_CLIENT_ID;
     const clientSecret = process.env.GMAIL_CLIENT_SECRET;
 
     if (!clientId || !clientSecret) {
-      console.error('Gmail auth error: Missing GMAIL_CLIENT_ID or GMAIL_CLIENT_SECRET');
+      console.error({ route: '/api/gmail/auth', step: 'envCheck', error: 'GMAIL_CLIENT_ID or GMAIL_CLIENT_SECRET is missing' });
       return NextResponse.json(
-        { error: 'Gmail OAuth is not configured. Please set GMAIL_CLIENT_ID and GMAIL_CLIENT_SECRET.' },
+        { error: 'Gmail OAuth is not configured. Contact support.' },
         { status: 500 }
       );
     }
 
-    const authUrl = getAuthUrl(authResult.uid!);
+    const authHeader = request.headers.get('authorization');
+    const authResult = await verifyFirebaseToken(authHeader);
+
+    if (!authResult.valid || !authResult.uid) {
+      console.error({ route: '/api/gmail/auth', step: 'tokenVerify', error: authResult.error });
+      return NextResponse.json({ error: authResult.error || 'Unauthorized' }, { status: 401 });
+    }
+
+    const authUrl = getAuthUrl(authResult.uid);
     return NextResponse.json({ authUrl });
   } catch (error: any) {
-    console.error('Gmail auth error:', error?.message || error);
+    console.error({ route: '/api/gmail/auth', step: 'handler', error: error.message, stack: error.stack });
     return NextResponse.json(
       { error: error?.message || 'Failed to generate Gmail authorization URL' },
       { status: 500 }

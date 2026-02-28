@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { exchangeCodeForTokens, storeGmailTokens, getOAuth2Client, getGmailTokens, verifyOAuthState } from '../../../lib/gmailService';
-import { google } from 'googleapis';
-import { getApps, initializeApp, cert, App } from 'firebase-admin/app';
+import {
+  exchangeCodeForTokens,
+  storeGmailTokens,
+  getOAuth2Client,
+  getGmailTokens,
+  verifyOAuthState,
+} from '../../../lib/gmailService';
+import { getAdminApp } from '../../../lib/adminSdk';
 import { getAuth as getAdminAuth } from 'firebase-admin/auth';
+import { google } from 'googleapis';
 
 export const runtime = 'nodejs';
 
@@ -10,69 +16,42 @@ function getAppUrl(): string {
   return process.env.APP_URL || 'https://mybillport.com';
 }
 
-function getFirebaseAdmin(): App {
-  const existingApps = getApps();
-  if (existingApps.length > 0) return existingApps[0];
-
-  const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
-  if (serviceAccountKey) {
-    try {
-      const serviceAccount = JSON.parse(serviceAccountKey);
-      return initializeApp({
-        credential: cert(serviceAccount),
-        projectId: serviceAccount.project_id,
-      });
-    } catch {
-      return initializeApp({
-        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-      });
-    }
-  }
-  return initializeApp({
-    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  });
-}
-
 async function handleSignIn(code: string, appUrl: string): Promise<NextResponse> {
-  console.log('[Google Sign-In] Starting sign-in callback handling');
+  const step = { route: '/api/gmail/callback', flow: 'signIn', step: '' };
+
+  step.step = 'initOAuth';
   const clientId = process.env.GMAIL_CLIENT_ID;
   const clientSecret = process.env.GMAIL_CLIENT_SECRET;
   const redirectUri = `${appUrl}/api/gmail/callback`;
   const oauth2Client = new google.auth.OAuth2(clientId, clientSecret, redirectUri);
 
-  console.log('[Google Sign-In] Exchanging code for tokens...');
+  step.step = 'exchangeCode';
   const { tokens } = await oauth2Client.getToken(code);
 
   if (!tokens.id_token) {
-    console.error('[Google Sign-In] No id_token in response');
+    console.error({ ...step, step: 'validateIdToken', error: 'No id_token in token response' });
     return NextResponse.redirect(`${appUrl}/login?error=no_id_token`);
   }
 
-  console.log('[Google Sign-In] Verifying ID token...');
-  const ticket = await oauth2Client.verifyIdToken({
-    idToken: tokens.id_token,
-    audience: clientId!,
-  });
+  step.step = 'verifyIdToken';
+  const ticket = await oauth2Client.verifyIdToken({ idToken: tokens.id_token, audience: clientId! });
   const payload = ticket.getPayload();
 
   if (!payload?.sub || !payload?.email) {
-    console.error('[Google Sign-In] Invalid token payload');
+    console.error({ ...step, step: 'validatePayload', error: 'Invalid token payload', sub: !!payload?.sub, email: !!payload?.email });
     return NextResponse.redirect(`${appUrl}/login?error=invalid_token`);
   }
 
-  console.log('[Google Sign-In] Authenticated Google user:', payload.email);
-
-  const adminApp = getFirebaseAdmin();
-  const adminAuth = getAdminAuth(adminApp);
+  step.step = 'lookupFirebaseUser';
+  const adminAuth = getAdminAuth(getAdminApp());
 
   let firebaseUid: string;
   try {
     const existingUser = await adminAuth.getUserByEmail(payload.email);
     firebaseUid = existingUser.uid;
-    console.log('[Google Sign-In] Found existing Firebase user:', firebaseUid);
   } catch (err: any) {
     if (err.code === 'auth/user-not-found') {
-      console.log('[Google Sign-In] Creating new Firebase user for:', payload.email);
+      step.step = 'createFirebaseUser';
       const newUser = await adminAuth.createUser({
         email: payload.email,
         displayName: payload.name || undefined,
@@ -80,8 +59,6 @@ async function handleSignIn(code: string, appUrl: string): Promise<NextResponse>
         emailVerified: payload.email_verified || false,
       });
       firebaseUid = newUser.uid;
-      console.log('[Google Sign-In] Created new Firebase user:', firebaseUid);
-
       try {
         await fetch(`${appUrl}/api/send-welcome-email`, {
           method: 'POST',
@@ -90,18 +67,16 @@ async function handleSignIn(code: string, appUrl: string): Promise<NextResponse>
         });
       } catch {}
     } else {
-      console.error('[Google Sign-In] Firebase Admin error:', err.code, err.message);
+      console.error({ ...step, step: 'getUserByEmail', error: err.message, code: err.code });
       throw err;
     }
   }
 
-  console.log('[Google Sign-In] Creating custom token for uid:', firebaseUid);
-  const customToken = await adminAuth.createCustomToken(firebaseUid);
-  console.log('[Google Sign-In] Custom token created successfully');
+  step.step = 'createCustomToken';
+  const customToken = await adminAuth.createCustomToken(firebaseUid!);
 
   const redirectUrl = new URL(`${appUrl}/auth/callback`);
   redirectUrl.searchParams.set('token', customToken);
-
   return NextResponse.redirect(redirectUrl.toString());
 }
 
@@ -116,25 +91,24 @@ export async function GET(request: NextRequest) {
     const error = searchParams.get('error');
 
     if (isSignIn) {
-      if (error) {
-        return NextResponse.redirect(`${appUrl}/login?error=${encodeURIComponent(error)}`);
-      }
-      if (!code) {
-        return NextResponse.redirect(`${appUrl}/login?error=no_code`);
-      }
+      if (error) return NextResponse.redirect(`${appUrl}/login?error=${encodeURIComponent(error)}`);
+      if (!code) return NextResponse.redirect(`${appUrl}/login?error=no_code`);
       return await handleSignIn(code, appUrl);
     }
 
     if (error) {
+      console.error({ route: '/api/gmail/callback', flow: 'gmailConnect', step: 'oauthError', error });
       return NextResponse.redirect(`${appUrl}/settings?gmail=error&reason=${encodeURIComponent(error)}`);
     }
 
     if (!code || !stateParam) {
+      console.error({ route: '/api/gmail/callback', flow: 'gmailConnect', step: 'missingParams', code: !!code, state: !!stateParam });
       return NextResponse.redirect(`${appUrl}/settings?gmail=error&reason=no_code`);
     }
 
     const userId = verifyOAuthState(stateParam);
     if (!userId) {
+      console.error({ route: '/api/gmail/callback', flow: 'gmailConnect', step: 'verifyState', error: 'Invalid or tampered state parameter' });
       return NextResponse.redirect(`${appUrl}/settings?gmail=error&reason=invalid_state`);
     }
 
@@ -143,8 +117,14 @@ export async function GET(request: NextRequest) {
     const oauth2Client = getOAuth2Client();
     oauth2Client.setCredentials({ access_token: tokens.accessToken });
     const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
-    const profile = await gmail.users.getProfile({ userId: 'me' });
-    const gmailEmail = profile.data.emailAddress || '';
+
+    let gmailEmail = '';
+    try {
+      const profile = await gmail.users.getProfile({ userId: 'me' });
+      gmailEmail = profile.data.emailAddress || '';
+    } catch (profileErr: any) {
+      console.error({ route: '/api/gmail/callback', flow: 'gmailConnect', step: 'getProfile', error: profileErr.message });
+    }
 
     let refreshToken = tokens.refreshToken;
     if (!refreshToken) {
@@ -153,6 +133,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (!refreshToken) {
+      console.error({ route: '/api/gmail/callback', flow: 'gmailConnect', step: 'validateRefreshToken', error: 'No refresh token available — user must re-authorize with prompt=consent' });
       return NextResponse.redirect(`${appUrl}/settings?gmail=error&reason=no_refresh_token`);
     }
 
@@ -165,12 +146,12 @@ export async function GET(request: NextRequest) {
       updatedAt: Date.now(),
     });
 
+    console.log({ route: '/api/gmail/callback', flow: 'gmailConnect', step: 'complete', userId, email: gmailEmail });
     return NextResponse.redirect(`${appUrl}/settings?gmail=connected`);
   } catch (error: any) {
-    console.error('Gmail callback error:', error?.code || error?.message || error);
+    console.error({ route: '/api/gmail/callback', step: 'uncaughtError', error: error.message, stack: error.stack });
     if (isSignIn) {
-      const errMsg = encodeURIComponent(error?.code || error?.message || 'auth_failed');
-      return NextResponse.redirect(`${appUrl}/login?error=${errMsg}`);
+      return NextResponse.redirect(`${appUrl}/login?error=${encodeURIComponent(error?.message || 'auth_failed')}`);
     }
     return NextResponse.redirect(`${appUrl}/settings?gmail=error&reason=token_exchange_failed`);
   }

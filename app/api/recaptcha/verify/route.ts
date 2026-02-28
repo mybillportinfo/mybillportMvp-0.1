@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 const SITE_KEY = '6Lfby0ksAAAAAPcrsjoe3qZjjD03IxkvRW8pZanp';
-const PROJECT_ID = 'mybillport-8e05a';
+const PROJECT_ID = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'mybillport-8e05a';
 const MIN_SCORE = 0.5;
 
 export async function POST(req: NextRequest) {
@@ -14,17 +14,13 @@ export async function POST(req: NextRequest) {
 
     const apiKey = process.env.RECAPTCHA_API_KEY;
     if (!apiKey) {
-      console.warn('RECAPTCHA_API_KEY not set — skipping server-side verification');
+      console.warn('[recaptcha] RECAPTCHA_API_KEY not set — skipping server-side verification');
       return NextResponse.json({ success: true, score: 1.0, skipped: true });
     }
 
     const url = `https://recaptchaenterprise.googleapis.com/v1/projects/${PROJECT_ID}/assessments?key=${apiKey}`;
     const body = {
-      event: {
-        token,
-        expectedAction: action,
-        siteKey: SITE_KEY,
-      },
+      event: { token, expectedAction: action, siteKey: SITE_KEY },
     };
 
     const response = await fetch(url, {
@@ -35,7 +31,7 @@ export async function POST(req: NextRequest) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('reCAPTCHA API error:', errorText);
+      console.error({ route: '/api/recaptcha/verify', step: 'apiCall', error: errorText });
       return NextResponse.json({ success: false, error: 'reCAPTCHA verification failed' }, { status: 500 });
     }
 
@@ -45,13 +41,13 @@ export async function POST(req: NextRequest) {
     const actionMatches = !action || data.tokenProperties?.action === action;
 
     if (!valid || !actionMatches || score < MIN_SCORE) {
-      console.warn('reCAPTCHA failed:', { valid, score, action, tokenAction: data.tokenProperties?.action });
+      console.warn('[recaptcha] Failed:', { valid, score, action, tokenAction: data.tokenProperties?.action });
       return NextResponse.json({ success: false, score, error: 'Suspicious activity detected' }, { status: 403 });
     }
 
     return NextResponse.json({ success: true, score });
-  } catch (err) {
-    console.error('reCAPTCHA verify error:', err);
+  } catch (err: any) {
+    console.error({ route: '/api/recaptcha/verify', step: 'handler', error: err.message });
     return NextResponse.json({ success: false, error: 'Internal error' }, { status: 500 });
   }
 }

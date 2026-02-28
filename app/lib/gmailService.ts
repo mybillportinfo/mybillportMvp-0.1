@@ -1,48 +1,16 @@
 import { google } from 'googleapis';
-import { initializeApp, getApps, cert, App } from 'firebase-admin/app';
-import { getFirestore, Firestore } from 'firebase-admin/firestore';
+import { getAdminDb } from './adminSdk';
 import crypto from 'crypto';
-
-let _db: Firestore | null = null;
-
-function getAdminDb(): Firestore {
-  if (_db) return _db;
-  const existingApps = getApps();
-  let app: App;
-  if (existingApps.length > 0) {
-    app = existingApps[0];
-  } else {
-    const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
-    if (serviceAccountKey) {
-      try {
-        const serviceAccount = JSON.parse(serviceAccountKey);
-        app = initializeApp({
-          credential: cert(serviceAccount),
-          projectId: serviceAccount.project_id,
-        });
-      } catch {
-        app = initializeApp({
-          projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-        });
-      }
-    } else {
-      app = initializeApp({
-        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-      });
-    }
-  }
-  _db = getFirestore(app);
-  return _db;
-}
 
 export function getOAuth2Client() {
   const clientId = process.env.GMAIL_CLIENT_ID;
   const clientSecret = process.env.GMAIL_CLIENT_SECRET;
-  const appUrl = process.env.APP_URL || 'https://mybillport.com';
-  const redirectUri = `${appUrl}/api/gmail/callback`;
+  const redirectUri = process.env.GMAIL_REDIRECT_URI ||
+    `${process.env.APP_URL || 'https://mybillport.com'}/api/gmail/callback`;
 
   if (!clientId || !clientSecret) {
-    throw new Error('Gmail OAuth credentials not configured');
+    console.error('[gmailService] Missing GMAIL_CLIENT_ID or GMAIL_CLIENT_SECRET');
+    throw new Error('Gmail OAuth credentials not configured. Set GMAIL_CLIENT_ID and GMAIL_CLIENT_SECRET in Vercel.');
   }
 
   return new google.auth.OAuth2(clientId, clientSecret, redirectUri);
@@ -50,9 +18,7 @@ export function getOAuth2Client() {
 
 function getStateSecret(): string {
   const secret = process.env.GMAIL_CLIENT_SECRET;
-  if (!secret) {
-    throw new Error('GMAIL_CLIENT_SECRET is required for OAuth state signing');
-  }
+  if (!secret) throw new Error('GMAIL_CLIENT_SECRET is required for OAuth state signing');
   return secret;
 }
 
@@ -89,6 +55,7 @@ export function getAuthUrl(userId: string): string {
   return oauth2Client.generateAuthUrl({
     access_type: 'offline',
     prompt: 'consent',
+    include_granted_scopes: true,
     scope: ['https://www.googleapis.com/auth/gmail.readonly'],
     state: signedState,
   });
@@ -109,10 +76,23 @@ export async function exchangeCodeForTokens(code: string): Promise<{
   expiryDate: number;
 }> {
   const oauth2Client = getOAuth2Client();
-  const { tokens } = await oauth2Client.getToken(code);
+
+  let tokens: any;
+  try {
+    const result = await oauth2Client.getToken(code);
+    tokens = result.tokens;
+  } catch (err: any) {
+    console.error({ route: 'gmailService.exchangeCodeForTokens', step: 'getToken', error: err.message, code: err.code });
+    throw new Error(`Token exchange failed: ${err.message}`);
+  }
 
   if (!tokens.access_token) {
+    console.error({ route: 'gmailService.exchangeCodeForTokens', step: 'validate', error: 'No access_token in token response' });
     throw new Error('Failed to obtain access token from Google');
+  }
+
+  if (!tokens.refresh_token) {
+    console.warn({ route: 'gmailService.exchangeCodeForTokens', step: 'validate', warning: 'No refresh_token — user may have already granted access. Will attempt to use stored refresh token.' });
   }
 
   return {
@@ -140,7 +120,8 @@ export async function revokeGmailToken(accessToken: string): Promise<void> {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     });
-  } catch {
+  } catch (err: any) {
+    console.warn('[gmailService] Token revocation failed (non-fatal):', err.message);
   }
 }
 
@@ -151,7 +132,10 @@ export async function deleteGmailTokens(userId: string): Promise<void> {
 
 export async function getAuthenticatedGmailClient(userId: string) {
   const tokens = await getGmailTokens(userId);
-  if (!tokens) throw new Error('Gmail not connected');
+  if (!tokens) {
+    console.error({ route: 'gmailService.getAuthenticatedGmailClient', step: 'getTokens', error: 'No Gmail tokens found for user', userId });
+    throw new Error('Gmail not connected');
+  }
 
   const oauth2Client = getOAuth2Client();
   oauth2Client.setCredentials({
@@ -170,7 +154,11 @@ export async function getAuthenticatedGmailClient(userId: string) {
       if (newTokens.refresh_token) {
         updated.refreshToken = newTokens.refresh_token;
       }
-      await storeGmailTokens(userId, { ...tokens, ...updated });
+      try {
+        await storeGmailTokens(userId, { ...tokens, ...updated });
+      } catch (err: any) {
+        console.error({ route: 'gmailService.tokenRefresh', step: 'storeUpdatedTokens', error: err.message });
+      }
     }
   });
 
@@ -210,11 +198,7 @@ export async function getPendingBills(userId: string): Promise<PendingBill[]> {
     .where('status', '==', 'pending')
     .orderBy('createdAt', 'desc')
     .get();
-
-  return snapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data(),
-  } as PendingBill));
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as PendingBill));
 }
 
 export async function checkDuplicateGmailMessage(userId: string, gmailMessageId: string): Promise<boolean> {
@@ -230,13 +214,9 @@ export async function checkDuplicateGmailMessage(userId: string, gmailMessageId:
 export async function updatePendingBillStatus(billId: string, status: 'confirmed' | 'rejected', userId: string): Promise<void> {
   const db = getAdminDb();
   const doc = await db.collection('pendingBills').doc(billId).get();
-  if (!doc.exists) {
-    throw new Error('Pending bill not found');
-  }
+  if (!doc.exists) throw new Error('Pending bill not found');
   const data = doc.data();
-  if (data?.userId !== userId) {
-    throw new Error('Unauthorized: bill does not belong to user');
-  }
+  if (data?.userId !== userId) throw new Error('Unauthorized: bill does not belong to user');
   await db.collection('pendingBills').doc(billId).update({ status });
 }
 
@@ -244,12 +224,14 @@ export async function getGmailConnectionStatus(userId: string): Promise<{
   connected: boolean;
   email?: string;
   connectedAt?: number;
+  hasRefreshToken?: boolean;
 }> {
   const tokens = await getGmailTokens(userId);
-  if (!tokens) return { connected: false };
+  if (!tokens) return { connected: false, hasRefreshToken: false };
   return {
     connected: true,
     email: tokens.email,
     connectedAt: tokens.connectedAt,
+    hasRefreshToken: !!tokens.refreshToken,
   };
 }
