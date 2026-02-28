@@ -38,10 +38,7 @@ function getAdminDb(): Firestore {
 export function getOAuth2Client() {
   const clientId = process.env.GMAIL_CLIENT_ID;
   const clientSecret = process.env.GMAIL_CLIENT_SECRET;
-  let appUrl = process.env.APP_URL || 'https://mybillport.com';
-  if (process.env.NODE_ENV === 'development' && process.env.REPLIT_DEV_DOMAIN) {
-    appUrl = `https://${process.env.REPLIT_DEV_DOMAIN}`;
-  }
+  const appUrl = process.env.APP_URL || 'https://mybillport.com';
   const redirectUri = `${appUrl}/api/gmail/callback`;
 
   if (!clientId || !clientSecret) {

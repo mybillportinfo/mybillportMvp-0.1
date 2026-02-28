@@ -4,9 +4,6 @@ import { google } from 'googleapis';
 export const runtime = 'nodejs';
 
 function getAppUrl(): string {
-  if (process.env.NODE_ENV === 'development' && process.env.REPLIT_DEV_DOMAIN) {
-    return `https://${process.env.REPLIT_DEV_DOMAIN}`;
-  }
   return process.env.APP_URL || 'https://mybillport.com';
 }
 
@@ -33,4 +30,3 @@ export async function GET() {
     return NextResponse.redirect(`${appUrl}/login?error=google_init_failed`);
   }
 }
-
