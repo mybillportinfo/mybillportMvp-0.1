@@ -97,13 +97,37 @@ export default function Privacy() {
 
           <section>
             <h2 className="text-xl font-semibold text-gray-900 mb-3">6. Google API Services Disclosure</h2>
-            <p className="mb-3">BillPort&apos;s use and transfer of information received from Google APIs adheres to the <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Google API Services User Data Policy</a>, including the Limited Use requirements.</p>
-            <p className="mb-3">When you sign in with Google:</p>
+            <p className="mb-3">MyBillPort&apos;s use and transfer of information received from Google APIs adheres to the <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Google API Services User Data Policy</a>, including the Limited Use requirements.</p>
+            <p className="mb-3">When you sign in with Google, we access only:</p>
+            <ul className="list-disc ml-6 space-y-2 mb-4">
+              <li>Basic profile information (name, email address, profile picture) for authentication purposes only</li>
+              <li>We do not access Google Drive, Google Calendar, or other Google services through sign-in</li>
+              <li>We do not share your Google sign-in data with third parties</li>
+            </ul>
+
+            <h3 className="text-lg font-medium text-gray-800 mb-2 mt-5">Gmail Integration (Optional)</h3>
+            <p className="mb-3">If you choose to connect your Gmail account, MyBillPort requests <strong>read-only access</strong> to help automatically detect billing emails. This is entirely optional and can be disconnected at any time.</p>
+            <p className="mb-2 font-medium text-gray-800">What we access:</p>
+            <ul className="list-disc ml-6 space-y-2 mb-4">
+              <li>Only emails that contain billing-related content (invoices, statements, payment notices)</li>
+              <li>Sender address, subject line, and email snippet — not full email body</li>
+              <li>We do not access unrelated personal emails</li>
+            </ul>
+            <p className="mb-2 font-medium text-gray-800">What we extract and store:</p>
+            <ul className="list-disc ml-6 space-y-2 mb-4">
+              <li>Biller name, amount due, and due date — used to populate your bill dashboard</li>
+              <li>We do not store full email content or any unrelated email data</li>
+            </ul>
+            <p className="mb-2 font-medium text-gray-800">How we use it:</p>
+            <ul className="list-disc ml-6 space-y-2 mb-4">
+              <li>To help you automate bill tracking — no other purpose</li>
+              <li>Gmail data is never used for advertising, sold, or shared with third parties</li>
+              <li>Access is limited strictly to the <strong>gmail.readonly</strong> scope</li>
+            </ul>
+            <p className="mb-2 font-medium text-gray-800">Disconnecting:</p>
             <ul className="list-disc ml-6 space-y-2">
-              <li>We only access basic profile information (name, email, profile picture)</li>
-              <li>We do not access your Gmail, Google Drive, or other Google services</li>
-              <li>We do not share your Google data with third parties</li>
-              <li>We use your Google account information solely for authentication purposes</li>
+              <li>You can disconnect Gmail at any time from your Settings page</li>
+              <li>Disconnecting immediately revokes our access tokens and deletes stored credentials</li>
             </ul>
           </section>
 

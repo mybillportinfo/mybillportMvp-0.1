@@ -366,7 +366,7 @@ export default function SettingsPage() {
               <Mail className="w-4 h-4 text-red-600" />
             </div>
             <div className="flex-1">
-              <p className="font-semibold text-slate-800">Gmail Bill Scanner</p>
+              <p className="font-semibold text-slate-800">Gmail Bill Scanner <span className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-700 border border-amber-200">BETA</span></p>
               <p className="text-xs text-slate-500">Auto-detect bills from your email</p>
             </div>
             {gmailConnected && (
