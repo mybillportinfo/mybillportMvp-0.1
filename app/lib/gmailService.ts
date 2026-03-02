@@ -2,16 +2,27 @@ import { google } from 'googleapis';
 import { getAdminDb } from './adminSdk';
 import crypto from 'crypto';
 
+export function getRedirectUri(): string {
+  if (process.env.GMAIL_REDIRECT_URI) return process.env.GMAIL_REDIRECT_URI;
+  const appUrl = process.env.APP_URL || 'https://mybillport.com';
+  return `${appUrl}/api/gmail/callback`;
+}
+
 export function getOAuth2Client() {
   const clientId = process.env.GMAIL_CLIENT_ID;
   const clientSecret = process.env.GMAIL_CLIENT_SECRET;
-  const redirectUri = process.env.GMAIL_REDIRECT_URI ||
-    `${process.env.APP_URL || 'https://mybillport.com'}/api/gmail/callback`;
+  const redirectUri = getRedirectUri();
 
   if (!clientId || !clientSecret) {
     console.error('[gmailService] Missing GMAIL_CLIENT_ID or GMAIL_CLIENT_SECRET');
     throw new Error('Gmail OAuth credentials not configured. Set GMAIL_CLIENT_ID and GMAIL_CLIENT_SECRET in Vercel.');
   }
+
+  console.log('[gmailService] OAuth2Client config:', {
+    clientId: clientId.slice(0, 20) + '...',
+    redirectUri,
+    hasSecret: !!clientSecret,
+  });
 
   return new google.auth.OAuth2(clientId, clientSecret, redirectUri);
 }
@@ -82,17 +93,27 @@ export async function exchangeCodeForTokens(code: string): Promise<{
     const result = await oauth2Client.getToken(code);
     tokens = result.tokens;
   } catch (err: any) {
-    console.error({ route: 'gmailService.exchangeCodeForTokens', step: 'getToken', error: err.message, code: err.code });
-    throw new Error(`Token exchange failed: ${err.message}`);
+    const googleError = err.response?.data;
+    console.error({
+      route: 'gmailService.exchangeCodeForTokens',
+      step: 'getToken',
+      googleRawError: googleError,
+      errorCode: googleError?.error,
+      errorDescription: googleError?.error_description,
+      httpStatus: err.status || err.code,
+      message: err.message,
+    });
+    const detail = googleError?.error || err.message;
+    throw new Error(`Google token exchange failed: ${detail}`);
   }
 
   if (!tokens.access_token) {
-    console.error({ route: 'gmailService.exchangeCodeForTokens', step: 'validate', error: 'No access_token in token response' });
+    console.error({ route: 'gmailService.exchangeCodeForTokens', step: 'validate', error: 'No access_token in response' });
     throw new Error('Failed to obtain access token from Google');
   }
 
   if (!tokens.refresh_token) {
-    console.warn({ route: 'gmailService.exchangeCodeForTokens', step: 'validate', warning: 'No refresh_token — user may have already granted access. Will attempt to use stored refresh token.' });
+    console.warn('[gmailService] No refresh_token returned — user may have granted access before. Will attempt stored token.');
   }
 
   return {
@@ -133,7 +154,7 @@ export async function deleteGmailTokens(userId: string): Promise<void> {
 export async function getAuthenticatedGmailClient(userId: string) {
   const tokens = await getGmailTokens(userId);
   if (!tokens) {
-    console.error({ route: 'gmailService.getAuthenticatedGmailClient', step: 'getTokens', error: 'No Gmail tokens found for user', userId });
+    console.error({ route: 'gmailService.getAuthenticatedGmailClient', step: 'getTokens', error: 'No Gmail tokens found', userId });
     throw new Error('Gmail not connected');
   }
 
@@ -151,9 +172,7 @@ export async function getAuthenticatedGmailClient(userId: string) {
         expiryDate: newTokens.expiry_date || Date.now() + 3600 * 1000,
         updatedAt: Date.now(),
       };
-      if (newTokens.refresh_token) {
-        updated.refreshToken = newTokens.refresh_token;
-      }
+      if (newTokens.refresh_token) updated.refreshToken = newTokens.refresh_token;
       try {
         await storeGmailTokens(userId, { ...tokens, ...updated });
       } catch (err: any) {

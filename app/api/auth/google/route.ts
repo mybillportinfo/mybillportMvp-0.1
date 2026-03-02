@@ -1,20 +1,12 @@
 import { NextResponse } from 'next/server';
-import { google } from 'googleapis';
+import { getOAuth2Client } from '../../lib/gmailService';
 
 export const runtime = 'nodejs';
 
-function getAppUrl(): string {
-  return process.env.APP_URL || 'https://mybillport.com';
-}
-
 export async function GET() {
   try {
-    const clientId = process.env.GMAIL_CLIENT_ID;
-    const clientSecret = process.env.GMAIL_CLIENT_SECRET;
-    const appUrl = getAppUrl();
-    const redirectUri = `${appUrl}/api/gmail/callback`;
-
-    const oauth2Client = new google.auth.OAuth2(clientId, clientSecret, redirectUri);
+    const oauth2Client = getOAuth2Client();
+    const appUrl = process.env.APP_URL || 'https://mybillport.com';
 
     const authUrl = oauth2Client.generateAuthUrl({
       access_type: 'offline',
@@ -25,8 +17,8 @@ export async function GET() {
 
     return NextResponse.redirect(authUrl);
   } catch (error: any) {
-    console.error('Google auth init error:', error);
-    const appUrl = getAppUrl();
+    console.error({ route: '/api/auth/google', step: 'handler', error: error.message });
+    const appUrl = process.env.APP_URL || 'https://mybillport.com';
     return NextResponse.redirect(`${appUrl}/login?error=google_init_failed`);
   }
 }

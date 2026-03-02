@@ -20,13 +20,18 @@ async function handleSignIn(code: string, appUrl: string): Promise<NextResponse>
   const step = { route: '/api/gmail/callback', flow: 'signIn', step: '' };
 
   step.step = 'initOAuth';
-  const clientId = process.env.GMAIL_CLIENT_ID;
-  const clientSecret = process.env.GMAIL_CLIENT_SECRET;
-  const redirectUri = `${appUrl}/api/gmail/callback`;
-  const oauth2Client = new google.auth.OAuth2(clientId, clientSecret, redirectUri);
+  const oauth2Client = getOAuth2Client();
 
   step.step = 'exchangeCode';
-  const { tokens } = await oauth2Client.getToken(code);
+  let tokens: any;
+  try {
+    const result = await oauth2Client.getToken(code);
+    tokens = result.tokens;
+  } catch (err: any) {
+    const googleError = err.response?.data || err.message;
+    console.error({ ...step, step: 'getToken', googleError, error: err.message });
+    return NextResponse.redirect(`${appUrl}/login?error=token_exchange_failed`);
+  }
 
   if (!tokens.id_token) {
     console.error({ ...step, step: 'validateIdToken', error: 'No id_token in token response' });
@@ -34,8 +39,15 @@ async function handleSignIn(code: string, appUrl: string): Promise<NextResponse>
   }
 
   step.step = 'verifyIdToken';
-  const ticket = await oauth2Client.verifyIdToken({ idToken: tokens.id_token, audience: clientId! });
-  const payload = ticket.getPayload();
+  let payload: any;
+  try {
+    const clientId = process.env.GMAIL_CLIENT_ID;
+    const ticket = await oauth2Client.verifyIdToken({ idToken: tokens.id_token, audience: clientId! });
+    payload = ticket.getPayload();
+  } catch (err: any) {
+    console.error({ ...step, step: 'verifyIdToken', error: err.message });
+    return NextResponse.redirect(`${appUrl}/login?error=token_verify_failed`);
+  }
 
   if (!payload?.sub || !payload?.email) {
     console.error({ ...step, step: 'validatePayload', error: 'Invalid token payload', sub: !!payload?.sub, email: !!payload?.email });
@@ -133,7 +145,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (!refreshToken) {
-      console.error({ route: '/api/gmail/callback', flow: 'gmailConnect', step: 'validateRefreshToken', error: 'No refresh token available — user must re-authorize with prompt=consent' });
+      console.error({ route: '/api/gmail/callback', flow: 'gmailConnect', step: 'validateRefreshToken', error: 'No refresh token — user must reconnect with prompt=consent' });
       return NextResponse.redirect(`${appUrl}/settings?gmail=error&reason=no_refresh_token`);
     }
 
