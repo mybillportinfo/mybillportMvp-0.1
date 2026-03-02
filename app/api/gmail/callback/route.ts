@@ -124,7 +124,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(`${appUrl}/settings?gmail=error&reason=invalid_state`);
     }
 
-    const tokens = await exchangeCodeForTokens(code);
+    let tokens: Awaited<ReturnType<typeof exchangeCodeForTokens>>;
+    try {
+      tokens = await exchangeCodeForTokens(code);
+    } catch (tokenErr: any) {
+      const rawReason = encodeURIComponent(tokenErr.message || 'token_exchange_failed');
+      console.error({ route: '/api/gmail/callback', step: 'exchangeCodeForTokens', error: tokenErr.message });
+      return NextResponse.redirect(`${appUrl}/settings?gmail=error&reason=${rawReason}`);
+    }
 
     const oauth2Client = getOAuth2Client();
     oauth2Client.setCredentials({ access_token: tokens.accessToken });
