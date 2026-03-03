@@ -56,7 +56,11 @@ export function getAdminApp(): App {
 export function getAdminDb(): Firestore {
   if (_db) return _db;
   _db = getFirestore(initAdminApp());
-  _db.settings({ ignoreUndefinedProperties: true });
+  try {
+    _db.settings({ ignoreUndefinedProperties: true });
+  } catch {
+    // settings() throws if Firestore was already started (warm serverless reuse) — safe to ignore
+  }
   return _db;
 }
 
