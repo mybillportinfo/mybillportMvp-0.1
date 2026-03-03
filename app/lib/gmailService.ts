@@ -212,25 +212,32 @@ export async function storePendingBill(bill: Omit<PendingBill, 'id'>): Promise<s
 
 export async function getPendingBills(userId: string): Promise<PendingBill[]> {
   const db = getAdminDb();
+  // Single-field filter only — avoids requiring a composite Firestore index.
+  // Status filtering and sorting are done in memory.
   const snapshot = await db.collection('pendingBills')
     .where('userId', '==', userId)
-    .where('status', '==', 'pending')
-    .orderBy('createdAt', 'desc')
     .get();
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as PendingBill));
+  return snapshot.docs
+    .map(doc => ({ id: doc.id, ...doc.data() } as PendingBill))
+    .filter(b => b.status === 'pending')
+    .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 }
 
 export async function checkDuplicateGmailMessage(userId: string, gmailMessageId: string): Promise<boolean> {
   const db = getAdminDb();
-  // Only block re-import if the bill is still pending or was confirmed (imported to main bills).
-  // If it was rejected, allow re-import so the user gets another chance to review it.
+  // Single-field filter per query — avoids composite index requirements.
+  // Status filtering done in memory.
   const snapshot = await db.collection('pendingBills')
     .where('userId', '==', userId)
     .where('gmailMessageId', '==', gmailMessageId)
-    .where('status', 'in', ['pending', 'confirmed'])
-    .limit(1)
+    .limit(5)
     .get();
-  return !snapshot.empty;
+  if (snapshot.empty) return false;
+  // Block re-import only if pending or confirmed; allow if all are rejected
+  return snapshot.docs.some(doc => {
+    const status = doc.data().status;
+    return status === 'pending' || status === 'confirmed';
+  });
 }
 
 export async function updatePendingBillStatus(billId: string, status: 'confirmed' | 'rejected', userId: string): Promise<void> {
