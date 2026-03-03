@@ -6,11 +6,10 @@ import { useRouter } from 'next/navigation';
 import {
   ArrowLeft, Home, Plus, Settings, Loader2, Check, X, Mail, Inbox,
   DollarSign, Calendar, Building2, Hash, AlertTriangle, CheckCircle,
-  RefreshCw, Receipt, Sparkles
+  RefreshCw, Sparkles, Pencil, Save
 } from "lucide-react";
 import { useAuth } from '../contexts/AuthContext';
 import { addBill } from '../lib/firebase';
-import { PROVIDER_REGISTRY } from '../lib/providerRegistry';
 
 interface PendingBill {
   id: string;
@@ -32,6 +31,13 @@ interface PendingBill {
   category?: string;
 }
 
+interface EditState {
+  merchantName: string;
+  amount: string;
+  dueDate: string;
+  accountNumber: string;
+}
+
 export default function PendingBillsPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -41,11 +47,11 @@ export default function PendingBillsPage() {
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [edits, setEdits] = useState<Record<string, EditState>>({});
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/login');
-    }
+    if (!authLoading && !user) router.push('/login');
   }, [user, authLoading, router]);
 
   useEffect(() => {
@@ -81,41 +87,85 @@ export default function PendingBillsPage() {
     }
   };
 
+  const startEdit = (bill: PendingBill) => {
+    setEditingId(bill.id);
+    setEdits(prev => ({
+      ...prev,
+      [bill.id]: {
+        merchantName: bill.merchantName || '',
+        amount: bill.amount !== null ? String(bill.amount) : '',
+        dueDate: bill.dueDate || '',
+        accountNumber: bill.accountNumber || '',
+      },
+    }));
+  };
+
+  const cancelEdit = () => setEditingId(null);
+
+  const updateEdit = (billId: string, field: keyof EditState, value: string) => {
+    setEdits(prev => ({
+      ...prev,
+      [billId]: { ...prev[billId], [field]: value },
+    }));
+  };
+
+  const getBillWithEdits = (bill: PendingBill): PendingBill => {
+    const e = edits[bill.id];
+    if (!e) return bill;
+    return {
+      ...bill,
+      merchantName: e.merchantName.trim() || bill.merchantName,
+      amount: e.amount !== '' ? parseFloat(e.amount) : null,
+      dueDate: e.dueDate.trim() || null,
+      accountNumber: e.accountNumber.trim() || null,
+    };
+  };
+
   const handleConfirm = async (bill: PendingBill) => {
     if (!user) return;
+    const finalBill = getBillWithEdits(bill);
+
+    if (!finalBill.amount || finalBill.amount <= 0) {
+      setError('Please enter a valid amount before adding this bill.');
+      return;
+    }
+    if (!finalBill.dueDate) {
+      setError('Please enter a due date before adding this bill.');
+      return;
+    }
+
     setProcessingId(bill.id);
+    setError(null);
     try {
-      const providerId = bill.matchedProviderId || `custom_${bill.merchantName.toLowerCase().replace(/\s+/g, '_')}`;
-      const providerName = bill.matchedProviderName || bill.merchantName;
-      const isCustomProvider = !bill.matchedProviderId;
+      const providerId = finalBill.matchedProviderId || `custom_${finalBill.merchantName.toLowerCase().replace(/\s+/g, '_')}`;
+      const providerName = finalBill.matchedProviderName || finalBill.merchantName;
+      const isCustomProvider = !finalBill.matchedProviderId;
 
       await addBill(user.uid, {
-        companyName: bill.merchantName,
-        accountNumber: bill.accountNumber || '',
-        dueDate: bill.dueDate ? new Date(bill.dueDate) : new Date(),
-        totalAmount: bill.amount || 0,
+        companyName: finalBill.merchantName,
+        accountNumber: finalBill.accountNumber || '',
+        dueDate: new Date(finalBill.dueDate),
+        totalAmount: finalBill.amount,
         paidAmount: 0,
         status: 'unpaid',
         providerId,
         providerName,
         isCustomProvider,
-        category: bill.category || undefined,
+        category: finalBill.category || undefined,
       });
 
       const token = await user.getIdToken();
       await fetch('/api/gmail/pending', {
         method: 'PATCH',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ billId: bill.id, action: 'confirm' }),
       });
 
       setBills(prev => prev.filter(b => b.id !== bill.id));
-      setSuccessMessage(`${bill.merchantName} bill added to your dashboard!`);
+      setEditingId(null);
+      setSuccessMessage(`${finalBill.merchantName} bill added to your dashboard!`);
     } catch (err: any) {
-      setError(`Failed to add ${bill.merchantName}: ${err.message || 'Unknown error'}`);
+      setError(`Failed to add bill: ${err.message || 'Unknown error'}`);
     } finally {
       setProcessingId(null);
     }
@@ -128,13 +178,9 @@ export default function PendingBillsPage() {
       const token = await user.getIdToken();
       await fetch('/api/gmail/pending', {
         method: 'PATCH',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ billId: bill.id, action: 'reject' }),
       });
-
       setBills(prev => prev.filter(b => b.id !== bill.id));
     } catch {
       setError('Failed to reject bill');
@@ -154,9 +200,8 @@ export default function PendingBillsPage() {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      if (data.error) {
-        setError(data.error);
-      } else {
+      if (data.error) setError(data.error);
+      else {
         setSuccessMessage(data.message);
         await fetchPendingBills();
       }
@@ -168,16 +213,9 @@ export default function PendingBillsPage() {
   };
 
   const getConfidenceBadge = (confidence: string) => {
-    switch (confidence) {
-      case 'high':
-        return <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-medium rounded-full">High confidence</span>;
-      case 'medium':
-        return <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 text-xs font-medium rounded-full">Medium confidence</span>;
-      case 'low':
-        return <span className="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-medium rounded-full">Low confidence</span>;
-      default:
-        return null;
-    }
+    if (confidence === 'high') return <span className="px-2 py-0.5 bg-green-900/50 text-green-400 text-xs font-medium rounded-full border border-green-700/50">High confidence</span>;
+    if (confidence === 'medium') return <span className="px-2 py-0.5 bg-yellow-900/50 text-yellow-400 text-xs font-medium rounded-full border border-yellow-700/50">Review fields</span>;
+    return <span className="px-2 py-0.5 bg-red-900/50 text-red-400 text-xs font-medium rounded-full border border-red-700/50">Edit required</span>;
   };
 
   if (authLoading || !user) {
@@ -243,7 +281,7 @@ export default function PendingBillsPage() {
             </div>
             <h3 className="text-white font-semibold text-lg mb-2">No Pending Bills</h3>
             <p className="text-slate-400 text-sm mb-6 max-w-xs">
-              No new bills found in your Gmail. Click the refresh button to scan for recent bill emails.
+              No new bills found in your Gmail. Tap the button below to scan for recent bill emails.
             </p>
             <button
               onClick={handleSync}
@@ -257,94 +295,170 @@ export default function PendingBillsPage() {
         ) : (
           <>
             <div className="flex items-center justify-between">
-              <p className="text-slate-400 text-sm">
-                {bills.length} bill{bills.length > 1 ? 's' : ''} found
-              </p>
+              <p className="text-slate-400 text-sm">{bills.length} bill{bills.length > 1 ? 's' : ''} to review</p>
               <div className="flex items-center gap-1 text-xs text-slate-500">
                 <Sparkles className="w-3 h-3" />
-                AI-extracted
+                Tap ✏ to edit any field
               </div>
             </div>
 
-            {bills.map(bill => (
-              <div key={bill.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden">
-                <div className="p-4 space-y-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-slate-700 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <Building2 className="w-5 h-5 text-teal-400" />
+            {bills.map(bill => {
+              const isEditing = editingId === bill.id;
+              const e = edits[bill.id];
+              const isProcessing = processingId === bill.id;
+              const displayAmount = isEditing ? e?.amount : (bill.amount !== null ? String(bill.amount) : '');
+              const displayDate = isEditing ? e?.dueDate : (bill.dueDate || '');
+              const displayMerchant = isEditing ? e?.merchantName : bill.merchantName;
+              const displayAccount = isEditing ? e?.accountNumber : (bill.accountNumber || '');
+              const needsEdit = bill.amount === null || !bill.dueDate;
+
+              return (
+                <div key={bill.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden">
+                  <div className="p-4 space-y-3">
+
+                    {/* Header row */}
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="w-10 h-10 bg-slate-700 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <Building2 className="w-5 h-5 text-teal-400" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          {isEditing ? (
+                            <input
+                              type="text"
+                              value={e?.merchantName || ''}
+                              onChange={ev => updateEdit(bill.id, 'merchantName', ev.target.value)}
+                              className="w-full bg-slate-700 text-white rounded-lg px-3 py-1.5 text-sm font-semibold border border-slate-600 focus:border-teal-500 focus:outline-none"
+                              placeholder="Company name"
+                            />
+                          ) : (
+                            <h3 className="text-white font-semibold truncate">{bill.merchantName}</h3>
+                          )}
+                          <p className="text-slate-400 text-xs truncate mt-0.5">{bill.emailSubject || bill.emailFrom}</p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="text-white font-semibold">{bill.merchantName}</h3>
-                        <p className="text-slate-400 text-xs">{bill.emailSubject}</p>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        {getConfidenceBadge(bill.confidence)}
+                        <button
+                          onClick={() => isEditing ? cancelEdit() : startEdit(bill)}
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-slate-700 transition-colors"
+                          title={isEditing ? 'Cancel edit' : 'Edit fields'}
+                        >
+                          {isEditing ? <X className="w-4 h-4" /> : <Pencil className="w-4 h-4" />}
+                        </button>
                       </div>
                     </div>
-                    {getConfidenceBadge(bill.confidence)}
-                  </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-slate-900/50 rounded-lg p-3">
-                      <div className="flex items-center gap-1.5 text-slate-400 text-xs mb-1">
-                        <DollarSign className="w-3 h-3" />
-                        Amount
+                    {/* Needs edit banner */}
+                    {needsEdit && !isEditing && (
+                      <div className="flex items-center gap-2 bg-amber-900/20 border border-amber-700/30 rounded-lg px-3 py-2">
+                        <AlertTriangle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+                        <p className="text-amber-400 text-xs">
+                          {bill.amount === null && !bill.dueDate ? 'Amount and due date not found — tap ✏ to enter them' :
+                           bill.amount === null ? 'Amount not found — tap ✏ to enter it' :
+                           'Due date not found — tap ✏ to enter it'}
+                        </p>
                       </div>
-                      <p className="text-white font-semibold">
-                        {bill.amount !== null ? `$${bill.amount.toFixed(2)}` : 'Not found'}
-                      </p>
-                    </div>
-                    <div className="bg-slate-900/50 rounded-lg p-3">
-                      <div className="flex items-center gap-1.5 text-slate-400 text-xs mb-1">
-                        <Calendar className="w-3 h-3" />
-                        Due Date
-                      </div>
-                      <p className="text-white font-semibold">
-                        {bill.dueDate || 'Not found'}
-                      </p>
-                    </div>
-                  </div>
-
-                  {bill.accountNumber && (
-                    <div className="flex items-center gap-2 text-slate-400 text-sm">
-                      <Hash className="w-3.5 h-3.5" />
-                      Account: {bill.accountNumber}
-                    </div>
-                  )}
-
-                  {bill.matchedProviderName && (
-                    <div className="flex items-center gap-2 text-teal-400 text-xs">
-                      <CheckCircle className="w-3 h-3" />
-                      Matched: {bill.matchedProviderName}
-                    </div>
-                  )}
-
-                  <p className="text-slate-500 text-xs line-clamp-2">{bill.rawEmailSnippet}</p>
-                </div>
-
-                <div className="flex border-t border-slate-700/50">
-                  <button
-                    onClick={() => handleReject(bill)}
-                    disabled={processingId === bill.id}
-                    className="flex-1 py-3 text-red-400 hover:bg-red-500/10 transition-colors font-medium text-sm flex items-center justify-center gap-2 disabled:opacity-50"
-                  >
-                    <X className="w-4 h-4" />
-                    Reject
-                  </button>
-                  <div className="w-px bg-slate-700/50" />
-                  <button
-                    onClick={() => handleConfirm(bill)}
-                    disabled={processingId === bill.id || bill.amount === null}
-                    className="flex-1 py-3 text-teal-400 hover:bg-teal-500/10 transition-colors font-medium text-sm flex items-center justify-center gap-2 disabled:opacity-50"
-                  >
-                    {processingId === bill.id ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Check className="w-4 h-4" />
                     )}
-                    Add to Bills
-                  </button>
+
+                    {/* Amount + Date fields */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-slate-900/50 rounded-lg p-3">
+                        <div className="flex items-center gap-1.5 text-slate-400 text-xs mb-1.5">
+                          <DollarSign className="w-3 h-3" />
+                          Amount
+                        </div>
+                        {isEditing ? (
+                          <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={e?.amount || ''}
+                            onChange={ev => updateEdit(bill.id, 'amount', ev.target.value)}
+                            className="w-full bg-slate-700 text-white rounded-lg px-2 py-1.5 text-sm font-semibold border border-slate-600 focus:border-teal-500 focus:outline-none"
+                            placeholder="0.00"
+                          />
+                        ) : (
+                          <p className={`font-semibold ${bill.amount !== null ? 'text-white' : 'text-red-400'}`}>
+                            {bill.amount !== null ? `$${bill.amount.toFixed(2)}` : 'Tap ✏ to add'}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="bg-slate-900/50 rounded-lg p-3">
+                        <div className="flex items-center gap-1.5 text-slate-400 text-xs mb-1.5">
+                          <Calendar className="w-3 h-3" />
+                          Due Date
+                        </div>
+                        {isEditing ? (
+                          <input
+                            type="date"
+                            value={e?.dueDate || ''}
+                            onChange={ev => updateEdit(bill.id, 'dueDate', ev.target.value)}
+                            className="w-full bg-slate-700 text-white rounded-lg px-2 py-1.5 text-sm font-semibold border border-slate-600 focus:border-teal-500 focus:outline-none"
+                          />
+                        ) : (
+                          <p className={`font-semibold ${bill.dueDate ? 'text-white' : 'text-red-400'}`}>
+                            {bill.dueDate || 'Tap ✏ to add'}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Account number */}
+                    {(isEditing || bill.accountNumber) && (
+                      <div className="bg-slate-900/50 rounded-lg px-3 py-2">
+                        <div className="flex items-center gap-1.5 text-slate-400 text-xs mb-1">
+                          <Hash className="w-3 h-3" />
+                          Account Number (optional)
+                        </div>
+                        {isEditing ? (
+                          <input
+                            type="text"
+                            value={e?.accountNumber || ''}
+                            onChange={ev => updateEdit(bill.id, 'accountNumber', ev.target.value)}
+                            className="w-full bg-slate-700 text-white rounded-lg px-2 py-1.5 text-sm border border-slate-600 focus:border-teal-500 focus:outline-none"
+                            placeholder="Account number"
+                          />
+                        ) : (
+                          <p className="text-white text-sm">{bill.accountNumber}</p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Email snippet */}
+                    {bill.rawEmailSnippet && (
+                      <p className="text-slate-500 text-xs line-clamp-2 italic">"{bill.rawEmailSnippet}"</p>
+                    )}
+                  </div>
+
+                  {/* Action buttons */}
+                  <div className="flex border-t border-slate-700/50">
+                    <button
+                      onClick={() => handleReject(bill)}
+                      disabled={isProcessing}
+                      className="flex-1 py-3 text-red-400 hover:bg-red-500/10 transition-colors font-medium text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+                    >
+                      <X className="w-4 h-4" />
+                      Reject
+                    </button>
+                    <div className="w-px bg-slate-700/50" />
+                    <button
+                      onClick={() => handleConfirm(bill)}
+                      disabled={isProcessing}
+                      className="flex-1 py-3 text-teal-400 hover:bg-teal-500/10 transition-colors font-medium text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+                    >
+                      {isProcessing ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Check className="w-4 h-4" />
+                      )}
+                      Add to Bills
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </>
         )}
       </div>
