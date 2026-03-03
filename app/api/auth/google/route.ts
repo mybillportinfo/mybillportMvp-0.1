@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getOAuth2Client } from '../../lib/gmailService';
+import { getOAuth2Client } from '../../../lib/gmailService';
 
 export const runtime = 'nodejs';
 

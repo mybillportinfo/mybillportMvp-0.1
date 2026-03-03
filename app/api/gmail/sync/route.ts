@@ -420,7 +420,7 @@ export async function POST(request: NextRequest) {
           gmail.users.messages.list({ userId: 'me', q: query, maxResults: 30 }),
           GMAIL_API_TIMEOUT_MS,
           `gmail.list`
-        );
+        ) as any;
         for (const msg of (res.data.messages || [])) {
           if (msg.id && !seenIds.has(msg.id)) {
             seenIds.add(msg.id);
