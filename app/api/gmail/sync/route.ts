@@ -40,12 +40,18 @@ EMAIL CONTENT:
 // ─── Search Queries ───────────────────────────────────────────────────────────
 function buildSearchQueries(): string[] {
   return [
+    // Subject-based (fast, high precision)
     'subject:(invoice OR bill OR statement OR receipt) newer_than:90d',
     'subject:("amount due" OR "payment due" OR "due date" OR "billing notice" OR "your bill") newer_than:90d',
     'subject:("account statement" OR "billing statement" OR "payment reminder" OR "balance due") newer_than:90d',
     'subject:(subscription OR renewal OR "auto-pay" OR autopay) newer_than:90d',
     'subject:(ebill OR "e-bill" OR "new bill" OR "current bill" OR "account summary") newer_than:90d',
     'subject:(overdue OR "past due" OR "final notice" OR "payment confirmation") newer_than:90d',
+    // Body-based: catches emails with no subject or subject not matching above
+    '("due date" OR "amount due" OR "payment due" OR "balance due") newer_than:90d',
+    '("bill" OR "invoice") ("due" OR "amount") newer_than:90d',
+    // Broad catch-all for inbox (catches no-subject emails, self-sent notes, etc.)
+    'in:inbox newer_than:30d',
   ];
 }
 
@@ -160,15 +166,22 @@ function regexExtract(subject: string, body: string): RegexExtraction {
   const bodyLower = body.toLowerCase();
   const fullText = `${subject}\n${body}`;
 
-  // Is this a billing candidate by subject keywords?
-  const billingSubjectKeywords = ['bill', 'invoice', 'statement', 'ebill', 'e-bill', 'amount due', 'payment due', 'receipt', 'overdue'];
-  const isBillingCandidate = billingSubjectKeywords.some(kw => subjectLower.includes(kw));
+  // Is this a billing candidate? Check subject AND body (catches no-subject emails)
+  const billingKeywords = ['bill', 'invoice', 'statement', 'ebill', 'e-bill', 'amount due', 'payment due',
+    'receipt', 'overdue', 'due date', 'total due', 'balance due', 'subscription', 'renewal'];
+  const bodyLower2 = body.toLowerCase();
+  const isBillingCandidate =
+    billingKeywords.some(kw => subjectLower.includes(kw)) ||
+    billingKeywords.some(kw => bodyLower2.includes(kw));
 
   // ── Amount extraction ──
   // Try context-aware extraction first (look for amounts near "due" keywords)
   const amountContextPatterns = [
+    // "$150" or "$ 150" before keywords
     /(?:new bill amount|amount due|payment due|total due|balance due|current charges|current bill|pay this amount)[^\d$]*\$?\s*([\d,]+\.?\d{0,2})/gi,
     /\$\s*([\d,]+\.?\d{0,2})\s*(?:is due|due|owed)/gi,
+    // "150$" — dollar sign AFTER the number (common in user notes and some billers)
+    /(?:new bill amount|amount due|payment due|total due|balance due|current charges)[^\d]*?([\d,]+\.?\d{0,2})\s*\$/gi,
   ];
 
   let amount: number | null = null;
@@ -185,25 +198,30 @@ function regexExtract(subject: string, body: string): RegexExtraction {
     if (amount !== null) break;
   }
 
-  // Fallback: find all dollar amounts in the text, prefer reasonable bill amounts
+  // Fallback: find all dollar amounts in any format
   if (amount === null) {
     const allAmounts: number[] = [];
-    const dollarPattern = /\$\s*([\d,]+\.\d{2})/g;
+
+    // "$150", "$150.00", "$ 1,234.56"
+    const prefixDollar = /\$\s*([\d,]+\.?\d{0,2})/g;
     let m: RegExpExecArray | null;
-    while ((m = dollarPattern.exec(fullText)) !== null) {
+    while ((m = prefixDollar.exec(fullText)) !== null) {
+      const val = parseFloat(m[1].replace(/,/g, ''));
+      if (val > 0.5 && val < 50000) allAmounts.push(val);
+    }
+
+    // "150$", "150.00$", "1,234.56 $" — dollar sign after number
+    const suffixDollar = /\b([\d,]+\.?\d{0,2})\s*\$/g;
+    while ((m = suffixDollar.exec(fullText)) !== null) {
       const val = parseFloat(m[1].replace(/,/g, ''));
       if (val > 0.5 && val < 50000) allAmounts.push(val);
     }
 
     if (allAmounts.length > 0) {
-      // Prefer amounts in a typical utility bill range (1–10,000)
       const candidates = allAmounts.filter(v => v >= 1 && v <= 10000);
-      if (candidates.length > 0) {
-        // Take the smallest if multiple (often the actual payment, not balance)
-        amount = candidates.sort((a, b) => a - b)[0];
-      } else {
-        amount = allAmounts[0];
-      }
+      amount = candidates.length > 0
+        ? candidates.sort((a, b) => a - b)[0]
+        : allAmounts[0];
     }
   }
 
