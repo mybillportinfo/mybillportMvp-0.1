@@ -37,6 +37,7 @@ interface PendingBill {
   matchedProviderId?: string;
   matchedProviderName?: string;
   category?: string;
+  emailType?: 'bill' | 'receipt' | 'order' | 'promo' | 'other';
   routingAction?: 'auto_accept' | 'user_review' | 'user_correction' | 'manual';
   validationWarnings?: string[];
 }
@@ -233,6 +234,17 @@ export default function PendingBillsPage() {
     return <span className="text-xs text-blue-400">hybrid</span>;
   };
 
+  const emailTypeBadge = (type?: string) => {
+    if (!type || type === 'bill') return null;
+    if (type === 'receipt')
+      return <span className="text-xs px-1.5 py-0.5 bg-slate-700 text-slate-300 rounded font-medium">Receipt</span>;
+    if (type === 'order')
+      return <span className="text-xs px-1.5 py-0.5 bg-slate-700 text-slate-300 rounded font-medium">Order</span>;
+    if (type === 'promo')
+      return <span className="text-xs px-1.5 py-0.5 bg-slate-700 text-slate-400 rounded">Promo</span>;
+    return null;
+  };
+
   const routingBadge = (action?: string) => {
     if (!action) return null;
     if (action === 'auto_accept')
@@ -365,8 +377,9 @@ export default function PendingBillsPage() {
                           ) : (
                             <h3 className="text-white font-semibold truncate">{bill.merchantName}</h3>
                           )}
-                          <div className="flex items-center gap-1.5 mt-0.5">
+                          <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                             <p className="text-slate-400 text-xs truncate">{bill.emailSubject || bill.emailFrom}</p>
+                            {emailTypeBadge(bill.emailType)}
                             {bill.detectionMethod && methodBadge(bill.detectionMethod)}
                           </div>
                         </div>

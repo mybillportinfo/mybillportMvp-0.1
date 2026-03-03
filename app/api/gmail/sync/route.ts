@@ -12,6 +12,7 @@ import { PROVIDER_REGISTRY } from '../../../lib/providerRegistry';
 import { extractWithRegex } from '../../../lib/extractWithRegex';
 import { computeConfidence, scoreToLabel, detectionMethod, ExtractionSources } from '../../../lib/confidenceScorer';
 import { validateExtractedFields, getRoutingAction } from '../../../lib/validation';
+import { classifyEmail, EmailType } from '../../../lib/emailClassifier';
 import Anthropic from '@anthropic-ai/sdk';
 
 export const runtime = 'nodejs';
@@ -370,6 +371,7 @@ export async function POST(request: NextRequest) {
     const seenMerchantsThisScan = new Set<string>();
 
     let scanned = 0, candidates = 0, aiParsed = 0, drafted = 0, skipped = 0, errors = 0;
+    let filteredReceipts = 0, filteredOrders = 0, filteredOther = 0;
 
     for (const msg of allMessages.slice(0, MAX_EMAILS_TO_PROCESS)) {
       try {
@@ -399,8 +401,15 @@ export async function POST(request: NextRequest) {
         const body    = extractEmailText(full.data.payload || {});
         const text    = (body || snippet).slice(0, 10000);
 
-        // Pre-filter: must look like a billing email
-        if (!isBillingEmail(from, subject, snippet, body)) { skipped++; continue; }
+        // ── Classifier: only proceed if this looks like a real bill ──────────
+        const emailType: EmailType = classifyEmail(subject, snippet, body);
+
+        if (emailType === 'receipt') { filteredReceipts++; skipped++; continue; }
+        if (emailType === 'order')   { filteredOrders++;   skipped++; continue; }
+        if (emailType === 'promo')   { filteredOther++;    skipped++; continue; }
+        if (emailType === 'other')   { filteredOther++;    skipped++; continue; }
+
+        // emailType === 'bill' — proceed to extraction
         candidates++;
 
         // ── Step 1: Deterministic regex extraction ──
@@ -523,6 +532,7 @@ export async function POST(request: NextRequest) {
           matchedProviderName: provider?.providerName,
           category: finalCategory,
           routingAction,
+          emailType,
           validationWarnings: validation.warnings.length > 0 ? validation.warnings : undefined,
         };
 
@@ -542,20 +552,31 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    console.log({ route: '/api/gmail/sync', step: 'complete', scanned, candidates, aiParsed, drafted, skipped, errors });
+    console.log({
+      route: '/api/gmail/sync', step: 'complete',
+      scanned, candidates, aiParsed, drafted, skipped, errors,
+      filteredReceipts, filteredOrders, filteredOther,
+    });
+
+    // Build a helpful summary message
+    const filterParts: string[] = [];
+    if (filteredReceipts > 0) filterParts.push(`${filteredReceipts} receipt${filteredReceipts > 1 ? 's' : ''}`);
+    if (filteredOrders > 0)   filterParts.push(`${filteredOrders} order${filteredOrders > 1 ? 's' : ''}`);
+    if (filteredOther > 0)    filterParts.push(`${filteredOther} non-bill${filteredOther > 1 ? 's' : ''}`);
+    const filterNote = filterParts.length > 0 ? ` (filtered out: ${filterParts.join(', ')})` : '';
 
     let message: string;
     if (drafted > 0) {
-      message = `Scan complete — ${drafted} new bill${drafted > 1 ? 's' : ''} added to Pending Bills (${aiParsed} AI-parsed, ${drafted - aiParsed} regex-only). Review and confirm them.`;
-    } else if (skipped > 0 && candidates === 0) {
-      message = `Scanned ${scanned} emails — all ${skipped} were already imported previously.`;
+      message = `Scan complete — ${drafted} new bill${drafted > 1 ? 's' : ''} added to Pending Bills${filterNote}. Review and confirm them.`;
     } else if (candidates > 0 && drafted === 0) {
       message = `Found ${candidates} billing emails but encountered errors storing them.`;
+    } else if (filterParts.length > 0) {
+      message = `Scanned ${scanned} emails — no new bills found. Filtered out ${filterParts.join(', ')} that were not bills.`;
     } else {
       message = `Scanned ${scanned} emails — no new billing emails detected in the last 60 days.`;
     }
 
-    return NextResponse.json({ success: true, scanned, candidates, aiParsed, drafted, skipped, errors, message });
+    return NextResponse.json({ success: true, scanned, candidates, aiParsed, drafted, skipped, errors, filteredReceipts, filteredOrders, message });
 
   } catch (error: any) {
     console.error({ route: '/api/gmail/sync', step: 'handler', error: error.message });

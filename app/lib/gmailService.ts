@@ -214,6 +214,8 @@ export interface PendingBill {
   matchedProviderId?: string;
   matchedProviderName?: string;
   category?: string;
+  // Email classification
+  emailType?: 'bill' | 'receipt' | 'order' | 'promo' | 'other';
   // Layer 5: routing action — tells the UI what to suggest to the user
   routingAction?: 'auto_accept' | 'user_review' | 'user_correction' | 'manual';
   // Layer 4: any warnings from business rule validation
