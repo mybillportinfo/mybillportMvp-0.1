@@ -46,6 +46,9 @@ export default function SettingsPage() {
   const [gmailSyncing, setGmailSyncing] = useState(false);
   const [gmailMessage, setGmailMessage] = useState<string | null>(null);
   const [gmailError, setGmailError] = useState<string | null>(null);
+  const [diagRunning, setDiagRunning] = useState(false);
+  const [diagResult, setDiagResult] = useState<any | null>(null);
+  const [diagOpen, setDiagOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -287,6 +290,25 @@ export default function SettingsPage() {
     }
   };
 
+  const handleRunDiag = async () => {
+    if (!user) return;
+    setDiagRunning(true);
+    setDiagResult(null);
+    setDiagOpen(true);
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch('/api/gmail/diag?q=newer_than:90d&max=20', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      setDiagResult(data);
+    } catch (e: any) {
+      setDiagResult({ error: e.message });
+    } finally {
+      setDiagRunning(false);
+    }
+  };
+
   const handleLogout = async () => {
     try {
       await logout();
@@ -405,6 +427,80 @@ export default function SettingsPage() {
                   <Unplug className="w-4 h-4" />
                 </button>
               </div>
+
+              {/* Diagnostics */}
+              <button
+                onClick={handleRunDiag}
+                disabled={diagRunning}
+                className="w-full py-2 border border-slate-200 text-slate-500 rounded-lg text-xs font-medium hover:bg-slate-50 transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
+              >
+                {diagRunning ? <Loader2 className="w-3 h-3 animate-spin" /> : <Shield className="w-3 h-3" />}
+                {diagRunning ? 'Running diagnostics...' : 'Run Diagnostics (debug)'}
+              </button>
+
+              {diagOpen && diagResult && (
+                <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50 p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-semibold text-slate-700">Diagnostic Results</p>
+                    <button onClick={() => setDiagOpen(false)} className="text-slate-400 hover:text-slate-600"><X className="w-3.5 h-3.5" /></button>
+                  </div>
+
+                  {diagResult.error ? (
+                    <p className="text-xs text-red-600">{diagResult.error}</p>
+                  ) : (
+                    <>
+                      <div className="grid grid-cols-2 gap-1 text-xs">
+                        <div className="bg-white rounded p-2 border border-slate-200">
+                          <p className="text-slate-500">Query used</p>
+                          <p className="font-mono text-slate-800 break-all">{diagResult.query}</p>
+                        </div>
+                        <div className="bg-white rounded p-2 border border-slate-200">
+                          <p className="text-slate-500">Emails returned</p>
+                          <p className="font-bold text-slate-800 text-lg">{diagResult.resultCount}</p>
+                        </div>
+                      </div>
+
+                      {diagResult.summary && (
+                        <div className="grid grid-cols-4 gap-1 text-xs text-center">
+                          {[
+                            { label: 'With plain text', val: diagResult.summary.withPlainText },
+                            { label: 'With HTML', val: diagResult.summary.withHtmlText },
+                            { label: 'Has $ amount', val: diagResult.summary.withDollarAmount },
+                            { label: 'Empty body', val: diagResult.summary.empty },
+                          ].map(s => (
+                            <div key={s.label} className="bg-white rounded p-1.5 border border-slate-200">
+                              <p className="text-slate-500 leading-tight">{s.label}</p>
+                              <p className="font-bold text-slate-800">{s.val}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="space-y-1 max-h-64 overflow-y-auto">
+                        {(diagResult.emails || []).map((e: any, i: number) => (
+                          <div key={i} className="bg-white rounded p-2 border border-slate-200 text-xs space-y-0.5">
+                            <p className="font-medium text-slate-800 truncate">{e.subject || '(no subject)'}</p>
+                            <p className="text-slate-500 truncate">{e.from}</p>
+                            <div className="flex gap-2 text-slate-400 flex-wrap">
+                              <span>Text: {e.plainTextLength}b</span>
+                              <span>HTML: {e.htmlTextLength}b</span>
+                              <span>Source: {e.chosenTextSource}</span>
+                              {e.containsDollarSign && <span className="text-green-600 font-medium">✓ Has $</span>}
+                              {e.containsDate && <span className="text-blue-600 font-medium">✓ Has date</span>}
+                            </div>
+                            {e.dollarAmounts?.length > 0 && (
+                              <p className="text-green-700 font-mono">{e.dollarAmounts.join(', ')}</p>
+                            )}
+                            {e.first500Chars && (
+                              <p className="text-slate-400 line-clamp-2 font-mono text-[10px]">{e.first500Chars.slice(0, 200)}</p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           ) : (
             <div className="space-y-2">
