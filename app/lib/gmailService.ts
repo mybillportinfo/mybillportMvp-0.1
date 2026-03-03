@@ -222,9 +222,12 @@ export async function getPendingBills(userId: string): Promise<PendingBill[]> {
 
 export async function checkDuplicateGmailMessage(userId: string, gmailMessageId: string): Promise<boolean> {
   const db = getAdminDb();
+  // Only block re-import if the bill is still pending or was confirmed (imported to main bills).
+  // If it was rejected, allow re-import so the user gets another chance to review it.
   const snapshot = await db.collection('pendingBills')
     .where('userId', '==', userId)
     .where('gmailMessageId', '==', gmailMessageId)
+    .where('status', 'in', ['pending', 'confirmed'])
     .limit(1)
     .get();
   return !snapshot.empty;
