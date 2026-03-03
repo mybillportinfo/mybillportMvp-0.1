@@ -56,6 +56,7 @@ export function getAdminApp(): App {
 export function getAdminDb(): Firestore {
   if (_db) return _db;
   _db = getFirestore(initAdminApp());
+  _db.settings({ ignoreUndefinedProperties: true });
   return _db;
 }
 
