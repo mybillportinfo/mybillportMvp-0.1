@@ -275,9 +275,9 @@ export default function SettingsPage() {
       if (data.error) {
         setGmailError(data.error);
       } else {
-        setGmailMessage(data.message || `Found ${data.added} new bills.`);
-        if (data.added > 0) {
-          setTimeout(() => router.push('/pending-bills'), 2000);
+        setGmailMessage(data.message || `Found ${data.drafted ?? data.added ?? 0} new bills.`);
+        if ((data.drafted ?? data.added ?? 0) > 0) {
+          setTimeout(() => router.push('/pending-bills'), 2500);
         }
       }
     } catch {
