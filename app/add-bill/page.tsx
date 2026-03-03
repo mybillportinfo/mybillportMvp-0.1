@@ -69,6 +69,9 @@ export default function AddBillPage() {
   const [gmailSyncing, setGmailSyncing] = useState(false);
   const [gmailMessage, setGmailMessage] = useState<string | null>(null);
   const [gmailError, setGmailError] = useState<string | null>(null);
+  // If the OAuth callback just redirected here, trust the URL param immediately
+  // so the status API call can't race and override it to false.
+  const justConnectedRef = useRef(false);
 
   useEffect(() => {
     if (!authLoading && !user) router.push('/login');
@@ -77,10 +80,20 @@ export default function AddBillPage() {
   useEffect(() => {
     if (user) {
       loadBillCount();
+      // If we just finished OAuth, skip the status check for 3 s to avoid a
+      // race where Firestore hasn't propagated the new tokens yet and returns
+      // connected: false, overriding the just-set connected: true state.
+      if (justConnectedRef.current) return;
       user.getIdToken().then(token => {
         fetch('/api/gmail/status', { headers: { Authorization: `Bearer ${token}` } })
           .then(r => r.json())
-          .then(data => { setGmailConnected(data.connected || false); setGmailEmail(data.email || ''); })
+          .then(data => {
+            // Only update state if OAuth didn't just set it (avoids flash)
+            if (!justConnectedRef.current) {
+              setGmailConnected(data.connected || false);
+              setGmailEmail(data.email || '');
+            }
+          })
           .catch(() => {});
       });
     }
@@ -90,11 +103,24 @@ export default function AddBillPage() {
     const params = new URLSearchParams(window.location.search);
     const gmailStatus = params.get('gmail');
     if (gmailStatus === 'connected') {
+      justConnectedRef.current = true;
       setGmailConnected(true);
-      setGmailMessage('Gmail connected! Click "Scan for Bills" to import.');
+      setGmailMessage('Gmail connected! Click "Scan for Bills" to import your bills.');
       window.history.replaceState({}, '', '/add-bill');
+      // After 2 s, do a real status check (Firestore should have the tokens by now)
+      // and clear the justConnected flag so future status checks work normally.
+      setTimeout(() => {
+        justConnectedRef.current = false;
+      }, 2000);
     } else if (gmailStatus === 'error') {
-      const reason = params.get('reason') || 'Unknown error';
+      const rawReason = params.get('reason') || 'Unknown error';
+      const reason = rawReason === 'no_refresh_token'
+        ? 'Connection incomplete — please tap Connect Gmail and try again.'
+        : rawReason === 'invalid_state'
+        ? 'Session expired. Please tap Connect Gmail and try again.'
+        : rawReason === 'no_code'
+        ? 'Authorization was cancelled. Please try again.'
+        : rawReason;
       setGmailError(`Failed to connect Gmail: ${reason}`);
       window.history.replaceState({}, '', '/add-bill');
     }
@@ -133,16 +159,25 @@ export default function AddBillPage() {
     try {
       const token = await user.getIdToken();
       const res = await fetch('/api/gmail/sync', { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
-      const data = await res.json();
-      if (data.error) {
-        setGmailError(data.error);
+      let data: any = {};
+      try { data = await res.json(); } catch { /* non-JSON body */ }
+
+      if (!res.ok || data.error) {
+        // Surface a helpful error — expired tokens get a reconnect prompt
+        const errMsg: string = data.error || `Scan failed (${res.status})`;
+        const isExpired = res.status === 401 || errMsg.toLowerCase().includes('expired') || errMsg.toLowerCase().includes('reconnect');
+        setGmailError(isExpired
+          ? 'Gmail access expired. Tap "Reconnect Gmail" below to refresh your connection, then scan again.'
+          : errMsg
+        );
+        if (isExpired) setGmailConnected(false);
       } else {
         setGmailMessage(data.message || `Found ${data.drafted ?? 0} new bills.`);
         // Redirect to Pending Bills if new bills were found OR if there are already pending bills waiting
         const hasPending = (data.drafted ?? 0) > 0 || (data.skippedAlreadyPending ?? 0) > 0 || (data.pendingCount ?? 0) > 0;
         if (hasPending) setTimeout(() => router.push('/pending-bills'), 2000);
       }
-    } catch { setGmailError('Failed to scan Gmail'); }
+    } catch { setGmailError('Could not reach the server. Check your connection and try again.'); }
     finally { setGmailSyncing(false); }
   };
 
@@ -561,7 +596,7 @@ export default function AddBillPage() {
                   className="w-full py-2.5 bg-red-500 text-white rounded-lg font-medium text-sm hover:bg-red-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {gmailLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
-                  {gmailLoading ? 'Connecting...' : 'Connect Gmail'}
+                  {gmailLoading ? 'Connecting...' : gmailError ? 'Reconnect Gmail' : 'Connect Gmail'}
                 </button>
               )}
             </div>
