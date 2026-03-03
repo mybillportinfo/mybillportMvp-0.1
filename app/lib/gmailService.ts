@@ -223,12 +223,30 @@ export interface PendingBill {
 }
 
 /**
+ * Maps sub-brand provider IDs to their parent brand for deduplication.
+ * Rogers Cable and Rogers Smart Home are both "Rogers" for dedup purposes —
+ * a user shouldn't see more than one Rogers bill per scan regardless of service type.
+ * Same for Bell Fibe → Bell, Telus Optik → Telus, etc.
+ */
+const PROVIDER_FAMILY: Record<string, string> = {
+  rogers_cable:       'rogers',
+  rogers_smart_home:  'rogers',
+  bell_fibe:          'bell',
+  bell_aliant:        'bell',
+  telus_optik:        'telus',
+  enbridge_gas:       'enbridge_gas', // keep separate — distinct billing entity
+};
+
+/**
  * Build a normalized key for deduplication.
- * Known providers → "provider:<registryId>" (most reliable)
+ * Known providers → "provider:<familyId>" (most reliable)
  * Unknown → "name:<first12charsOfNormalizedName>"
  */
 export function buildMerchantKey(matchedProviderId: string | undefined, merchantName: string): string {
-  if (matchedProviderId) return `provider:${matchedProviderId}`;
+  if (matchedProviderId) {
+    const family = PROVIDER_FAMILY[matchedProviderId] ?? matchedProviderId;
+    return `provider:${family}`;
+  }
   const norm = merchantName.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 12);
   return `name:${norm}`;
 }

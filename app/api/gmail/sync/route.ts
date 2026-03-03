@@ -138,7 +138,17 @@ function extractDomain(from: string): string | null {
 }
 
 // ─── Extract Display Name from From Header ────────────────────────────────────
+// Handles subdomains like myaccount.rogers.com → "Rogers"
+const SKIP_SUBDOMAINS = new Set([
+  'mail', 'email', 'notify', 'alerts', 'noreply', 'no-reply', 'info',
+  'billing', 'ebilling', 'myaccount', 'account', 'accounts', 'notifications',
+  'auto', 'secure', 'donotreply', 'do-not-reply', 'service', 'help',
+  'support', 'mailer', 'postmaster', 'reply', 'statement', 'statements',
+  'invoices', 'invoice', 'payment', 'payments', 'news', 'hello', 'contact',
+]);
+
 function extractSenderName(from: string): string {
+  // Try display name part of "Display Name <email@domain.com>"
   const display = from.match(/^"?([^"<]+)"?\s*</);
   if (display) {
     const name = display[1].trim()
@@ -147,12 +157,16 @@ function extractSenderName(from: string): string {
       .trim();
     if (name.length > 1) return capitalise(name);
   }
+
+  // Fall back to domain — skip generic subdomains to find the real brand name
   const domain = extractDomain(from);
   if (domain) {
-    const parts = domain.split('.');
-    const label = parts[0];
-    const skip = ['mail', 'email', 'notify', 'alerts', 'noreply', 'info', 'billing'];
-    const chosen = skip.includes(label) && parts.length > 1 ? parts[1] : label;
+    // e.g. "myaccount.rogers.com" → ['myaccount', 'rogers', 'com'] → remove TLD → ['myaccount', 'rogers']
+    const partsNoTld = domain.split('.').slice(0, -1);
+    // Find first segment that is not a generic subdomain prefix
+    const chosen = partsNoTld.find(p => !SKIP_SUBDOMAINS.has(p.toLowerCase()))
+      ?? partsNoTld[partsNoTld.length - 1]
+      ?? domain;
     return capitalise(chosen);
   }
   return 'Unknown';
@@ -163,14 +177,19 @@ function capitalise(s: string): string {
 }
 
 // ─── Provider Registry Match ──────────────────────────────────────────────────
+// Pre-sort registry by name length descending so we always get the most specific
+// match first — "Rogers Cable" beats "Rogers", "Bell Fibe" beats "Bell".
+const SORTED_REGISTRY = Object.entries(PROVIDER_REGISTRY)
+  .sort(([, a], [, b]) => b.name.length - a.name.length);
+
 function matchProvider(from: string, subject: string, body: string): {
   providerId: string; providerName: string; category: string;
 } | null {
   const text = `${from} ${subject} ${body.slice(0, 2000)}`.toLowerCase();
-  for (const [id, p] of Object.entries(PROVIDER_REGISTRY)) {
-    const name = (p as any).name.toLowerCase();
+  for (const [id, p] of SORTED_REGISTRY) {
+    const name = p.name.toLowerCase();
     if (name.length > 2 && text.includes(name)) {
-      return { providerId: id, providerName: (p as any).name, category: (p as any).category };
+      return { providerId: id, providerName: p.name, category: p.category };
     }
   }
   return null;

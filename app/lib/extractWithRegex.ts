@@ -302,11 +302,13 @@ function tryAccountPatterns(text: string): { display: string; cleaned: string } 
     // Matches after "account" keyword anywhere in 200-char window
     new RegExp(`account[^\\n]{0,80}?(\\d{2}\\s\\d{2}\\s\\d{2}\\s\\d{5}\\s\\d)`, 'i'),
 
-    // ── Masked account formats: "****1234", "XXXX-5678", ending with 4+ digits ──
-    /[*Xx]{2,}[\s\-]?([A-Z0-9]{4,12})/i,
+    // ── Masked account formats: "Account: ****1234" or "Account ending in XXXX" ──
+    // IMPORTANT: requires "account" label before the masked portion to avoid
+    // matching phone numbers, order numbers, or other numeric strings.
+    new RegExp(`account[^\\n]{0,40}\\*{2,}\\s*-?([A-Z0-9]{4,8})${EOL}`, 'im'),
 
-    // ── Fallback: "Acct: XXXXX" short form ──
-    /\bacct\b[\s:]+([A-Z0-9][A-Z0-9 \-]{2,18})/i,
+    // ── Fallback: "Acct: XXXXX" short form — require adjacent position ──
+    new RegExp(`\\bacct\\b[\\s:]+([A-Z0-9][A-Z0-9 \\-]{2,18})${EOL}`, 'i'),
   ];
 
   for (const p of patterns) {
@@ -327,17 +329,24 @@ export function extractWithRegex(text: string): RegexExtracted {
   const accountNumber        = acctResult?.cleaned ?? null;
   const accountNumberDisplay = acctResult?.display ?? null;
 
-  // Amount due — positive keywords first, proximity fallback handles the rest
+  // Amount due — positive keywords first, proximity fallback handles the rest.
+  // Include Rogers/Bell/Telus-specific label variants.
   const amountDue = findAmount(text, [
     'amount due', 'new bill amount', 'payment due', 'current charges',
     'new charges', 'total due', 'balance due', 'pay this amount',
     'please pay', 'amount owed', 'current bill', 'your bill', 'new amount',
+    // Telecom-specific labels
+    'total charges', 'monthly charges', 'current month charges',
+    'total amount due', 'please pay the amount', 'amount to pay',
+    'total new charges', 'your current bill', 'your new bill',
   ]);
 
-  // Due date
+  // Due date — include Rogers/Bell/Telus-specific variants
   const dueDate = findDate(text, [
     'due date', 'payment due', 'pay by', 'pay on or before',
     'due on', 'due before', 'payment by',
+    'please pay by', 'to avoid late fees', 'payment required by',
+    'autopay date', 'auto-pay date', 'scheduled payment',
   ]);
 
   // Statement date
