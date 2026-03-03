@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Home, Plus, Settings, User, Bell, Shield, Lock, LogOut, ChevronRight, Loader2, X, Eye, EyeOff, MessageSquare, Receipt, DollarSign, Check, AlertTriangle, Camera, Trash2, Mail, RefreshCw, Unplug, Inbox } from "lucide-react";
+import { ArrowLeft, Home, Plus, Settings, User, Bell, Shield, Lock, LogOut, ChevronRight, Loader2, X, Eye, EyeOff, MessageSquare, Receipt, DollarSign, Check, AlertTriangle, Camera, Trash2, Mail } from "lucide-react";
 import { useAuth } from '../contexts/AuthContext';
 import {
   getUserPreferences, setUserPreferences,
@@ -40,15 +40,6 @@ export default function SettingsPage() {
   const [deletingAccount, setDeletingAccount] = useState(false);
   const photoInputRef = useRef<HTMLInputElement>(null);
 
-  const [gmailConnected, setGmailConnected] = useState(false);
-  const [gmailEmail, setGmailEmail] = useState('');
-  const [gmailLoading, setGmailLoading] = useState(false);
-  const [gmailSyncing, setGmailSyncing] = useState(false);
-  const [gmailMessage, setGmailMessage] = useState<string | null>(null);
-  const [gmailError, setGmailError] = useState<string | null>(null);
-  const [diagRunning, setDiagRunning] = useState(false);
-  const [diagResult, setDiagResult] = useState<any | null>(null);
-  const [diagOpen, setDiagOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -78,33 +69,8 @@ export default function SettingsPage() {
         setNewEmail(user.email || '');
       });
 
-      user.getIdToken().then(token => {
-        fetch('/api/gmail/status', {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-          .then(r => r.json())
-          .then(data => {
-            setGmailConnected(data.connected || false);
-            setGmailEmail(data.email || '');
-          })
-          .catch(() => {});
-      });
     }
   }, [user]);
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const gmailStatus = params.get('gmail');
-    if (gmailStatus === 'connected') {
-      setGmailConnected(true);
-      setGmailMessage('Gmail connected successfully!');
-      window.history.replaceState({}, '', '/settings');
-    } else if (gmailStatus === 'error') {
-      const reason = params.get('reason') || 'Unknown error';
-      setGmailError(`Failed to connect Gmail: ${reason}`);
-      window.history.replaceState({}, '', '/settings');
-    }
-  }, []);
 
   const handleSavePreferences = async () => {
     if (!user) return;
@@ -220,95 +186,6 @@ export default function SettingsPage() {
     }
   };
 
-  const handleConnectGmail = async () => {
-    if (!user) return;
-    setGmailLoading(true);
-    setGmailError(null);
-    try {
-      const token = await user.getIdToken();
-      const res = await fetch('/api/gmail/auth', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (data.authUrl) {
-        window.location.href = data.authUrl;
-      } else {
-        setGmailError(data.error || 'Failed to get authorization URL');
-      }
-    } catch {
-      setGmailError('Failed to connect Gmail');
-    } finally {
-      setGmailLoading(false);
-    }
-  };
-
-  const handleDisconnectGmail = async () => {
-    if (!user) return;
-    setGmailLoading(true);
-    setGmailError(null);
-    try {
-      const token = await user.getIdToken();
-      await fetch('/api/gmail/disconnect', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setGmailConnected(false);
-      setGmailEmail('');
-      setGmailMessage('Gmail disconnected.');
-      setTimeout(() => setGmailMessage(null), 3000);
-    } catch {
-      setGmailError('Failed to disconnect Gmail');
-    } finally {
-      setGmailLoading(false);
-    }
-  };
-
-  const handleSyncGmail = async () => {
-    if (!user) return;
-    setGmailSyncing(true);
-    setGmailError(null);
-    setGmailMessage(null);
-    try {
-      const token = await user.getIdToken();
-      const res = await fetch('/api/gmail/sync', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (data.error) {
-        setGmailError(data.error);
-      } else {
-        setGmailMessage(data.message || `Found ${data.drafted ?? data.added ?? 0} new bills.`);
-        if ((data.drafted ?? data.added ?? 0) > 0) {
-          setTimeout(() => router.push('/pending-bills'), 2500);
-        }
-      }
-    } catch {
-      setGmailError('Failed to sync Gmail bills');
-    } finally {
-      setGmailSyncing(false);
-    }
-  };
-
-  const handleRunDiag = async () => {
-    if (!user) return;
-    setDiagRunning(true);
-    setDiagResult(null);
-    setDiagOpen(true);
-    try {
-      const token = await user.getIdToken();
-      const res = await fetch('/api/gmail/diag?q=newer_than:90d&max=20', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      setDiagResult(data);
-    } catch (e: any) {
-      setDiagResult({ error: e.message });
-    } finally {
-      setDiagRunning(false);
-    }
-  };
-
   const handleLogout = async () => {
     try {
       await logout();
@@ -380,154 +257,6 @@ export default function SettingsPage() {
               Active
             </span>
           </div>
-        </div>
-
-        <div className="bg-white rounded-xl p-4 space-y-3">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
-              <Mail className="w-4 h-4 text-red-600" />
-            </div>
-            <div className="flex-1">
-              <p className="font-semibold text-slate-800">Gmail Bill Scanner <span className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-700 border border-amber-200">BETA</span></p>
-              <p className="text-xs text-slate-500">Auto-detect bills from your email</p>
-            </div>
-            {gmailConnected && (
-              <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-medium rounded-full">Connected</span>
-            )}
-          </div>
-
-          {gmailConnected ? (
-            <div className="space-y-2">
-              <p className="text-sm text-slate-600">
-                Connected to <span className="font-medium text-slate-800">{gmailEmail}</span>
-              </p>
-              <p className="text-xs text-slate-400">We only read emails from known billers to extract bill data. No emails are stored.</p>
-              <div className="flex gap-2">
-                <button
-                  onClick={handleSyncGmail}
-                  disabled={gmailSyncing}
-                  className="flex-1 py-2.5 bg-teal-500 text-white rounded-lg font-medium text-sm hover:bg-teal-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {gmailSyncing ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-                  {gmailSyncing ? 'Scanning...' : 'Scan for Bills'}
-                </button>
-                <Link
-                  href="/pending-bills"
-                  className="py-2.5 px-4 bg-slate-100 text-slate-700 rounded-lg font-medium text-sm hover:bg-slate-200 transition-colors flex items-center gap-2"
-                >
-                  <Inbox className="w-4 h-4" />
-                  Review
-                </Link>
-                <button
-                  onClick={handleDisconnectGmail}
-                  disabled={gmailLoading}
-                  className="py-2.5 px-3 border border-red-200 text-red-600 rounded-lg text-sm hover:bg-red-50 transition-colors disabled:opacity-50"
-                  title="Disconnect Gmail"
-                >
-                  <Unplug className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Diagnostics */}
-              <button
-                onClick={handleRunDiag}
-                disabled={diagRunning}
-                className="w-full py-2 border border-slate-200 text-slate-500 rounded-lg text-xs font-medium hover:bg-slate-50 transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
-              >
-                {diagRunning ? <Loader2 className="w-3 h-3 animate-spin" /> : <Shield className="w-3 h-3" />}
-                {diagRunning ? 'Running diagnostics...' : 'Run Diagnostics (debug)'}
-              </button>
-
-              {diagOpen && diagResult && (
-                <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50 p-3 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs font-semibold text-slate-700">Diagnostic Results</p>
-                    <button onClick={() => setDiagOpen(false)} className="text-slate-400 hover:text-slate-600"><X className="w-3.5 h-3.5" /></button>
-                  </div>
-
-                  {diagResult.error ? (
-                    <p className="text-xs text-red-600">{diagResult.error}</p>
-                  ) : (
-                    <>
-                      <div className="grid grid-cols-2 gap-1 text-xs">
-                        <div className="bg-white rounded p-2 border border-slate-200">
-                          <p className="text-slate-500">Query used</p>
-                          <p className="font-mono text-slate-800 break-all">{diagResult.query}</p>
-                        </div>
-                        <div className="bg-white rounded p-2 border border-slate-200">
-                          <p className="text-slate-500">Emails returned</p>
-                          <p className="font-bold text-slate-800 text-lg">{diagResult.resultCount}</p>
-                        </div>
-                      </div>
-
-                      {diagResult.summary && (
-                        <div className="grid grid-cols-4 gap-1 text-xs text-center">
-                          {[
-                            { label: 'With plain text', val: diagResult.summary.withPlainText },
-                            { label: 'With HTML', val: diagResult.summary.withHtmlText },
-                            { label: 'Has $ amount', val: diagResult.summary.withDollarAmount },
-                            { label: 'Empty body', val: diagResult.summary.empty },
-                          ].map(s => (
-                            <div key={s.label} className="bg-white rounded p-1.5 border border-slate-200">
-                              <p className="text-slate-500 leading-tight">{s.label}</p>
-                              <p className="font-bold text-slate-800">{s.val}</p>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      <div className="space-y-1 max-h-64 overflow-y-auto">
-                        {(diagResult.emails || []).map((e: any, i: number) => (
-                          <div key={i} className="bg-white rounded p-2 border border-slate-200 text-xs space-y-0.5">
-                            <p className="font-medium text-slate-800 truncate">{e.subject || '(no subject)'}</p>
-                            <p className="text-slate-500 truncate">{e.from}</p>
-                            <div className="flex gap-2 text-slate-400 flex-wrap">
-                              <span>Text: {e.plainTextLength}b</span>
-                              <span>HTML: {e.htmlTextLength}b</span>
-                              <span>Source: {e.chosenTextSource}</span>
-                              {e.containsDollarSign && <span className="text-green-600 font-medium">✓ Has $</span>}
-                              {e.containsDate && <span className="text-blue-600 font-medium">✓ Has date</span>}
-                            </div>
-                            {e.dollarAmounts?.length > 0 && (
-                              <p className="text-green-700 font-mono">{e.dollarAmounts.join(', ')}</p>
-                            )}
-                            {e.first500Chars && (
-                              <p className="text-slate-400 line-clamp-2 font-mono text-[10px]">{e.first500Chars.slice(0, 200)}</p>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="space-y-2">
-              <p className="text-xs text-slate-500">Connect your Gmail to automatically find and import bills from your inbox. We only read bill-related emails — your privacy is protected.</p>
-              <button
-                onClick={handleConnectGmail}
-                disabled={gmailLoading}
-                className="w-full py-2.5 bg-red-500 text-white rounded-lg font-medium text-sm hover:bg-red-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {gmailLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
-                {gmailLoading ? 'Connecting...' : 'Connect Gmail'}
-              </button>
-            </div>
-          )}
-
-          {gmailMessage && (
-            <div className="bg-teal-50 border border-teal-200 text-teal-700 px-3 py-2 rounded-lg text-sm flex items-center gap-2">
-              <Check className="w-4 h-4 flex-shrink-0" />
-              {gmailMessage}
-            </div>
-          )}
-          {gmailError && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg text-sm flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-              {gmailError}
-            </div>
-          )}
         </div>
 
         <div className="bg-white rounded-xl overflow-hidden divide-y divide-slate-100">

@@ -6,7 +6,8 @@ import { useRouter } from 'next/navigation';
 import {
   ArrowLeft, Home, Plus, Settings, Loader2, AlertTriangle,
   ChevronDown, X, Search, Camera, ImageIcon, FileText,
-  CheckCircle, AlertCircle, Pencil, Sparkles, Receipt, DollarSign
+  CheckCircle, AlertCircle, Pencil, Sparkles, Receipt, DollarSign,
+  Mail, RefreshCw, Inbox,
 } from "lucide-react";
 import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
@@ -62,13 +63,42 @@ export default function AddBillPage() {
   const photoInputRef = useRef<HTMLInputElement>(null);
   const pdfInputRef = useRef<HTMLInputElement>(null);
 
+  const [gmailConnected, setGmailConnected] = useState(false);
+  const [gmailEmail, setGmailEmail] = useState('');
+  const [gmailLoading, setGmailLoading] = useState(false);
+  const [gmailSyncing, setGmailSyncing] = useState(false);
+  const [gmailMessage, setGmailMessage] = useState<string | null>(null);
+  const [gmailError, setGmailError] = useState<string | null>(null);
+
   useEffect(() => {
     if (!authLoading && !user) router.push('/login');
   }, [user, authLoading, router]);
 
   useEffect(() => {
-    if (user) loadBillCount();
+    if (user) {
+      loadBillCount();
+      user.getIdToken().then(token => {
+        fetch('/api/gmail/status', { headers: { Authorization: `Bearer ${token}` } })
+          .then(r => r.json())
+          .then(data => { setGmailConnected(data.connected || false); setGmailEmail(data.email || ''); })
+          .catch(() => {});
+      });
+    }
   }, [user]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const gmailStatus = params.get('gmail');
+    if (gmailStatus === 'connected') {
+      setGmailConnected(true);
+      setGmailMessage('Gmail connected! Click "Scan for Bills" to import.');
+      window.history.replaceState({}, '', '/add-bill');
+    } else if (gmailStatus === 'error') {
+      const reason = params.get('reason') || 'Unknown error';
+      setGmailError(`Failed to connect Gmail: ${reason}`);
+      window.history.replaceState({}, '', '/add-bill');
+    }
+  }, []);
 
   const loadBillCount = async () => {
     if (!user) return;
@@ -79,6 +109,39 @@ export default function AddBillPage() {
       setExistingBills(bills);
     } catch { setBillCount(null); }
     finally { setLoadingCount(false); }
+  };
+
+  const handleConnectGmail = async () => {
+    if (!user) return;
+    setGmailLoading(true);
+    setGmailError(null);
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch('/api/gmail/auth', { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      if (data.authUrl) window.location.href = data.authUrl;
+      else setGmailError(data.error || 'Failed to get authorization URL');
+    } catch { setGmailError('Failed to connect Gmail'); }
+    finally { setGmailLoading(false); }
+  };
+
+  const handleSyncGmail = async () => {
+    if (!user) return;
+    setGmailSyncing(true);
+    setGmailError(null);
+    setGmailMessage(null);
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch('/api/gmail/sync', { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      if (data.error) {
+        setGmailError(data.error);
+      } else {
+        setGmailMessage(data.message || `Found ${data.drafted ?? 0} new bills.`);
+        if ((data.drafted ?? 0) > 0) setTimeout(() => router.push('/pending-bills'), 2000);
+      }
+    } catch { setGmailError('Failed to scan Gmail'); }
+    finally { setGmailSyncing(false); }
   };
 
   const selectedCategory = useMemo(() => getCategoryByValue(category), [category]);
@@ -437,6 +500,69 @@ export default function AddBillPage() {
                 <p className="text-sm text-slate-500">Enter account info</p>
               </div>
             </button>
+
+            {/* Gmail Bill Scanner */}
+            <div className="bg-white rounded-xl p-5 space-y-3">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Mail className="w-6 h-6 text-red-500" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="font-semibold text-slate-800">Gmail Bill Scanner</p>
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-700 border border-amber-200">BETA</span>
+                  </div>
+                  <p className="text-sm text-slate-500 truncate">
+                    {gmailConnected ? `Connected: ${gmailEmail}` : 'Auto-import bills from your inbox'}
+                  </p>
+                </div>
+                {gmailConnected && (
+                  <span className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0" title="Connected" />
+                )}
+              </div>
+
+              {gmailMessage && (
+                <div className="bg-teal-50 border border-teal-200 text-teal-700 px-3 py-2 rounded-lg text-xs flex items-center gap-2">
+                  <CheckCircle className="w-3.5 h-3.5 flex-shrink-0" />
+                  {gmailMessage}
+                </div>
+              )}
+              {gmailError && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg text-xs flex items-center gap-2">
+                  <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+                  {gmailError}
+                </div>
+              )}
+
+              {gmailConnected ? (
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleSyncGmail}
+                    disabled={gmailSyncing}
+                    className="flex-1 py-2.5 bg-teal-500 text-white rounded-lg font-medium text-sm hover:bg-teal-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {gmailSyncing ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+                    {gmailSyncing ? 'Scanning...' : 'Scan for Bills'}
+                  </button>
+                  <Link
+                    href="/pending-bills"
+                    className="py-2.5 px-4 bg-slate-100 text-slate-700 rounded-lg font-medium text-sm hover:bg-slate-200 transition-colors flex items-center gap-2"
+                  >
+                    <Inbox className="w-4 h-4" />
+                    Review
+                  </Link>
+                </div>
+              ) : (
+                <button
+                  onClick={handleConnectGmail}
+                  disabled={gmailLoading}
+                  className="w-full py-2.5 bg-red-500 text-white rounded-lg font-medium text-sm hover:bg-red-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {gmailLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
+                  {gmailLoading ? 'Connecting...' : 'Connect Gmail'}
+                </button>
+              )}
+            </div>
 
             <div className="w-full bg-slate-100 rounded-xl p-5 flex items-center gap-4 opacity-60 cursor-not-allowed">
               <div className="w-12 h-12 bg-slate-200 rounded-xl flex items-center justify-center flex-shrink-0">

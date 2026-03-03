@@ -110,18 +110,18 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       console.error({ route: '/api/gmail/callback', flow: 'gmailConnect', step: 'oauthError', error });
-      return NextResponse.redirect(`${appUrl}/settings?gmail=error&reason=${encodeURIComponent(error)}`);
+      return NextResponse.redirect(`${appUrl}/add-bill?gmail=error&reason=${encodeURIComponent(error)}`);
     }
 
     if (!code || !stateParam) {
       console.error({ route: '/api/gmail/callback', flow: 'gmailConnect', step: 'missingParams', code: !!code, state: !!stateParam });
-      return NextResponse.redirect(`${appUrl}/settings?gmail=error&reason=no_code`);
+      return NextResponse.redirect(`${appUrl}/add-bill?gmail=error&reason=no_code`);
     }
 
     const userId = verifyOAuthState(stateParam);
     if (!userId) {
       console.error({ route: '/api/gmail/callback', flow: 'gmailConnect', step: 'verifyState', error: 'Invalid or tampered state parameter' });
-      return NextResponse.redirect(`${appUrl}/settings?gmail=error&reason=invalid_state`);
+      return NextResponse.redirect(`${appUrl}/add-bill?gmail=error&reason=invalid_state`);
     }
 
     let tokens: Awaited<ReturnType<typeof exchangeCodeForTokens>>;
@@ -130,7 +130,7 @@ export async function GET(request: NextRequest) {
     } catch (tokenErr: any) {
       const rawReason = encodeURIComponent(tokenErr.message || 'token_exchange_failed');
       console.error({ route: '/api/gmail/callback', step: 'exchangeCodeForTokens', error: tokenErr.message });
-      return NextResponse.redirect(`${appUrl}/settings?gmail=error&reason=${rawReason}`);
+      return NextResponse.redirect(`${appUrl}/add-bill?gmail=error&reason=${rawReason}`);
     }
 
     const oauth2Client = getOAuth2Client();
@@ -153,7 +153,7 @@ export async function GET(request: NextRequest) {
 
     if (!refreshToken) {
       console.error({ route: '/api/gmail/callback', flow: 'gmailConnect', step: 'validateRefreshToken', error: 'No refresh token — user must reconnect with prompt=consent' });
-      return NextResponse.redirect(`${appUrl}/settings?gmail=error&reason=no_refresh_token`);
+      return NextResponse.redirect(`${appUrl}/add-bill?gmail=error&reason=no_refresh_token`);
     }
 
     await storeGmailTokens(userId, {
@@ -166,12 +166,12 @@ export async function GET(request: NextRequest) {
     });
 
     console.log({ route: '/api/gmail/callback', flow: 'gmailConnect', step: 'complete', userId, email: gmailEmail });
-    return NextResponse.redirect(`${appUrl}/settings?gmail=connected`);
+    return NextResponse.redirect(`${appUrl}/add-bill?gmail=connected`);
   } catch (error: any) {
     console.error({ route: '/api/gmail/callback', step: 'uncaughtError', error: error.message, stack: error.stack });
     if (isSignIn) {
       return NextResponse.redirect(`${appUrl}/login?error=${encodeURIComponent(error?.message || 'auth_failed')}`);
     }
-    return NextResponse.redirect(`${appUrl}/settings?gmail=error&reason=token_exchange_failed`);
+    return NextResponse.redirect(`${appUrl}/add-bill?gmail=error&reason=token_exchange_failed`);
   }
 }
