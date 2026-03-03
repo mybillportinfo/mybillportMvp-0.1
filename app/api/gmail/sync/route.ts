@@ -91,16 +91,12 @@ function htmlToText(html: string): string {
 }
 
 // ─── Email Text Extraction ────────────────────────────────────────────────────
-function extractEmailText(payload: any): { text: string; hasPdfAttachment: boolean; pdfAttachmentId: string | null; pdfFilename: string | null } {
+function extractEmailText(payload: any): string {
   let plainText = '';
   let htmlText = '';
-  let hasPdfAttachment = false;
-  let pdfAttachmentId: string | null = null;
-  let pdfFilename: string | null = null;
 
   function traverse(part: any) {
     if (!part) return;
-
     const mime = (part.mimeType || '').toLowerCase();
 
     if (mime === 'text/plain' && part.body?.data) {
@@ -108,13 +104,6 @@ function extractEmailText(payload: any): { text: string; hasPdfAttachment: boole
     } else if (mime === 'text/html' && part.body?.data) {
       const raw = Buffer.from(part.body.data, 'base64url').toString('utf-8');
       htmlText += htmlToText(raw) + '\n';
-    } else if (mime === 'application/pdf') {
-      hasPdfAttachment = true;
-      pdfAttachmentId = part.body?.attachmentId || null;
-      pdfFilename = part.filename || 'attachment.pdf';
-    } else if (mime.startsWith('multipart/') && part.parts) {
-      for (const subPart of part.parts) traverse(subPart);
-      return;
     }
 
     if (part.parts) {
@@ -125,33 +114,7 @@ function extractEmailText(payload: any): { text: string; hasPdfAttachment: boole
   traverse(payload);
 
   const text = plainText.trim() || htmlText.trim();
-  return {
-    text: text.slice(0, 10000),
-    hasPdfAttachment,
-    pdfAttachmentId,
-    pdfFilename,
-  };
-}
-
-// ─── PDF Text Extraction ──────────────────────────────────────────────────────
-async function extractPdfText(gmail: any, messageId: string, attachmentId: string): Promise<string | null> {
-  try {
-    const attachResponse = await withTimeout(
-      gmail.users.messages.attachments.get({ userId: 'me', messageId, id: attachmentId }),
-      GMAIL_API_TIMEOUT_MS,
-      'gmail.getAttachment'
-    );
-    const data = attachResponse.data.data;
-    if (!data) return null;
-
-    const buffer = Buffer.from(data, 'base64url');
-    const pdfParse = (await import('pdf-parse')).default;
-    const result = await pdfParse(buffer);
-    return result.text?.slice(0, 8000) || null;
-  } catch (err: any) {
-    console.error({ route: '/api/gmail/sync', step: 'pdfExtract', error: err.message });
-    return null;
-  }
+  return text.slice(0, 10000);
 }
 
 // ─── Regex-Based Pre-Extraction ───────────────────────────────────────────────
@@ -534,15 +497,8 @@ export async function POST(request: NextRequest) {
         candidates++;
 
         // Extract text from email body
-        const { text: emailText, hasPdfAttachment, pdfAttachmentId, pdfFilename } = extractEmailText(fullMessage.data.payload || {});
-
-        // If email has a PDF and limited body text, try to extract from PDF
-        let pdfText: string | null = null;
-        if (hasPdfAttachment && pdfAttachmentId && emailText.length < 500) {
-          pdfText = await extractPdfText(gmail, msg.id, pdfAttachmentId);
-        }
-
-        const textForParsing = (pdfText || emailText || snippet).slice(0, 10000);
+        const emailText = extractEmailText(fullMessage.data.payload || {});
+        const textForParsing = (emailText || snippet).slice(0, 10000);
 
         // Run regex pre-extraction (deterministic, no AI)
         const regexResult = regexExtract(subject, textForParsing);
