@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import {
   ArrowLeft, Home, Plus, Settings, Loader2, Check, X, Mail, Inbox,
   DollarSign, Calendar, Building2, Hash, AlertTriangle, CheckCircle,
-  RefreshCw, Sparkles, Pencil, Save
+  RefreshCw, Sparkles, Pencil, Info, TrendingDown, BarChart2,
 } from "lucide-react";
 import { useAuth } from '../contexts/AuthContext';
 import { addBill } from '../lib/firebase';
@@ -16,10 +16,17 @@ interface PendingBill {
   userId: string;
   gmailMessageId: string;
   merchantName: string;
+  billerDomain: string | null;
   amount: number | null;
   dueDate: string | null;
   accountNumber: string | null;
+  statementDate: string | null;
+  minimumPayment: number | null;
+  totalBalance: number | null;
+  currency: string;
   confidence: 'high' | 'medium' | 'low';
+  confidenceScore: number;
+  detectionMethod: 'regex' | 'ai' | 'hybrid';
   rawEmailSnippet: string;
   emailSubject: string;
   emailFrom: string;
@@ -49,6 +56,7 @@ export default function PendingBillsPage() {
   const [syncing, setSyncing] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [edits, setEdits] = useState<Record<string, EditState>>({});
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) router.push('/login');
@@ -60,7 +68,7 @@ export default function PendingBillsPage() {
 
   useEffect(() => {
     if (successMessage) {
-      const timer = setTimeout(() => setSuccessMessage(null), 3000);
+      const timer = setTimeout(() => setSuccessMessage(null), 4000);
       return () => clearTimeout(timer);
     }
   }, [successMessage]);
@@ -75,11 +83,8 @@ export default function PendingBillsPage() {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      if (data.error) {
-        setError(data.error);
-      } else {
-        setBills(data.bills || []);
-      }
+      if (data.error) setError(data.error);
+      else setBills(data.bills || []);
     } catch {
       setError('Failed to load pending bills');
     } finally {
@@ -103,10 +108,7 @@ export default function PendingBillsPage() {
   const cancelEdit = () => setEditingId(null);
 
   const updateEdit = (billId: string, field: keyof EditState, value: string) => {
-    setEdits(prev => ({
-      ...prev,
-      [billId]: { ...prev[billId], [field]: value },
-    }));
+    setEdits(prev => ({ ...prev, [billId]: { ...prev[billId], [field]: value } }));
   };
 
   const getBillWithEdits = (bill: PendingBill): PendingBill => {
@@ -212,10 +214,20 @@ export default function PendingBillsPage() {
     }
   };
 
-  const getConfidenceBadge = (confidence: string) => {
-    if (confidence === 'high') return <span className="px-2 py-0.5 bg-green-900/50 text-green-400 text-xs font-medium rounded-full border border-green-700/50">High confidence</span>;
-    if (confidence === 'medium') return <span className="px-2 py-0.5 bg-yellow-900/50 text-yellow-400 text-xs font-medium rounded-full border border-yellow-700/50">Review fields</span>;
-    return <span className="px-2 py-0.5 bg-red-900/50 text-red-400 text-xs font-medium rounded-full border border-red-700/50">Edit required</span>;
+  const confidenceBadge = (bill: PendingBill) => {
+    const score = bill.confidenceScore ?? 0;
+    const label = bill.confidence;
+    if (label === 'high')
+      return <span className="px-2 py-0.5 bg-green-900/50 text-green-400 text-xs font-medium rounded-full border border-green-700/50">{score}% confident</span>;
+    if (label === 'medium')
+      return <span className="px-2 py-0.5 bg-yellow-900/50 text-yellow-400 text-xs font-medium rounded-full border border-yellow-700/50">{score}% — review</span>;
+    return <span className="px-2 py-0.5 bg-red-900/50 text-red-400 text-xs font-medium rounded-full border border-red-700/50">{score}% — edit</span>;
+  };
+
+  const methodBadge = (method: string) => {
+    if (method === 'regex') return <span className="text-xs text-teal-500">regex</span>;
+    if (method === 'ai') return <span className="text-xs text-purple-400">AI</span>;
+    return <span className="text-xs text-blue-400">hybrid</span>;
   };
 
   if (authLoading || !user) {
@@ -228,12 +240,13 @@ export default function PendingBillsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 pb-24">
-      <div className="px-5 pt-12 pb-6">
+      {/* Header */}
+      <div className="px-5 pt-12 pb-4">
         <Link href="/settings" className="flex items-center text-slate-400 hover:text-white mb-4 transition-colors">
           <ArrowLeft className="w-5 h-5 mr-2" />
           Back to Settings
         </Link>
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-teal-500 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(20,184,166,0.3)]">
               <Inbox className="text-white w-5 h-5" />
@@ -249,19 +262,21 @@ export default function PendingBillsPage() {
             className="p-2.5 bg-slate-800 rounded-lg border border-slate-700 hover:bg-slate-700 transition-colors disabled:opacity-50"
             title="Scan Gmail for new bills"
           >
-            {syncing ? <Loader2 className="w-5 h-5 text-teal-400 animate-spin" /> : <RefreshCw className="w-5 h-5 text-teal-400" />}
+            {syncing
+              ? <Loader2 className="w-5 h-5 text-teal-400 animate-spin" />
+              : <RefreshCw className="w-5 h-5 text-teal-400" />}
           </button>
         </div>
       </div>
 
       <div className="px-4 space-y-4">
+        {/* Alerts */}
         {successMessage && (
           <div className="bg-teal-500/10 border border-teal-500/30 text-teal-400 px-4 py-3 rounded-xl text-sm flex items-center gap-2">
             <CheckCircle className="w-4 h-4 flex-shrink-0" />
             {successMessage}
           </div>
         )}
-
         {error && (
           <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-xl text-sm flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 flex-shrink-0" />
@@ -269,11 +284,14 @@ export default function PendingBillsPage() {
           </div>
         )}
 
+        {/* Loading */}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-16 text-slate-400">
             <Loader2 className="w-10 h-10 animate-spin mb-3 text-teal-500" />
             <p>Loading pending bills...</p>
           </div>
+
+        /* Empty state */
         ) : bills.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <div className="w-16 h-16 bg-slate-800 rounded-2xl flex items-center justify-center mb-4">
@@ -281,7 +299,7 @@ export default function PendingBillsPage() {
             </div>
             <h3 className="text-white font-semibold text-lg mb-2">No Pending Bills</h3>
             <p className="text-slate-400 text-sm mb-6 max-w-xs">
-              No new bills found in your Gmail. Tap the button below to scan for recent bill emails.
+              No new bills found in your Gmail. Tap Scan to search for recent billing emails.
             </p>
             <button
               onClick={handleSync}
@@ -292,10 +310,12 @@ export default function PendingBillsPage() {
               {syncing ? 'Scanning...' : 'Scan Gmail'}
             </button>
           </div>
+
+        /* Bill list */
         ) : (
           <>
             <div className="flex items-center justify-between">
-              <p className="text-slate-400 text-sm">{bills.length} bill{bills.length > 1 ? 's' : ''} to review</p>
+              <p className="text-slate-400 text-sm">{bills.length} bill{bills.length !== 1 ? 's' : ''} to review</p>
               <div className="flex items-center gap-1 text-xs text-slate-500">
                 <Sparkles className="w-3 h-3" />
                 Tap ✏ to edit any field
@@ -304,12 +324,9 @@ export default function PendingBillsPage() {
 
             {bills.map(bill => {
               const isEditing = editingId === bill.id;
+              const isExpanded = expandedId === bill.id;
               const e = edits[bill.id];
               const isProcessing = processingId === bill.id;
-              const displayAmount = isEditing ? e?.amount : (bill.amount !== null ? String(bill.amount) : '');
-              const displayDate = isEditing ? e?.dueDate : (bill.dueDate || '');
-              const displayMerchant = isEditing ? e?.merchantName : bill.merchantName;
-              const displayAccount = isEditing ? e?.accountNumber : (bill.accountNumber || '');
               const needsEdit = bill.amount === null || !bill.dueDate;
 
               return (
@@ -334,11 +351,14 @@ export default function PendingBillsPage() {
                           ) : (
                             <h3 className="text-white font-semibold truncate">{bill.merchantName}</h3>
                           )}
-                          <p className="text-slate-400 text-xs truncate mt-0.5">{bill.emailSubject || bill.emailFrom}</p>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <p className="text-slate-400 text-xs truncate">{bill.emailSubject || bill.emailFrom}</p>
+                            {bill.detectionMethod && methodBadge(bill.detectionMethod)}
+                          </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        {getConfidenceBadge(bill.confidence)}
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        {confidenceBadge(bill)}
                         <button
                           onClick={() => isEditing ? cancelEdit() : startEdit(bill)}
                           className="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-slate-700 transition-colors"
@@ -349,24 +369,26 @@ export default function PendingBillsPage() {
                       </div>
                     </div>
 
-                    {/* Needs edit banner */}
+                    {/* Missing fields warning */}
                     {needsEdit && !isEditing && (
                       <div className="flex items-center gap-2 bg-amber-900/20 border border-amber-700/30 rounded-lg px-3 py-2">
                         <AlertTriangle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
                         <p className="text-amber-400 text-xs">
-                          {bill.amount === null && !bill.dueDate ? 'Amount and due date not found — tap ✏ to enter them' :
-                           bill.amount === null ? 'Amount not found — tap ✏ to enter it' :
-                           'Due date not found — tap ✏ to enter it'}
+                          {bill.amount === null && !bill.dueDate
+                            ? 'Amount and due date not found — tap ✏ to enter them'
+                            : bill.amount === null
+                            ? 'Amount not found — tap ✏ to enter it'
+                            : 'Due date not found — tap ✏ to enter it'}
                         </p>
                       </div>
                     )}
 
-                    {/* Amount + Date fields */}
+                    {/* Amount + Due Date */}
                     <div className="grid grid-cols-2 gap-3">
                       <div className="bg-slate-900/50 rounded-lg p-3">
                         <div className="flex items-center gap-1.5 text-slate-400 text-xs mb-1.5">
                           <DollarSign className="w-3 h-3" />
-                          Amount
+                          Amount Due
                         </div>
                         {isEditing ? (
                           <input
@@ -379,8 +401,10 @@ export default function PendingBillsPage() {
                             placeholder="0.00"
                           />
                         ) : (
-                          <p className={`font-semibold ${bill.amount !== null ? 'text-white' : 'text-red-400'}`}>
-                            {bill.amount !== null ? `$${bill.amount.toFixed(2)}` : 'Tap ✏ to add'}
+                          <p className={`font-semibold text-sm ${bill.amount !== null ? 'text-white' : 'text-red-400'}`}>
+                            {bill.amount !== null
+                              ? `${bill.currency === 'CAD' ? 'CAD' : bill.currency} $${bill.amount.toFixed(2)}`
+                              : 'Tap ✏ to add'}
                           </p>
                         )}
                       </div>
@@ -398,30 +422,73 @@ export default function PendingBillsPage() {
                             className="w-full bg-slate-700 text-white rounded-lg px-2 py-1.5 text-sm font-semibold border border-slate-600 focus:border-teal-500 focus:outline-none"
                           />
                         ) : (
-                          <p className={`font-semibold ${bill.dueDate ? 'text-white' : 'text-red-400'}`}>
+                          <p className={`font-semibold text-sm ${bill.dueDate ? 'text-white' : 'text-red-400'}`}>
                             {bill.dueDate || 'Tap ✏ to add'}
                           </p>
                         )}
                       </div>
                     </div>
 
-                    {/* Account number */}
-                    {(isEditing || bill.accountNumber) && (
-                      <div className="bg-slate-900/50 rounded-lg px-3 py-2">
-                        <div className="flex items-center gap-1.5 text-slate-400 text-xs mb-1">
-                          <Hash className="w-3 h-3" />
-                          Account Number (optional)
-                        </div>
-                        {isEditing ? (
-                          <input
-                            type="text"
-                            value={e?.accountNumber || ''}
-                            onChange={ev => updateEdit(bill.id, 'accountNumber', ev.target.value)}
-                            className="w-full bg-slate-700 text-white rounded-lg px-2 py-1.5 text-sm border border-slate-600 focus:border-teal-500 focus:outline-none"
-                            placeholder="Account number"
-                          />
-                        ) : (
-                          <p className="text-white text-sm">{bill.accountNumber}</p>
+                    {/* Account number (editable) */}
+                    <div className="bg-slate-900/50 rounded-lg px-3 py-2">
+                      <div className="flex items-center gap-1.5 text-slate-400 text-xs mb-1">
+                        <Hash className="w-3 h-3" />
+                        Account Number {isEditing ? '(optional)' : ''}
+                      </div>
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          value={e?.accountNumber || ''}
+                          onChange={ev => updateEdit(bill.id, 'accountNumber', ev.target.value)}
+                          className="w-full bg-slate-700 text-white rounded-lg px-2 py-1.5 text-sm border border-slate-600 focus:border-teal-500 focus:outline-none"
+                          placeholder="Account number"
+                        />
+                      ) : (
+                        <p className={`text-sm font-mono ${bill.accountNumber ? 'text-white' : 'text-slate-500'}`}>
+                          {bill.accountNumber || '—'}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Extra fields (collapsed by default, shown on expand) */}
+                    {(bill.minimumPayment || bill.totalBalance || bill.statementDate) && (
+                      <button
+                        onClick={() => setExpandedId(isExpanded ? null : bill.id)}
+                        className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-teal-400 transition-colors w-full"
+                      >
+                        <Info className="w-3 h-3" />
+                        {isExpanded ? 'Hide details' : 'Show more details'}
+                      </button>
+                    )}
+
+                    {isExpanded && (
+                      <div className="grid grid-cols-2 gap-2">
+                        {bill.minimumPayment !== null && (
+                          <div className="bg-slate-900/50 rounded-lg p-2.5">
+                            <div className="flex items-center gap-1 text-slate-400 text-xs mb-1">
+                              <TrendingDown className="w-3 h-3" />
+                              Min. Payment
+                            </div>
+                            <p className="text-white text-sm font-semibold">${bill.minimumPayment.toFixed(2)}</p>
+                          </div>
+                        )}
+                        {bill.totalBalance !== null && (
+                          <div className="bg-slate-900/50 rounded-lg p-2.5">
+                            <div className="flex items-center gap-1 text-slate-400 text-xs mb-1">
+                              <BarChart2 className="w-3 h-3" />
+                              Total Balance
+                            </div>
+                            <p className="text-white text-sm font-semibold">${bill.totalBalance.toFixed(2)}</p>
+                          </div>
+                        )}
+                        {bill.statementDate && (
+                          <div className="bg-slate-900/50 rounded-lg p-2.5 col-span-2">
+                            <div className="flex items-center gap-1 text-slate-400 text-xs mb-1">
+                              <Calendar className="w-3 h-3" />
+                              Statement Date
+                            </div>
+                            <p className="text-white text-sm">{bill.statementDate}</p>
+                          </div>
                         )}
                       </div>
                     )}
@@ -432,7 +499,7 @@ export default function PendingBillsPage() {
                     )}
                   </div>
 
-                  {/* Action buttons */}
+                  {/* Actions */}
                   <div className="flex border-t border-slate-700/50">
                     <button
                       onClick={() => handleReject(bill)}
@@ -448,11 +515,7 @@ export default function PendingBillsPage() {
                       disabled={isProcessing}
                       className="flex-1 py-3 text-teal-400 hover:bg-teal-500/10 transition-colors font-medium text-sm flex items-center justify-center gap-2 disabled:opacity-50"
                     >
-                      {isProcessing ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Check className="w-4 h-4" />
-                      )}
+                      {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                       Add to Bills
                     </button>
                   </div>
@@ -463,6 +526,7 @@ export default function PendingBillsPage() {
         )}
       </div>
 
+      {/* Bottom nav */}
       <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur border-t border-slate-700 py-3 px-6">
         <div className="max-w-md mx-auto flex justify-around">
           <Link href="/app" className="nav-item">

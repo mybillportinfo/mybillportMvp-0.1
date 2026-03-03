@@ -188,17 +188,28 @@ export interface PendingBill {
   id?: string;
   userId: string;
   gmailMessageId: string;
+  // Core extraction
   merchantName: string;
+  billerDomain: string | null;
   amount: number | null;
   dueDate: string | null;
   accountNumber: string | null;
+  statementDate: string | null;
+  minimumPayment: number | null;
+  totalBalance: number | null;
+  currency: string;
+  // Confidence
   confidence: 'high' | 'medium' | 'low';
+  confidenceScore: number;
+  detectionMethod: 'regex' | 'ai' | 'hybrid';
+  // Email metadata
   rawEmailSnippet: string;
   emailSubject: string;
   emailFrom: string;
   emailDate: string;
   status: 'pending' | 'confirmed' | 'rejected';
   createdAt: number;
+  // Provider matching
   matchedProviderId?: string;
   matchedProviderName?: string;
   category?: string;
