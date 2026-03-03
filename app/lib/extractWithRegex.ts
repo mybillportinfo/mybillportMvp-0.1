@@ -1,6 +1,7 @@
 /**
- * Deterministic regex extraction for bill fields.
- * Runs before AI — fields found here take priority over AI results.
+ * Layer 1: Deterministic Regex Extraction
+ *
+ * Multi-strategy extraction with proximity-based scoring as fallback.
  *
  * Key design decisions:
  * - All account number patterns terminate at \n, 3+ spaces, or end-of-string
@@ -9,10 +10,12 @@
  *   where <td>Account Number</td><td>91 00 64 33899 2</td> converts to two lines.
  * - Raw account text is preserved with spaces for display; cleaned (digits only)
  *   used for dedup and storage.
+ * - Multi-amount proximity scoring: when multiple dollar amounts exist, each is
+ *   scored by distance to positive billing keywords vs negative balance keywords.
  */
 
 export interface RegexExtracted {
-  accountNumber: string | null;      // cleaned alphanumeric, e.g. "910064338992"
+  accountNumber: string | null;        // cleaned alphanumeric, e.g. "910064338992"
   accountNumberDisplay: string | null; // original format, e.g. "91 00 64 33899 2"
   amountDue: number | null;
   dueDate: string | null;
@@ -105,6 +108,95 @@ function findDate(text: string, keywords: string[]): string | null {
   return null;
 }
 
+// ─── Proximity-based multi-amount scoring ─────────────────────────────────────
+
+interface CandidateAmount {
+  value: number;
+  position: number;
+  hasDollarSign: boolean;
+}
+
+/**
+ * Find every dollar amount in the text with its character position.
+ * Handles: $80.81  $1,234.00  80.81 CAD  $80
+ */
+function findAllAmounts(text: string): CandidateAmount[] {
+  const results: CandidateAmount[] = [];
+  const seen = new Set<string>();
+
+  // Pattern 1: $X.XX or $X,XXX.XX
+  const p1 = /\$([\d,]+\.?\d{0,2})/g;
+  let m: RegExpExecArray | null;
+  while ((m = p1.exec(text)) !== null) {
+    const key = `${m.index}:${m[1]}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const v = parseAmount(m[1]);
+    if (v && v >= 0.50 && v <= 50000) {
+      results.push({ value: v, position: m.index, hasDollarSign: true });
+    }
+  }
+
+  // Pattern 2: X,XXX.XX (decimal required) — only when near a billing keyword
+  const p2 = /([\d,]+\.\d{2})\s*(?:CAD|USD|\$)?/g;
+  while ((m = p2.exec(text)) !== null) {
+    const key = `${m.index}:${m[1]}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const v = parseAmount(m[1]);
+    if (v && v >= 0.50 && v <= 50000) {
+      results.push({ value: v, position: m.index, hasDollarSign: text.slice(Math.max(0, m.index - 2), m.index).includes('$') });
+    }
+  }
+
+  return results;
+}
+
+/**
+ * Score a candidate amount by proximity to positive and negative keywords.
+ * Higher score = more likely to be the "amount due" figure.
+ * Returns a score on an open scale (positive is good, negative is bad).
+ */
+function scoreByProximity(
+  candidate: CandidateAmount,
+  textLower: string,
+  positiveKws: string[],
+  negativeKws: string[],
+): number {
+  let score = 0;
+
+  if (candidate.hasDollarSign) score += 0.3;
+
+  for (const kw of positiveKws) {
+    let from = 0;
+    while (from < textLower.length) {
+      const idx = textLower.indexOf(kw, from);
+      if (idx < 0) break;
+      const dist = Math.abs(candidate.position - idx);
+      if (dist < 250) score += (1 - dist / 250) * 2.5;
+      from = idx + 1;
+    }
+  }
+
+  for (const kw of negativeKws) {
+    let from = 0;
+    while (from < textLower.length) {
+      const idx = textLower.indexOf(kw, from);
+      if (idx < 0) break;
+      const dist = Math.abs(candidate.position - idx);
+      if (dist < 180) score -= (1 - dist / 180) * 2.0;
+      from = idx + 1;
+    }
+  }
+
+  return score;
+}
+
+/**
+ * Primary strategy: keyword-anchored pattern match (fast and precise).
+ * Fallback strategy: score ALL dollar amounts by proximity to keywords.
+ * This handles emails where label and amount are far apart or on separate lines.
+ */
 function findAmount(text: string, keywords: string[]): number | null {
   const kw = keywords.join('|');
   const patterns = [
@@ -116,6 +208,8 @@ function findAmount(text: string, keywords: string[]): number | null {
     new RegExp(`(?:${kw})[^\\d\\n]{0,25}([\\d,]+\\.\\d{2})\\s*\\$`, 'i'),
     // Label on one line, amount on next line
     new RegExp(`(?:${kw})\\s*[:\\-]?\\s*\\n+\\s*\\$?([\\d,]+\\.\\d{2})`, 'im'),
+    // Two lines apart (e.g. "Amount Due\n\n$80.81")
+    new RegExp(`(?:${kw})\\s*[:\\-]?\\s*(?:\\n\\s*){1,3}\\$?([\\d,]+\\.\\d{2})`, 'im'),
   ];
 
   for (const p of patterns) {
@@ -125,7 +219,30 @@ function findAmount(text: string, keywords: string[]): number | null {
       if (v) return v;
     }
   }
-  return null;
+
+  // ── Proximity fallback ────────────────────────────────────────────────────
+  // When no keyword-anchored pattern matches, find ALL amounts and rank them.
+  const candidates = findAllAmounts(text);
+  if (candidates.length === 0) return null;
+  if (candidates.length === 1) return candidates[0].value;
+
+  const textLower = text.toLowerCase();
+  const negativeKws = [
+    'previous balance', 'prior balance', 'past due amount',
+    'payment received', 'credit applied', 'balance forward',
+    'account balance',  // intentionally excluded from "amount due" search
+  ];
+
+  let bestScore = -Infinity;
+  let bestValue: number | null = null;
+
+  for (const c of candidates) {
+    const s = scoreByProximity(c, textLower, keywords, negativeKws);
+    if (s > bestScore) { bestScore = s; bestValue = c.value; }
+  }
+
+  // Only return if there's a meaningful positive signal
+  return bestScore > 0.5 ? bestValue : null;
 }
 
 // ─── Account number extraction ────────────────────────────────────────────────
@@ -210,7 +327,7 @@ export function extractWithRegex(text: string): RegexExtracted {
   const accountNumber        = acctResult?.cleaned ?? null;
   const accountNumberDisplay = acctResult?.display ?? null;
 
-  // Amount due
+  // Amount due — positive keywords first, proximity fallback handles the rest
   const amountDue = findAmount(text, [
     'amount due', 'new bill amount', 'payment due', 'current charges',
     'new charges', 'total due', 'balance due', 'pay this amount',

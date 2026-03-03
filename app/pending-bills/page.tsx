@@ -37,6 +37,8 @@ interface PendingBill {
   matchedProviderId?: string;
   matchedProviderName?: string;
   category?: string;
+  routingAction?: 'auto_accept' | 'user_review' | 'user_correction' | 'manual';
+  validationWarnings?: string[];
 }
 
 interface EditState {
@@ -231,6 +233,17 @@ export default function PendingBillsPage() {
     return <span className="text-xs text-blue-400">hybrid</span>;
   };
 
+  const routingBadge = (action?: string) => {
+    if (!action) return null;
+    if (action === 'auto_accept')
+      return <span className="px-2 py-0.5 bg-emerald-900/40 text-emerald-400 text-xs font-medium rounded-full border border-emerald-700/50" title="High confidence — ready to add">Ready</span>;
+    if (action === 'user_review')
+      return <span className="px-2 py-0.5 bg-blue-900/40 text-blue-400 text-xs font-medium rounded-full border border-blue-700/50" title="Please verify the extracted data">Review</span>;
+    if (action === 'user_correction')
+      return <span className="px-2 py-0.5 bg-amber-900/40 text-amber-400 text-xs font-medium rounded-full border border-amber-700/50" title="Some fields need your input">Needs Input</span>;
+    return <span className="px-2 py-0.5 bg-red-900/40 text-red-400 text-xs font-medium rounded-full border border-red-700/50" title="Could not extract reliably — enter manually">Manual</span>;
+  };
+
   if (authLoading || !user) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 flex items-center justify-center">
@@ -359,6 +372,7 @@ export default function PendingBillsPage() {
                         </div>
                       </div>
                       <div className="flex items-center gap-1.5 flex-shrink-0">
+                        {routingBadge(bill.routingAction)}
                         {confidenceBadge(bill)}
                         <button
                           onClick={() => isEditing ? cancelEdit() : startEdit(bill)}

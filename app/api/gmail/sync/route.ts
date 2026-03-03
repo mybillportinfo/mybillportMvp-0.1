@@ -11,6 +11,7 @@ import {
 import { PROVIDER_REGISTRY } from '../../../lib/providerRegistry';
 import { extractWithRegex } from '../../../lib/extractWithRegex';
 import { computeConfidence, scoreToLabel, detectionMethod, ExtractionSources } from '../../../lib/confidenceScorer';
+import { validateExtractedFields, getRoutingAction } from '../../../lib/validation';
 import Anthropic from '@anthropic-ai/sdk';
 
 export const runtime = 'nodejs';
@@ -21,23 +22,40 @@ const CLAUDE_TIMEOUT_MS = 25000;
 const MAX_EMAILS_TO_PROCESS = 150;
 
 // ─── Claude Prompt ────────────────────────────────────────────────────────────
-const AI_PROMPT = `You are an expert billing data extractor. Given the email content, return a JSON object with these exact fields:
+// Layer 2: AI Fallback with per-field confidence scores.
+// Each extracted field includes a confidence value (0.0–1.0):
+//   0.90–1.00 = found with an explicit label in the email
+//   0.65–0.89 = inferred from context
+//   0.40–0.64 = uncertain / partial match
+const AI_PROMPT = `You are an expert billing data extractor. Analyze the email and return EXACTLY this JSON structure.
+Use null for any missing field. For each found field, include a confidence score (0.0–1.0).
 
-- billerName: Clean company name (e.g. "Enbridge", "Rogers", "Bell"). Use sender name/domain if unclear.
-- accountNumber: Customer account or reference number. May contain spaces or dashes — extract as-is. Use null if not found.
-- amountDue: The CURRENT amount owed as a plain number. Prefer labels: "Amount Due", "New Bill Amount", "Current Charges", "Payment Due". Do NOT use balance, previous balance, or credit. null if not found.
-- dueDate: Payment due date as YYYY-MM-DD. Look for "Due Date", "Pay By", "Payment Due". null if not found.
-- statementDate: Date the statement was issued as YYYY-MM-DD. null if not found.
-- minimumPayment: Minimum payment amount as a number. null if not present.
-- totalBalance: Total account balance as a number (if different from amountDue). null if not present.
-- currency: "CAD" unless explicitly stated otherwise.
-- category: One of: utilities, telecom, government, insurance, banking, credit_cards, housing, transportation, education, subscriptions, property, miscellaneous
+{
+  "billerName": "string",
+  "accountNumber": { "value": "cleaned-no-spaces", "original": "as-found-in-email", "confidence": 0.0 } | null,
+  "amountDue":     { "value": 0.00, "confidence": 0.0 } | null,
+  "dueDate":       { "value": "YYYY-MM-DD", "confidence": 0.0 } | null,
+  "statementDate": { "value": "YYYY-MM-DD", "confidence": 0.0 } | null,
+  "minimumPayment":{ "value": 0.00, "confidence": 0.0 } | null,
+  "totalBalance":  { "value": 0.00, "confidence": 0.0 } | null,
+  "currency": "CAD",
+  "category": "utilities|telecom|government|insurance|banking|credit_cards|housing|transportation|education|subscriptions|property|miscellaneous",
+  "reasoning": "one sentence explaining key extraction decisions"
+}
+
+Confidence guide:
+  0.90 = field found with explicit label ("Amount Due: $80.81")
+  0.70 = field inferred from context ("Your bill is $80.81")
+  0.45 = uncertain, partial, or ambiguous match
 
 Rules:
-- Return ONLY valid JSON. No markdown, no explanation.
-- If a field is not present, use null.
-- Account numbers may be partially masked (e.g., ****1234) — extract the visible part.
-- Prefer specificity: "Enbridge Gas" → "Enbridge"
+- Return ONLY valid JSON. No markdown, no extra text.
+- billerName: use sender display name / domain if company name unclear.
+- accountNumber.value: remove all spaces and dashes from the raw number.
+- amountDue: PREFER labels "Amount Due", "New Bill Amount", "Current Charges", "Payment Due".
+  NEVER use "previous balance", "balance forward", or credit amounts.
+- Account numbers may have spaces ("91 00 64 33899 2") — clean for value, keep original in original.
+- If same field appears multiple times, use the one with the highest confidence.
 
 EMAIL:
 `;
@@ -166,9 +184,23 @@ async function withTimeout<T>(promise: Promise<T>, ms: number, label: string): P
 }
 
 // ─── Claude AI Extraction ─────────────────────────────────────────────────────
+
+/** A field returned by Claude with an embedded per-field confidence score */
+interface AIField<T> {
+  value: T;
+  original?: string;
+  confidence: number;  // 0.0–1.0 as requested in the prompt
+}
+
+/**
+ * Structured result from Claude.
+ * All data fields are either a typed AIField or null.
+ * We also expose raw per-field confidence values so later layers can use them.
+ */
 interface AIResult {
   billerName: string | null;
   accountNumber: string | null;
+  accountNumberOriginal: string | null;
   amountDue: number | null;
   dueDate: string | null;
   statementDate: string | null;
@@ -176,6 +208,26 @@ interface AIResult {
   totalBalance: number | null;
   currency: string;
   category: string;
+  // Per-field confidence values extracted from Claude's response
+  fieldConfidence: {
+    accountNumber: number;
+    amountDue: number;
+    dueDate: number;
+  };
+}
+
+/** Safely resolve a field that may be a nested AIField object or a raw scalar (old format). */
+function resolveField<T>(raw: unknown): AIField<T> | null {
+  if (raw === null || raw === undefined) return null;
+  if (typeof raw === 'object' && raw !== null && 'value' in raw) {
+    const f = raw as Record<string, unknown>;
+    const v = f.value as T;
+    const c = typeof f.confidence === 'number' ? Math.min(1, Math.max(0, f.confidence)) : 0.5;
+    if (v === null || v === undefined) return null;
+    return { value: v, original: f.original as string | undefined, confidence: c };
+  }
+  // Backwards compat: plain scalar value (old prompt format)
+  return { value: raw as T, confidence: 0.6 };
 }
 
 async function extractWithAI(emailText: string, from: string, subject: string): Promise<AIResult | null> {
@@ -193,28 +245,56 @@ async function extractWithAI(emailText: string, from: string, subject: string): 
     const response = await withTimeout(
       client.messages.create({
         model: 'claude-3-5-sonnet-20241022',
-        max_tokens: 600,
+        max_tokens: 700,
         messages: [{ role: 'user', content: AI_PROMPT + content }],
       }),
       CLAUDE_TIMEOUT_MS,
       'Claude extraction'
     );
 
-    const text = response.content[0]?.type === 'text' ? response.content[0].text : '';
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    const rawText = response.content[0]?.type === 'text' ? response.content[0].text : '';
+    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
     if (!jsonMatch) return null;
 
     const p = JSON.parse(jsonMatch[0]);
+
+    const acctField  = resolveField<string>(p.accountNumber);
+    const amtField   = resolveField<number>(p.amountDue);
+    const dateField  = resolveField<string>(p.dueDate);
+    const stmtField  = resolveField<string>(p.statementDate);
+    const minField   = resolveField<number>(p.minimumPayment);
+    const balField   = resolveField<number>(p.totalBalance);
+
+    // Validate extracted values
+    const acctValue  = acctField?.value && typeof acctField.value === 'string' && acctField.value.trim().length >= 4
+      ? acctField.value.trim() : null;
+    const amtValue   = amtField?.value && typeof amtField.value === 'number' && amtField.value > 0
+      ? amtField.value : null;
+    const dateValue  = dateField?.value && typeof dateField.value === 'string' && dateField.value.length >= 8
+      ? dateField.value : null;
+    const stmtValue  = stmtField?.value && typeof stmtField.value === 'string' && stmtField.value.length >= 8
+      ? stmtField.value : null;
+    const minValue   = minField?.value && typeof minField.value === 'number' && minField.value > 0
+      ? minField.value : null;
+    const balValue   = balField?.value && typeof balField.value === 'number' && balField.value > 0
+      ? balField.value : null;
+
     return {
       billerName: typeof p.billerName === 'string' ? p.billerName.trim() : null,
-      accountNumber: typeof p.accountNumber === 'string' ? p.accountNumber.trim() : null,
-      amountDue: typeof p.amountDue === 'number' && p.amountDue > 0 ? p.amountDue : null,
-      dueDate: typeof p.dueDate === 'string' && p.dueDate.length > 0 ? p.dueDate : null,
-      statementDate: typeof p.statementDate === 'string' && p.statementDate.length > 0 ? p.statementDate : null,
-      minimumPayment: typeof p.minimumPayment === 'number' && p.minimumPayment > 0 ? p.minimumPayment : null,
-      totalBalance: typeof p.totalBalance === 'number' && p.totalBalance > 0 ? p.totalBalance : null,
+      accountNumber: acctValue,
+      accountNumberOriginal: acctField?.original ?? acctValue,
+      amountDue: amtValue,
+      dueDate: dateValue,
+      statementDate: stmtValue,
+      minimumPayment: minValue,
+      totalBalance: balValue,
       currency: typeof p.currency === 'string' ? p.currency : 'CAD',
       category: typeof p.category === 'string' ? p.category : 'miscellaneous',
+      fieldConfidence: {
+        accountNumber: acctValue  ? (acctField?.confidence  ?? 0.6) : 0,
+        amountDue:     amtValue   ? (amtField?.confidence   ?? 0.6) : 0,
+        dueDate:       dateValue  ? (dateField?.confidence  ?? 0.6) : 0,
+      },
     };
   } catch (err: any) {
     console.error({ route: '/api/gmail/sync', step: 'AI', error: err.message });
@@ -341,8 +421,8 @@ export async function POST(request: NextRequest) {
         const finalAmount      = regex.amountDue      ?? ai?.amountDue      ?? null;
         const finalDueDate     = regex.dueDate        ?? ai?.dueDate        ?? null;
         const finalAccountNum  = regex.accountNumber  ?? ai?.accountNumber  ?? null;
-        // Display: prefer regex's space-preserved format; fall back to cleaned or AI
-        const finalAccountNumDisplay = regex.accountNumberDisplay ?? regex.accountNumber ?? ai?.accountNumber ?? null;
+        // Display: prefer regex's space-preserved format, then AI original, then cleaned
+        const finalAccountNumDisplay = regex.accountNumberDisplay ?? ai?.accountNumberOriginal ?? ai?.accountNumber ?? null;
         const finalStmtDate    = regex.statementDate  ?? ai?.statementDate  ?? null;
         const finalMinPayment  = regex.minimumPayment ?? ai?.minimumPayment ?? null;
         const finalTotalBal    = regex.totalBalance   ?? ai?.totalBalance   ?? null;
@@ -388,19 +468,43 @@ export async function POST(request: NextRequest) {
           billerFromRegistry: !!provider,
         };
 
-        const score  = computeConfidence({ amountDue: finalAmount, dueDate: finalDueDate, accountNumber: finalAccountNum, billerName: finalMerchant }, sources);
+        let score  = computeConfidence({ amountDue: finalAmount, dueDate: finalDueDate, accountNumber: finalAccountNum, billerName: finalMerchant }, sources);
+
+        // Boost score using AI per-field confidence when AI filled a gap
+        // (only applied for fields that were NOT already found by regex)
+        if (ai?.fieldConfidence) {
+          const fc = ai.fieldConfidence;
+          if (sources.amountFromAI && fc.amountDue > 0)     score = Math.min(100, score + fc.amountDue * 8);
+          if (sources.dateFromAI   && fc.dueDate > 0)       score = Math.min(100, score + fc.dueDate   * 6);
+          if (sources.accountFromAI && fc.accountNumber > 0) score = Math.min(100, score + fc.accountNumber * 4);
+        }
+
+        // ── Step 7: Validation & Enrichment (Layer 4) ──
+        const validation = validateExtractedFields(finalAmount, finalDueDate, finalAccountNum);
+
+        // Apply any confidence penalties from validation (e.g., amount out of range)
+        score = Math.round(Math.max(0, Math.min(100, score * validation.confidenceMultiplier)));
+
+        // Use validated (possibly corrected/nulled) values for storage
+        const storedAmount     = validation.adjustedAmount     ?? finalAmount;
+        const storedDueDate    = validation.adjustedDueDate    ?? finalDueDate;
+        const storedAccountNum = validation.adjustedAccountNumber ?? finalAccountNum;
+
         const label  = scoreToLabel(score);
         const method = detectionMethod(sources);
 
-        // ── Step 6: Store — always, even if fields are incomplete ──
+        // ── Step 8: Routing (Layer 5) ──
+        const routingAction = getRoutingAction(score, storedAmount, storedDueDate);
+
+        // ── Step 9: Store — always, even if fields are incomplete ──
         const pendingBill: Omit<PendingBill, 'id'> = {
           userId,
           gmailMessageId: msg.id,
           merchantName: finalMerchant,
           billerDomain,
-          amount: finalAmount,
-          dueDate: finalDueDate,
-          accountNumber: finalAccountNum,
+          amount: storedAmount,
+          dueDate: storedDueDate,
+          accountNumber: storedAccountNum,
           accountNumberDisplay: finalAccountNumDisplay,
           statementDate: finalStmtDate,
           minimumPayment: finalMinPayment,
@@ -418,6 +522,8 @@ export async function POST(request: NextRequest) {
           matchedProviderId: provider?.providerId,
           matchedProviderName: provider?.providerName,
           category: finalCategory,
+          routingAction,
+          validationWarnings: validation.warnings.length > 0 ? validation.warnings : undefined,
         };
 
         await storePendingBill(pendingBill);
@@ -425,8 +531,9 @@ export async function POST(request: NextRequest) {
 
         console.log({
           route: '/api/gmail/sync', step: 'stored',
-          merchant: finalMerchant, score, method,
-          amount: finalAmount, dueDate: finalDueDate, accountNumber: finalAccountNum,
+          merchant: finalMerchant, score, method, routingAction,
+          amount: storedAmount, dueDate: storedDueDate, accountNumber: storedAccountNum,
+          validationWarnings: validation.warnings,
         });
 
       } catch (err: any) {
