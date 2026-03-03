@@ -391,6 +391,8 @@ export async function POST(request: NextRequest) {
 
     let scanned = 0, candidates = 0, aiParsed = 0, drafted = 0, skipped = 0, errors = 0;
     let filteredReceipts = 0, filteredOrders = 0, filteredOther = 0;
+    let skippedAlreadyPending = 0;
+    const blockedBillerNames: string[] = [];
 
     for (const msg of allMessages.slice(0, MAX_EMAILS_TO_PROCESS)) {
       try {
@@ -479,6 +481,8 @@ export async function POST(request: NextRequest) {
         if (existingPendingKeys.has(mKey)) {
           console.log({ route: '/api/gmail/sync', step: 'skipDuplicate', reason: 'alreadyPending', merchant: finalMerchant });
           skipped++;
+          skippedAlreadyPending++;
+          if (blockedBillerNames.length < 5) blockedBillerNames.push(finalMerchant);
           continue;
         }
 
@@ -574,7 +578,7 @@ export async function POST(request: NextRequest) {
     console.log({
       route: '/api/gmail/sync', step: 'complete',
       scanned, candidates, aiParsed, drafted, skipped, errors,
-      filteredReceipts, filteredOrders, filteredOther,
+      filteredReceipts, filteredOrders, filteredOther, skippedAlreadyPending,
     });
 
     // Build a helpful summary message
@@ -587,6 +591,10 @@ export async function POST(request: NextRequest) {
     let message: string;
     if (drafted > 0) {
       message = `Scan complete — ${drafted} new bill${drafted > 1 ? 's' : ''} added to Pending Bills${filterNote}. Review and confirm them.`;
+    } else if (skippedAlreadyPending > 0) {
+      // The most common "nothing found" case — billers already have pending bills
+      const names = blockedBillerNames.join(', ');
+      message = `Scan complete — bills from ${names} are already waiting in your review queue. Review and confirm them to scan for new ones.`;
     } else if (candidates > 0 && drafted === 0) {
       message = `Found ${candidates} billing emails but encountered errors storing them.`;
     } else if (filterParts.length > 0) {
@@ -595,7 +603,12 @@ export async function POST(request: NextRequest) {
       message = `Scanned ${scanned} emails — no new billing emails detected in the last 60 days.`;
     }
 
-    return NextResponse.json({ success: true, scanned, candidates, aiParsed, drafted, skipped, errors, filteredReceipts, filteredOrders, message });
+    return NextResponse.json({
+      success: true, scanned, candidates, aiParsed, drafted, skipped, errors,
+      filteredReceipts, filteredOrders, skippedAlreadyPending,
+      pendingCount: existingPendingKeys.size,
+      message,
+    });
 
   } catch (error: any) {
     console.error({ route: '/api/gmail/sync', step: 'handler', error: error.message });

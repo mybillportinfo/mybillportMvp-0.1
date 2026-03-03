@@ -138,7 +138,9 @@ export default function AddBillPage() {
         setGmailError(data.error);
       } else {
         setGmailMessage(data.message || `Found ${data.drafted ?? 0} new bills.`);
-        if ((data.drafted ?? 0) > 0) setTimeout(() => router.push('/pending-bills'), 2000);
+        // Redirect to Pending Bills if new bills were found OR if there are already pending bills waiting
+        const hasPending = (data.drafted ?? 0) > 0 || (data.skippedAlreadyPending ?? 0) > 0 || (data.pendingCount ?? 0) > 0;
+        if (hasPending) setTimeout(() => router.push('/pending-bills'), 2000);
       }
     } catch { setGmailError('Failed to scan Gmail'); }
     finally { setGmailSyncing(false); }

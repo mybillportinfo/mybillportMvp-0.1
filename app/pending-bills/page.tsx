@@ -268,9 +268,9 @@ export default function PendingBillsPage() {
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 pb-24">
       {/* Header */}
       <div className="px-5 pt-12 pb-4">
-        <Link href="/settings" className="flex items-center text-slate-400 hover:text-white mb-4 transition-colors">
+        <Link href="/add-bill" className="flex items-center text-slate-400 hover:text-white mb-4 transition-colors">
           <ArrowLeft className="w-5 h-5 mr-2" />
-          Back to Settings
+          Back to Add Bill
         </Link>
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-3">
@@ -340,6 +340,14 @@ export default function PendingBillsPage() {
         /* Bill list */
         ) : (
           <>
+            {/* Explain why scanner shows "nothing new" */}
+            <div className="bg-amber-500/10 border border-amber-500/30 text-amber-300 px-4 py-3 rounded-xl text-sm flex items-start gap-2">
+              <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+              <span>
+                These bills are blocking new scans. <strong>Confirm</strong> the ones you want to keep, or <strong>Reject</strong> the rest — then scan again for fresh bills.
+              </span>
+            </div>
+
             <div className="flex items-center justify-between">
               <p className="text-slate-400 text-sm">{bills.length} bill{bills.length !== 1 ? 's' : ''} to review</p>
               <div className="flex items-center gap-1 text-xs text-slate-500">
