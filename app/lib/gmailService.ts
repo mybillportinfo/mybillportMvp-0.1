@@ -216,6 +216,36 @@ export interface PendingBill {
   category?: string;
 }
 
+/**
+ * Build a normalized key for deduplication.
+ * Known providers → "provider:<registryId>" (most reliable)
+ * Unknown → "name:<first12charsOfNormalizedName>"
+ */
+export function buildMerchantKey(matchedProviderId: string | undefined, merchantName: string): string {
+  if (matchedProviderId) return `provider:${matchedProviderId}`;
+  const norm = merchantName.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 12);
+  return `name:${norm}`;
+}
+
+/**
+ * Return a Set of merchant keys for all PENDING bills belonging to this user.
+ * Used at scan start so we can skip billers already awaiting review.
+ */
+export async function fetchExistingPendingMerchantKeys(userId: string): Promise<Set<string>> {
+  const db = getAdminDb();
+  const snapshot = await db.collection('pendingBills')
+    .where('userId', '==', userId)
+    .get();
+
+  const keys = new Set<string>();
+  for (const doc of snapshot.docs) {
+    const d = doc.data();
+    if (d.status !== 'pending') continue;
+    keys.add(buildMerchantKey(d.matchedProviderId, d.merchantName || ''));
+  }
+  return keys;
+}
+
 export async function storePendingBill(bill: Omit<PendingBill, 'id'>): Promise<string> {
   const db = getAdminDb();
   const docRef = await db.collection('pendingBills').add(bill);

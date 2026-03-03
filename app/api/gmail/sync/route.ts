@@ -4,6 +4,8 @@ import {
   getAuthenticatedGmailClient,
   checkDuplicateGmailMessage,
   storePendingBill,
+  fetchExistingPendingMerchantKeys,
+  buildMerchantKey,
   PendingBill,
 } from '../../../lib/gmailService';
 import { PROVIDER_REGISTRY } from '../../../lib/providerRegistry';
@@ -43,14 +45,14 @@ EMAIL:
 // ─── Gmail Search Queries ─────────────────────────────────────────────────────
 function buildSearchQueries(): string[] {
   return [
-    'subject:(invoice OR bill OR statement OR receipt) newer_than:90d',
-    'subject:("amount due" OR "payment due" OR "due date" OR "billing notice" OR "your bill") newer_than:90d',
-    'subject:("account statement" OR "billing statement" OR "payment reminder" OR "balance due") newer_than:90d',
-    'subject:(subscription OR renewal OR "auto-pay" OR autopay) newer_than:90d',
-    'subject:(ebill OR "e-bill" OR "new bill" OR "current bill" OR "account summary") newer_than:90d',
-    'subject:(overdue OR "past due" OR "final notice" OR "payment confirmation") newer_than:90d',
-    '("due date" OR "amount due" OR "payment due" OR "balance due") newer_than:90d',
-    '("bill" OR "invoice") ("due" OR "amount") newer_than:90d',
+    'subject:(invoice OR bill OR statement OR receipt) newer_than:60d',
+    'subject:("amount due" OR "payment due" OR "due date" OR "billing notice" OR "your bill") newer_than:60d',
+    'subject:("account statement" OR "billing statement" OR "payment reminder" OR "balance due") newer_than:60d',
+    'subject:(subscription OR renewal OR "auto-pay" OR autopay) newer_than:60d',
+    'subject:(ebill OR "e-bill" OR "new bill" OR "current bill" OR "account summary") newer_than:60d',
+    'subject:(overdue OR "past due" OR "final notice" OR "payment confirmation") newer_than:60d',
+    '("due date" OR "amount due" OR "payment due" OR "balance due") newer_than:60d',
+    '("bill" OR "invoice") ("due" OR "amount") newer_than:60d',
     'in:inbox newer_than:30d',
   ];
 }
@@ -271,9 +273,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true, scanned: 0, candidates: 0, parsed: 0, drafted: 0,
         skipped: 0, errors: 0,
-        message: 'No billing emails found in the last 90 days. Check your inbox is not empty or in spam.',
+        message: 'No billing emails found in the last 60 days. Check your inbox or try scanning again.',
       });
     }
+
+    // Load existing pending merchant keys — skip any biller already awaiting review
+    let existingPendingKeys: Set<string>;
+    try {
+      existingPendingKeys = await fetchExistingPendingMerchantKeys(userId);
+    } catch {
+      existingPendingKeys = new Set();
+    }
+
+    // Track merchants imported in THIS scan — Gmail returns newest first,
+    // so the first time we see a biller is its most recent email.
+    const seenMerchantsThisScan = new Set<string>();
 
     let scanned = 0, candidates = 0, aiParsed = 0, drafted = 0, skipped = 0, errors = 0;
 
@@ -342,7 +356,28 @@ export async function POST(request: NextRequest) {
         const finalCurrency = ai?.currency || 'CAD';
         const billerDomain  = extractDomain(from);
 
-        // ── Step 5: Confidence scoring ──
+        // ── Step 5: Per-biller deduplication ──
+        // Build merchant key using provider ID (known) or normalized name (unknown)
+        const mKey = buildMerchantKey(provider?.providerId, finalMerchant);
+
+        // Skip if we already imported a (newer) email from this biller in this scan
+        if (seenMerchantsThisScan.has(mKey)) {
+          console.log({ route: '/api/gmail/sync', step: 'skipDuplicate', reason: 'alreadyScanningThisBiller', merchant: finalMerchant });
+          skipped++;
+          continue;
+        }
+
+        // Skip if this biller already has a pending bill awaiting the user's review
+        if (existingPendingKeys.has(mKey)) {
+          console.log({ route: '/api/gmail/sync', step: 'skipDuplicate', reason: 'alreadyPending', merchant: finalMerchant });
+          skipped++;
+          continue;
+        }
+
+        // Mark this merchant as seen for the rest of this scan
+        seenMerchantsThisScan.add(mKey);
+
+        // ── Step 6: Confidence scoring ──
         const sources: ExtractionSources = {
           amountFromRegex:   regex.amountDue !== null,
           amountFromAI:      ai?.amountDue != null && regex.amountDue === null,
@@ -410,7 +445,7 @@ export async function POST(request: NextRequest) {
     } else if (candidates > 0 && drafted === 0) {
       message = `Found ${candidates} billing emails but encountered errors storing them.`;
     } else {
-      message = `Scanned ${scanned} emails — no new billing emails detected in the last 90 days.`;
+      message = `Scanned ${scanned} emails — no new billing emails detected in the last 60 days.`;
     }
 
     return NextResponse.json({ success: true, scanned, candidates, aiParsed, drafted, skipped, errors, message });
