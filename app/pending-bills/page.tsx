@@ -20,6 +20,7 @@ interface PendingBill {
   amount: number | null;
   dueDate: string | null;
   accountNumber: string | null;
+  accountNumberDisplay: string | null;
   statementDate: string | null;
   minimumPayment: number | null;
   totalBalance: number | null;
@@ -445,7 +446,7 @@ export default function PendingBillsPage() {
                         />
                       ) : (
                         <p className={`text-sm font-mono ${bill.accountNumber ? 'text-white' : 'text-slate-500'}`}>
-                          {bill.accountNumber || '—'}
+                          {bill.accountNumberDisplay || bill.accountNumber || '—'}
                         </p>
                       )}
                     </div>

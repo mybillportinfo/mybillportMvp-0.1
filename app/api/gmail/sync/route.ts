@@ -327,6 +327,8 @@ export async function POST(request: NextRequest) {
         const finalAmount      = regex.amountDue      ?? ai?.amountDue      ?? null;
         const finalDueDate     = regex.dueDate        ?? ai?.dueDate        ?? null;
         const finalAccountNum  = regex.accountNumber  ?? ai?.accountNumber  ?? null;
+        // Display: prefer regex's space-preserved format; fall back to cleaned or AI
+        const finalAccountNumDisplay = regex.accountNumberDisplay ?? regex.accountNumber ?? ai?.accountNumber ?? null;
         const finalStmtDate    = regex.statementDate  ?? ai?.statementDate  ?? null;
         const finalMinPayment  = regex.minimumPayment ?? ai?.minimumPayment ?? null;
         const finalTotalBal    = regex.totalBalance   ?? ai?.totalBalance   ?? null;
@@ -364,6 +366,7 @@ export async function POST(request: NextRequest) {
           amount: finalAmount,
           dueDate: finalDueDate,
           accountNumber: finalAccountNum,
+          accountNumberDisplay: finalAccountNumDisplay,
           statementDate: finalStmtDate,
           minimumPayment: finalMinPayment,
           totalBalance: finalTotalBal,

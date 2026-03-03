@@ -193,7 +193,8 @@ export interface PendingBill {
   billerDomain: string | null;
   amount: number | null;
   dueDate: string | null;
-  accountNumber: string | null;
+  accountNumber: string | null;       // cleaned alphanumeric (for dedup/storage)
+  accountNumberDisplay: string | null; // original format with spaces (for display)
   statementDate: string | null;
   minimumPayment: number | null;
   totalBalance: number | null;
