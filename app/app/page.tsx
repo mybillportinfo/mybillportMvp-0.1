@@ -45,6 +45,7 @@ export default function Dashboard() {
   const [annualProjection, setAnnualProjection] = useState<{ perBiller: AnnualProjection[]; totalAnnual: number } | null>(null);
   const [savingsScore, setSavingsScore] = useState<SavingsScore | null>(null);
   const [showProjectionDetail, setShowProjectionDetail] = useState(false);
+  const [showInsights, setShowInsights] = useState(false);
   const [insightsModal, setInsightsModal] = useState<{ bill: Bill; loading: boolean; data: any | null; error: string | null } | null>(null);
   const { supported: pushSupported, permission: pushPermission, isSubscribed: pushSubscribed, subscribe: subscribePush } = usePushNotifications(user?.uid || null);
 
@@ -385,6 +386,12 @@ export default function Dashboard() {
   const dueTomorrowBills = bills.filter(b => b.status !== 'paid' && new Date(b.dueDate).toDateString() === tomorrow.toDateString());
   const attentionBills = [...overdueBills, ...dueTodayBills];
 
+  const billsThisMonth = bills.filter(b => {
+    const d = new Date(b.dueDate);
+    return d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
+  });
+  const paidThisMonth = billsThisMonth.filter(b => b.status === 'paid');
+
   const usedCategories = [...new Set(bills.map(b => b.category).filter(Boolean))] as string[];
 
   const greeting = () => {
@@ -422,7 +429,21 @@ export default function Dashboard() {
           </Link>
         </div>
         <p className="text-slate-400">{greeting()}</p>
-        <p className="text-white text-2xl font-semibold">Here&apos;s your overview</p>
+        {loading ? (
+          <p className="text-white text-2xl font-semibold">Loading your bills…</p>
+        ) : attentionBills.length > 0 ? (
+          <p className="text-red-400 text-2xl font-semibold">
+            {attentionBills.length} bill{attentionBills.length !== 1 ? 's' : ''} need{attentionBills.length === 1 ? 's' : ''} attention
+          </p>
+        ) : dueTomorrowBills.length > 0 ? (
+          <p className="text-amber-400 text-2xl font-semibold">
+            {dueTomorrowBills.length} bill{dueTomorrowBills.length !== 1 ? 's' : ''} due tomorrow
+          </p>
+        ) : bills.length === 0 ? (
+          <p className="text-white text-2xl font-semibold">Add your first bill</p>
+        ) : (
+          <p className="text-teal-400 text-2xl font-semibold">You&apos;re all caught up ✓</p>
+        )}
       </div>
 
       {/* Success toast */}
@@ -433,134 +454,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Summary cards */}
-      <div className="px-4 grid grid-cols-2 gap-3 mb-6">
-        <div className="summary-card text-center">
-          <p className="text-2xl font-bold text-white">{bills.length}</p>
-          <p className="text-xs text-slate-400">Total Bills</p>
-        </div>
-        <div className="summary-card text-center">
-          <p className="text-2xl font-bold text-teal-400">${totalOwing.toFixed(2)}</p>
-          <p className="text-xs text-slate-400">Total Owing</p>
-        </div>
-      </div>
-
-      {(() => {
-        const recurringBills = bills.filter(b => b.isRecurring && b.status !== 'paid');
-        const recurringTotal = recurringBills.reduce((sum, b) => sum + Math.max(b.totalAmount - (b.paidAmount || 0), 0), 0);
-        if (recurringBills.length === 0) return null;
-        return (
-          <div className="px-4 mb-4">
-            <div className="summary-card flex items-center gap-3">
-              <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center text-lg">🔄</div>
-              <div>
-                <p className="text-white font-semibold">{recurringBills.length} Recurring Bill{recurringBills.length !== 1 ? 's' : ''}</p>
-                <p className="text-xs text-slate-400">${recurringTotal.toFixed(2)} upcoming recurring</p>
-              </div>
-            </div>
-          </div>
-        );
-      })()}
-
-      {!loading && bills.length > 0 && annualProjection && savingsScore && (
-        <div className="px-4 grid grid-cols-2 gap-3 mb-4">
-          <button
-            onClick={() => setShowProjectionDetail(!showProjectionDetail)}
-            className="summary-card text-left hover:border-teal-500/40 transition-all"
-          >
-            <div className="flex items-center gap-2 mb-1">
-              <BarChart3 className="w-4 h-4 text-teal-400" />
-              <span className="text-xs text-slate-400">Annual Projection</span>
-            </div>
-            <p className="text-xl font-bold text-teal-400">${annualProjection.totalAnnual.toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-            <p className="text-[10px] text-slate-500">{annualProjection.perBiller.length} biller{annualProjection.perBiller.length !== 1 ? 's' : ''} tracked</p>
-          </button>
-
-          <div className="summary-card text-left">
-            <div className="flex items-center gap-2 mb-1">
-              <Target className="w-4 h-4 text-teal-400" />
-              <span className="text-xs text-slate-400">Savings Score</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <p className={`text-xl font-bold ${savingsScore.color}`}>{savingsScore.score}</p>
-              <span className="text-[10px] text-slate-500">/100</span>
-            </div>
-            <p className={`text-[10px] font-medium ${savingsScore.color}`}>{savingsScore.label}</p>
-          </div>
-        </div>
-      )}
-
-      {showProjectionDetail && annualProjection && (
-        <div className="px-4 mb-4">
-          <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
-            <div className="p-4 border-b border-slate-700 flex items-center justify-between">
-              <div>
-                <h3 className="text-white font-semibold text-sm">Annual Cost Breakdown</h3>
-                <p className="text-xs text-slate-400">Estimated yearly spending per biller</p>
-              </div>
-              <button onClick={() => setShowProjectionDetail(false)} className="p-1 hover:bg-slate-700 rounded-lg">
-                <X className="w-4 h-4 text-slate-400" />
-              </button>
-            </div>
-            <div className="divide-y divide-slate-700/50 max-h-64 overflow-y-auto">
-              {annualProjection.perBiller.map((p, i) => (
-                <div key={i} className="px-4 py-3 flex items-center justify-between">
-                  <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <span className="text-sm text-white truncate">{p.billerName}</span>
-                    {p.trend === 'rising' && <ArrowUpRight className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />}
-                    {p.trend === 'falling' && <ArrowDownRight className="w-3.5 h-3.5 text-green-400 flex-shrink-0" />}
-                    {p.trend === 'stable' && <Minus className="w-3 h-3 text-slate-500 flex-shrink-0" />}
-                  </div>
-                  <div className="text-right flex-shrink-0 ml-2">
-                    <p className="text-sm font-medium text-teal-400">${p.annualEstimate.toLocaleString('en-CA', { minimumFractionDigits: 2 })}</p>
-                    <p className="text-[10px] text-slate-500">${p.monthlyAvg.toFixed(2)}/bill</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="px-4 py-3 bg-slate-700/30 flex items-center justify-between">
-              <span className="text-sm font-semibold text-white">Total Annual Estimate</span>
-              <span className="text-sm font-bold text-teal-400">${annualProjection.totalAnnual.toLocaleString('en-CA', { minimumFractionDigits: 2 })}</span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {!loading && savingsScore && savingsScore.factors.length > 0 && (
-        <div className="px-4 mb-4">
-          <div className="flex flex-wrap gap-1.5">
-            {savingsScore.factors.slice(0, 3).map((f, i) => (
-              <span key={i} className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium ${
-                f.impact === 'positive' ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
-                f.impact === 'negative' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
-                'bg-slate-700 text-slate-400 border border-slate-600'
-              }`}>
-                {f.impact === 'positive' ? '✓' : f.impact === 'negative' ? '!' : '•'} {f.label}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {isAtLimit && (
-        <div className="px-4 mb-4">
-          <div className="bg-amber-500/10 border border-amber-500/30 text-amber-400 px-4 py-3 rounded-lg text-sm flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-            <span>Free plan limit reached ({FREE_PLAN_LIMIT}/{FREE_PLAN_LIMIT} bills). Remove a bill to add more.</span>
-          </div>
-        </div>
-      )}
-
-      {error && (
-        <div className="px-4 mb-4">
-          <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg text-sm">
-            {error}
-            <button onClick={() => setError(null)} className="ml-2 underline hover:no-underline">Dismiss</button>
-          </div>
-        </div>
-      )}
-
-      {/* Needs Attention section */}
+      {/* Needs Attention — top priority */}
       {!loading && attentionBills.length > 0 && (
         <div className="px-4 mb-4">
           <div className="bg-red-500/10 border border-red-500/30 rounded-xl overflow-hidden">
@@ -615,6 +509,64 @@ export default function Dashboard() {
                 {dueTomorrowBills.map(b => b.companyName).join(', ')}
               </span>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Compact monthly summary */}
+      {!loading && bills.length > 0 && (
+        <div className="px-4 mb-4">
+          <div className="summary-card flex items-center justify-around text-center">
+            <div>
+              <p className="text-xl font-bold text-white">{billsThisMonth.length}</p>
+              <p className="text-[11px] text-slate-400">Bills this month</p>
+            </div>
+            <div className="w-px h-8 bg-slate-700" />
+            <div>
+              <p className="text-xl font-bold text-teal-400">{paidThisMonth.length}</p>
+              <p className="text-[11px] text-slate-400">Paid this month</p>
+            </div>
+            <div className="w-px h-8 bg-slate-700" />
+            <div>
+              <p className="text-xl font-bold text-white">${totalOwing.toFixed(2)}</p>
+              <p className="text-[11px] text-slate-400">Still owing</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Recurring bills */}
+      {(() => {
+        const recurringBills = bills.filter(b => b.isRecurring && b.status !== 'paid');
+        const recurringTotal = recurringBills.reduce((sum, b) => sum + Math.max(b.totalAmount - (b.paidAmount || 0), 0), 0);
+        if (recurringBills.length === 0) return null;
+        return (
+          <div className="px-4 mb-4">
+            <div className="summary-card flex items-center gap-3">
+              <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center text-lg">🔄</div>
+              <div>
+                <p className="text-white font-semibold">{recurringBills.length} Recurring Bill{recurringBills.length !== 1 ? 's' : ''}</p>
+                <p className="text-xs text-slate-400">${recurringTotal.toFixed(2)} upcoming recurring</p>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {isAtLimit && (
+        <div className="px-4 mb-4">
+          <div className="bg-amber-500/10 border border-amber-500/30 text-amber-400 px-4 py-3 rounded-lg text-sm flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+            <span>Free plan limit reached ({FREE_PLAN_LIMIT}/{FREE_PLAN_LIMIT} bills). Remove a bill to add more.</span>
+          </div>
+        </div>
+      )}
+
+      {error && (
+        <div className="px-4 mb-4">
+          <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg text-sm">
+            {error}
+            <button onClick={() => setError(null)} className="ml-2 underline hover:no-underline">Dismiss</button>
           </div>
         </div>
       )}
@@ -996,6 +948,94 @@ export default function Dashboard() {
           >
             Add Another Bill
           </Link>
+        </div>
+      )}
+
+      {/* Smart Insights — collapsible, optional depth */}
+      {!loading && bills.length > 0 && annualProjection && savingsScore && (
+        <div className="px-4 mt-4 mb-2">
+          <button
+            onClick={() => setShowInsights(v => !v)}
+            className="w-full flex items-center justify-between py-3 px-4 bg-slate-800 border border-slate-700 rounded-xl hover:border-teal-500/30 transition-all"
+          >
+            <div className="flex items-center gap-2">
+              <BarChart3 className="w-4 h-4 text-teal-400" />
+              <span className="text-slate-300 text-sm font-medium">Smart Insights</span>
+              {savingsScore && (
+                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                  savingsScore.score >= 80 ? 'bg-green-500/15 text-green-400' :
+                  savingsScore.score >= 60 ? 'bg-teal-500/15 text-teal-400' :
+                  savingsScore.score >= 40 ? 'bg-amber-500/15 text-amber-400' :
+                  'bg-red-500/15 text-red-400'
+                }`}>Score: {savingsScore.score}/100</span>
+              )}
+            </div>
+            <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${showInsights ? 'rotate-180' : ''}`} />
+          </button>
+
+          {showInsights && (
+            <div className="mt-2 bg-slate-800 border border-slate-700 rounded-xl overflow-hidden">
+              {/* Savings score header */}
+              <div className="px-4 py-3 border-b border-slate-700 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Target className="w-4 h-4 text-teal-400" />
+                  <div>
+                    <p className="text-white font-semibold text-sm">Savings Score</p>
+                    <p className={`text-xs font-medium ${savingsScore.color}`}>{savingsScore.label}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className={`text-2xl font-bold ${savingsScore.color}`}>{savingsScore.score}</p>
+                  <p className="text-[10px] text-slate-500">/100</p>
+                </div>
+              </div>
+
+              {/* Score factors */}
+              {savingsScore.factors.length > 0 && (
+                <div className="px-4 py-3 border-b border-slate-700 flex flex-wrap gap-1.5">
+                  {savingsScore.factors.slice(0, 4).map((f, i) => (
+                    <span key={i} className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium ${
+                      f.impact === 'positive' ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
+                      f.impact === 'negative' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
+                      'bg-slate-700 text-slate-400 border border-slate-600'
+                    }`}>
+                      {f.impact === 'positive' ? '✓' : f.impact === 'negative' ? '!' : '•'} {f.label}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {/* Annual projection */}
+              <div className="px-4 py-3 border-b border-slate-700 flex items-center justify-between">
+                <div>
+                  <p className="text-white font-semibold text-sm">Annual Projection</p>
+                  <p className="text-xs text-slate-400">{annualProjection.perBiller.length} biller{annualProjection.perBiller.length !== 1 ? 's' : ''} tracked</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-lg font-bold text-teal-400">${annualProjection.totalAnnual.toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                  <p className="text-[10px] text-slate-500">estimated / year</p>
+                </div>
+              </div>
+
+              {/* Per-biller breakdown */}
+              <div className="divide-y divide-slate-700/50 max-h-52 overflow-y-auto">
+                {annualProjection.perBiller.map((p, i) => (
+                  <div key={i} className="px-4 py-2.5 flex items-center justify-between">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <span className="text-sm text-white truncate">{p.billerName}</span>
+                      {p.trend === 'rising' && <ArrowUpRight className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />}
+                      {p.trend === 'falling' && <ArrowDownRight className="w-3.5 h-3.5 text-green-400 flex-shrink-0" />}
+                      {p.trend === 'stable' && <Minus className="w-3 h-3 text-slate-500 flex-shrink-0" />}
+                    </div>
+                    <div className="text-right flex-shrink-0 ml-2">
+                      <p className="text-sm font-medium text-teal-400">${p.annualEstimate.toLocaleString('en-CA', { minimumFractionDigits: 2 })}</p>
+                      <p className="text-[10px] text-slate-500">${p.monthlyAvg.toFixed(2)}/bill</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
