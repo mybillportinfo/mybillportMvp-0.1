@@ -961,6 +961,12 @@ export async function checkAndCreateDueDateNotifications(userId: string, bills: 
           relatedBillId: bill.id,
           isRead: false,
         });
+        // Also send a native push notification to the phone
+        fetch('/api/push/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId, title, body: message, url: '/app' }),
+        }).catch(() => {});
       }
     }
   }

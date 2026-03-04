@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
-import { Home, Plus, Settings, Loader2, Trash2, AlertTriangle, Bell, DollarSign, CheckCircle, ExternalLink, Check, X, Clock, ChevronDown, ChevronUp, Pencil, Receipt, TrendingUp, TrendingDown, Minus, Sparkles, BarChart3, Target, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { Home, Plus, Settings, Loader2, Trash2, AlertTriangle, Bell, BellOff, DollarSign, CheckCircle, ExternalLink, Check, X, Clock, ChevronDown, ChevronUp, Pencil, Receipt, TrendingUp, TrendingDown, Minus, Sparkles, BarChart3, Target, ArrowUpRight, ArrowDownRight, Smartphone } from "lucide-react";
+import { usePushNotifications } from '../hooks/usePushNotifications';
 import { useAuth } from '../contexts/AuthContext';
 import { fetchBills, deleteBill, fetchNotifications, checkAndCreateDueDateNotifications, sortBills, Bill, markBillAsPaid, getPaymentHistory, BillPaymentRecord, PaymentMethod, updateBill, BillingCycle, applyRecurringDetection, persistRecurringFlags, detectRecurringPatterns, dismissAmountAlert, RecurringFrequency } from '../lib/firebase';
 import { CATEGORIES, getCategoryByValue, getSubcategory } from '../lib/categories';
@@ -45,6 +46,25 @@ export default function Dashboard() {
   const [savingsScore, setSavingsScore] = useState<SavingsScore | null>(null);
   const [showProjectionDetail, setShowProjectionDetail] = useState(false);
   const [insightsModal, setInsightsModal] = useState<{ bill: Bill; loading: boolean; data: any | null; error: string | null } | null>(null);
+  const [pushBannerDismissed, setPushBannerDismissed] = useState(true);
+
+  const { supported: pushSupported, permission: pushPermission, isSubscribed: pushSubscribed, isLoading: pushLoading, subscribe: subscribePush } = usePushNotifications(user?.uid || null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setPushBannerDismissed(!!localStorage.getItem('billport_push_dismissed'));
+    }
+  }, []);
+
+  const dismissPushBanner = () => {
+    localStorage.setItem('billport_push_dismissed', '1');
+    setPushBannerDismissed(true);
+  };
+
+  const handleEnablePush = async () => {
+    const ok = await subscribePush();
+    if (ok) setPushBannerDismissed(true);
+  };
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -367,6 +387,15 @@ export default function Dashboard() {
   const hasMore = visibleCount < filteredBills.length;
   const unpaidBills = bills.filter(b => b.status !== 'paid');
   const totalOwing = unpaidBills.reduce((sum, b) => sum + (b.totalAmount - b.paidAmount), 0);
+
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
+  const overdueBills = bills.filter(b => b.status !== 'paid' && new Date(b.dueDate) < today);
+  const dueTodayBills = bills.filter(b => b.status !== 'paid' && new Date(b.dueDate).toDateString() === today.toDateString());
+  const dueTomorrowBills = bills.filter(b => b.status !== 'paid' && new Date(b.dueDate).toDateString() === tomorrow.toDateString());
+  const attentionBills = [...overdueBills, ...dueTodayBills];
+
+  const showPushBanner = pushSupported && pushPermission !== 'denied' && !pushSubscribed && !pushBannerDismissed && !loading && bills.length > 0;
   const usedCategories = [...new Set(bills.map(b => b.category).filter(Boolean))] as string[];
 
   const greeting = () => {
@@ -538,6 +567,92 @@ export default function Dashboard() {
           <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg text-sm">
             {error}
             <button onClick={() => setError(null)} className="ml-2 underline hover:no-underline">Dismiss</button>
+          </div>
+        </div>
+      )}
+
+      {/* Push notification banner */}
+      {showPushBanner && (
+        <div className="px-4 mb-4">
+          <div className="bg-slate-800 border border-teal-500/30 rounded-xl p-4 flex items-center gap-3">
+            <div className="w-10 h-10 bg-teal-500/15 rounded-xl flex items-center justify-center flex-shrink-0">
+              <Smartphone className="w-5 h-5 text-teal-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-white font-semibold text-sm">Get bill reminders on your phone</p>
+              <p className="text-slate-400 text-xs mt-0.5">We&apos;ll notify you before bills are due — even when the app is closed</p>
+            </div>
+            <div className="flex gap-2 flex-shrink-0">
+              <button
+                onClick={handleEnablePush}
+                disabled={pushLoading}
+                className="px-3 py-1.5 bg-teal-500 text-white rounded-lg text-xs font-semibold hover:bg-teal-600 transition-colors disabled:opacity-50"
+              >
+                {pushLoading ? 'Enabling...' : 'Enable'}
+              </button>
+              <button onClick={dismissPushBanner} className="p-1.5 text-slate-500 hover:text-slate-300 transition-colors">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Needs Attention section */}
+      {!loading && attentionBills.length > 0 && (
+        <div className="px-4 mb-4">
+          <div className="bg-red-500/10 border border-red-500/30 rounded-xl overflow-hidden">
+            <div className="px-4 py-3 flex items-center gap-2 border-b border-red-500/20">
+              <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0" />
+              <span className="text-red-400 font-semibold text-sm">
+                Needs Attention — {attentionBills.length} bill{attentionBills.length !== 1 ? 's' : ''}
+              </span>
+            </div>
+            <div className="divide-y divide-red-500/10">
+              {attentionBills.slice(0, 3).map(bill => {
+                const dueDate = new Date(bill.dueDate);
+                dueDate.setHours(0, 0, 0, 0);
+                const isOverdue = dueDate < today;
+                const daysOverdue = isOverdue ? Math.round((today.getTime() - dueDate.getTime()) / 86400000) : 0;
+                return (
+                  <div key={bill.id} className="px-4 py-3 flex items-center justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-white font-medium text-sm truncate">{bill.companyName}</p>
+                      <p className={`text-xs mt-0.5 ${isOverdue ? 'text-red-400' : 'text-orange-400'}`}>
+                        {isOverdue ? `${daysOverdue} day${daysOverdue !== 1 ? 's' : ''} overdue` : 'Due today'} · ${(bill.totalAmount - (bill.paidAmount || 0)).toFixed(2)}
+                      </p>
+                    </div>
+                    <Link
+                      href={`/payment?biller=${encodeURIComponent(bill.companyName)}&amount=${(bill.totalAmount - (bill.paidAmount || 0)).toFixed(2)}`}
+                      onClick={() => trackPaymentRedirect(bill.companyName, true)}
+                      className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-red-500 text-white rounded-lg text-xs font-semibold hover:bg-red-600 transition-colors"
+                    >
+                      Pay Now <ExternalLink className="w-3 h-3" />
+                    </Link>
+                  </div>
+                );
+              })}
+              {attentionBills.length > 3 && (
+                <div className="px-4 py-2 text-xs text-slate-400 text-center">
+                  + {attentionBills.length - 3} more — scroll down to see all
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Due tomorrow strip */}
+      {!loading && dueTomorrowBills.length > 0 && attentionBills.length === 0 && (
+        <div className="px-4 mb-4">
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl px-4 py-3 flex items-center gap-3">
+            <Clock className="w-4 h-4 text-amber-400 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <span className="text-amber-400 font-semibold text-sm">Due Tomorrow — </span>
+              <span className="text-slate-300 text-sm">
+                {dueTomorrowBills.map(b => b.companyName).join(', ')}
+              </span>
+            </div>
           </div>
         </div>
       )}

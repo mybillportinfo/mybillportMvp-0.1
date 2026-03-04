@@ -1,6 +1,5 @@
 const CACHE_NAME = 'mybillport-shell-v1';
 
-// App shell pages to pre-cache on install
 const PRECACHE_URLS = [
   '/',
   '/app',
@@ -9,12 +8,11 @@ const PRECACHE_URLS = [
   '/offline.html',
 ];
 
-// Never cache API routes — bill data must always be fresh
 function isApiRoute(url) {
   return new URL(url).pathname.startsWith('/api/');
 }
 
-// ─── Install: pre-cache the app shell ────────────────────────────────────────
+// ─── Install ─────────────────────────────────────────────────────────────────
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) =>
@@ -23,7 +21,7 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// ─── Activate: clear old caches ──────────────────────────────────────────────
+// ─── Activate ────────────────────────────────────────────────────────────────
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
@@ -34,24 +32,17 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// ─── Fetch: network-first for API routes, cache-first for shell ──────────────
+// ─── Fetch: network-first ────────────────────────────────────────────────────
 self.addEventListener('fetch', (event) => {
   const { request } = event;
-
-  // Only handle GET requests
   if (request.method !== 'GET') return;
-
-  // API routes: always go to network; never serve from cache
   if (isApiRoute(request.url)) {
     event.respondWith(fetch(request));
     return;
   }
-
-  // App shell: network-first, fall back to cache, then offline page
   event.respondWith(
     fetch(request)
       .then((response) => {
-        // Clone and update cache for successful responses
         if (response && response.status === 200) {
           const clone = response.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
@@ -61,11 +52,50 @@ self.addEventListener('fetch', (event) => {
       .catch(async () => {
         const cached = await caches.match(request);
         if (cached) return cached;
-        // Navigation requests get the offline page
         if (request.mode === 'navigate') {
           return caches.match('/offline.html');
         }
         return new Response('Offline', { status: 503 });
       })
+  );
+});
+
+// ─── Push: show native phone notification ────────────────────────────────────
+self.addEventListener('push', (event) => {
+  if (!event.data) return;
+
+  let payload = { title: 'MyBillPort', body: 'You have a bill update.', url: '/app', icon: '/icon-192.png', badge: '/icon-192.png' };
+  try {
+    payload = { ...payload, ...event.data.json() };
+  } catch {}
+
+  event.waitUntil(
+    self.registration.showNotification(payload.title, {
+      body: payload.body,
+      icon: payload.icon,
+      badge: payload.badge,
+      data: { url: payload.url },
+      vibrate: [200, 100, 200],
+      requireInteraction: false,
+      tag: 'billport-notification',
+    })
+  );
+});
+
+// ─── Notification click: open/focus the app ──────────────────────────────────
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const url = event.notification.data?.url || '/app';
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if (client.url.includes(self.location.origin) && 'focus' in client) {
+          client.navigate(url);
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) return clients.openWindow(url);
+    })
   );
 });
