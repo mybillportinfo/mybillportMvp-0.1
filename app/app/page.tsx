@@ -46,25 +46,15 @@ export default function Dashboard() {
   const [savingsScore, setSavingsScore] = useState<SavingsScore | null>(null);
   const [showProjectionDetail, setShowProjectionDetail] = useState(false);
   const [insightsModal, setInsightsModal] = useState<{ bill: Bill; loading: boolean; data: any | null; error: string | null } | null>(null);
-  const [pushBannerDismissed, setPushBannerDismissed] = useState(true);
+  const { supported: pushSupported, permission: pushPermission, isSubscribed: pushSubscribed, subscribe: subscribePush } = usePushNotifications(user?.uid || null);
 
-  const { supported: pushSupported, permission: pushPermission, isSubscribed: pushSubscribed, isLoading: pushLoading, subscribe: subscribePush } = usePushNotifications(user?.uid || null);
-
+  // Auto-subscribe on first load — push notifications are ON by default
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setPushBannerDismissed(!!localStorage.getItem('billport_push_dismissed'));
-    }
-  }, []);
-
-  const dismissPushBanner = () => {
-    localStorage.setItem('billport_push_dismissed', '1');
-    setPushBannerDismissed(true);
-  };
-
-  const handleEnablePush = async () => {
-    const ok = await subscribePush();
-    if (ok) setPushBannerDismissed(true);
-  };
+    if (!pushSupported || pushSubscribed || pushPermission === 'denied' || pushPermission === 'granted') return;
+    // Permission not yet decided — auto-request after 3 seconds so the page loads first
+    const timer = setTimeout(() => { subscribePush().catch(() => {}); }, 3000);
+    return () => clearTimeout(timer);
+  }, [pushSupported, pushSubscribed, pushPermission, subscribePush]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -395,7 +385,6 @@ export default function Dashboard() {
   const dueTomorrowBills = bills.filter(b => b.status !== 'paid' && new Date(b.dueDate).toDateString() === tomorrow.toDateString());
   const attentionBills = [...overdueBills, ...dueTodayBills];
 
-  const showPushBanner = pushSupported && pushPermission !== 'denied' && !pushSubscribed && !pushBannerDismissed && !loading && bills.length > 0;
   const usedCategories = [...new Set(bills.map(b => b.category).filter(Boolean))] as string[];
 
   const greeting = () => {
@@ -567,33 +556,6 @@ export default function Dashboard() {
           <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg text-sm">
             {error}
             <button onClick={() => setError(null)} className="ml-2 underline hover:no-underline">Dismiss</button>
-          </div>
-        </div>
-      )}
-
-      {/* Push notification banner */}
-      {showPushBanner && (
-        <div className="px-4 mb-4">
-          <div className="bg-slate-800 border border-teal-500/30 rounded-xl p-4 flex items-center gap-3">
-            <div className="w-10 h-10 bg-teal-500/15 rounded-xl flex items-center justify-center flex-shrink-0">
-              <Smartphone className="w-5 h-5 text-teal-400" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-white font-semibold text-sm">Get bill reminders on your phone</p>
-              <p className="text-slate-400 text-xs mt-0.5">We&apos;ll notify you before bills are due — even when the app is closed</p>
-            </div>
-            <div className="flex gap-2 flex-shrink-0">
-              <button
-                onClick={handleEnablePush}
-                disabled={pushLoading}
-                className="px-3 py-1.5 bg-teal-500 text-white rounded-lg text-xs font-semibold hover:bg-teal-600 transition-colors disabled:opacity-50"
-              >
-                {pushLoading ? 'Enabling...' : 'Enable'}
-              </button>
-              <button onClick={dismissPushBanner} className="p-1.5 text-slate-500 hover:text-slate-300 transition-colors">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
           </div>
         </div>
       )}

@@ -3,7 +3,8 @@
 import { useEffect, useState, useRef } from 'react';
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Home, Plus, Settings, User, Bell, Shield, Lock, LogOut, ChevronRight, Loader2, X, Eye, EyeOff, MessageSquare, Receipt, DollarSign, Check, AlertTriangle, Camera, Trash2, Mail } from "lucide-react";
+import { ArrowLeft, Home, Plus, Settings, User, Bell, Shield, Lock, LogOut, ChevronRight, Loader2, X, Eye, EyeOff, MessageSquare, Receipt, DollarSign, Check, AlertTriangle, Camera, Trash2, Mail, Smartphone } from "lucide-react";
+import { usePushNotifications } from '../hooks/usePushNotifications';
 import { useAuth } from '../contexts/AuthContext';
 import {
   getUserPreferences, setUserPreferences,
@@ -26,6 +27,8 @@ export default function SettingsPage() {
   const [savingPrefs, setSavingPrefs] = useState(false);
   const [prefsSaved, setPrefsSaved] = useState(false);
   const [loadingPrefs, setLoadingPrefs] = useState(true);
+
+  const { supported: pushSupported, permission: pushPermission, isSubscribed: pushSubscribed, isLoading: pushLoading, subscribe: subscribePush, unsubscribe: unsubscribePush } = usePushNotifications(user?.uid || null);
 
   const [linkedProviders, setLinkedProviders] = useState<string[]>([]);
 
@@ -540,6 +543,40 @@ export default function SettingsPage() {
                           <p className="text-xs text-slate-500 mt-2">Overdue bills always generate notifications</p>
                         </div>
                       )}
+
+                      <div className="border-t border-slate-100 pt-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <Smartphone className="w-5 h-5 text-slate-400" />
+                            <div>
+                              <p className="font-medium text-slate-800">Phone Notifications</p>
+                              <p className="text-sm text-slate-500">
+                                {!pushSupported
+                                  ? 'Not supported on this device'
+                                  : pushPermission === 'denied'
+                                  ? 'Blocked — enable in browser settings'
+                                  : pushSubscribed
+                                  ? 'Active — alerts pop up even when app is closed'
+                                  : 'Get alerts on your phone even when app is closed'}
+                              </p>
+                            </div>
+                          </div>
+                          {pushSupported && pushPermission !== 'denied' && (
+                            <button
+                              onClick={pushSubscribed ? unsubscribePush : subscribePush}
+                              disabled={pushLoading}
+                              className={`w-12 h-7 rounded-full transition-colors relative disabled:opacity-50 ${pushSubscribed ? 'bg-teal-500' : 'bg-slate-300'}`}
+                            >
+                              <span className={`absolute top-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${pushSubscribed ? 'left-[22px]' : 'left-0.5'}`} />
+                            </button>
+                          )}
+                        </div>
+                        {pushSubscribed && (
+                          <p className="text-xs text-teal-600 mt-2 ml-8">
+                            You&apos;ll receive push alerts for overdue bills, due-today reminders, and more.
+                          </p>
+                        )}
+                      </div>
 
                       {prefsSaved && (
                         <div className="bg-teal-50 border border-teal-200 text-teal-700 px-4 py-2 rounded-lg text-sm text-center">
