@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Mail, Lock, Loader2, Check, X, Receipt, DollarSign } from "lucide-react";
+import { ArrowLeft, Mail, Lock, Loader2, Check, X, Receipt, DollarSign, ShieldCheck } from "lucide-react";
 import { useAuth } from '../contexts/AuthContext';
 import GoogleSignInButton from '../components/GoogleSignInButton';
 import { useRecaptcha } from '../hooks/useRecaptcha';
@@ -213,6 +213,16 @@ export default function Signup() {
               Sign in
             </Link>
           </p>
+
+          <div className="mt-5 pt-5 border-t border-slate-700/60 flex items-center justify-center gap-1.5 text-xs text-slate-500">
+            <ShieldCheck className="w-3.5 h-3.5 text-teal-600 flex-shrink-0" />
+            <span>
+              Protected by reCAPTCHA &mdash;{' '}
+              <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-slate-400">Privacy</a>
+              {' '}&amp;{' '}
+              <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-slate-400">Terms</a>
+            </span>
+          </div>
         </div>
       </div>
     </div>
