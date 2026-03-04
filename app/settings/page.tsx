@@ -28,7 +28,7 @@ export default function SettingsPage() {
   const [prefsSaved, setPrefsSaved] = useState(false);
   const [loadingPrefs, setLoadingPrefs] = useState(true);
 
-  const { supported: pushSupported, permission: pushPermission, isSubscribed: pushSubscribed, isLoading: pushLoading, subscribe: subscribePush, unsubscribe: unsubscribePush } = usePushNotifications(user?.uid || null);
+  const { supported: pushSupported, permission: pushPermission, isSubscribed: pushSubscribed, isLoading: pushLoading, error: pushError, subscribe: subscribePush, unsubscribe: unsubscribePush } = usePushNotifications(user?.uid || null);
 
   const [linkedProviders, setLinkedProviders] = useState<string[]>([]);
 
@@ -575,6 +575,9 @@ export default function SettingsPage() {
                           <p className="text-xs text-teal-600 mt-2 ml-8">
                             You&apos;ll receive push alerts for overdue bills, due-today reminders, and more.
                           </p>
+                        )}
+                        {pushError && (
+                          <p className="text-xs text-red-500 mt-2 ml-8">{pushError}</p>
                         )}
                       </div>
 
