@@ -236,3 +236,10 @@ body {
   outline: 2px solid var(--ring);
   outline-offset: 2px;
 }
+
+/* Hide the floating reCAPTCHA badge on all pages.
+   Attribution text ("Protected by reCAPTCHA") is shown manually
+   on Login and Signup forms, which satisfies Google's ToS. */
+.grecaptcha-badge {
+  visibility: hidden !important;
+}
