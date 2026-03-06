@@ -1,21 +1,21 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Mail, Lock, Loader2, Receipt, DollarSign, ShieldCheck } from "lucide-react";
 import { useAuth } from '../contexts/AuthContext';
 import GoogleSignInButton from '../components/GoogleSignInButton';
-import { useRecaptcha } from '../hooks/useRecaptcha';
+import { RecaptchaCheckbox } from '../components/RecaptchaCheckbox';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [googleError, setGoogleError] = useState<string | null>(null);
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
 
   const { user, login, error, clearError } = useAuth();
-  const { executeRecaptcha } = useRecaptcha();
   const router = useRouter();
   const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
   const urlError = searchParams?.get('error');
@@ -41,26 +41,38 @@ export default function Login() {
     }
   }, [user, router]);
 
+  const handleVerify = useCallback((token: string) => {
+    setRecaptchaToken(token);
+    setGoogleError(null);
+  }, []);
+
+  const handleExpire = useCallback(() => {
+    setRecaptchaToken(null);
+  }, []);
+
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) return;
+
+    if (!recaptchaToken) {
+      setGoogleError('Please confirm you are human by checking the box.');
+      return;
+    }
+
     setIsSubmitting(true);
     clearError();
     try {
-      try {
-        const token = await executeRecaptcha('LOGIN');
-        const res = await fetch('/api/recaptcha/verify', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token, action: 'LOGIN' }),
-        });
-        const result = await res.json();
-        if (!result.success && !result.skipped) {
-          setGoogleError('Security check failed. Please try again.');
-          setIsSubmitting(false);
-          return;
-        }
-      } catch {
+      const res = await fetch('/api/recaptcha/v2/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: recaptchaToken }),
+      });
+      const result = await res.json();
+      if (!result.success && !result.skipped) {
+        setGoogleError('Human verification failed. Please try the checkbox again.');
+        setRecaptchaToken(null);
+        setIsSubmitting(false);
+        return;
       }
       await login(email, password);
       router.push('/app');
@@ -153,10 +165,14 @@ export default function Login() {
               </div>
             </div>
 
+            <div className="bg-slate-700/30 rounded-lg p-3">
+              <RecaptchaCheckbox onVerify={handleVerify} onExpire={handleExpire} />
+            </div>
+
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="w-full btn-accent py-3 rounded-lg font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
+              disabled={isSubmitting || !recaptchaToken}
+              className="w-full btn-accent py-3 rounded-lg font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
                 <>
