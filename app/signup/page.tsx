@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Mail, Lock, Loader2, Check, X, Receipt, DollarSign, ShieldCheck } from "lucide-react";
 import { useAuth } from '../contexts/AuthContext';
 import GoogleSignInButton from '../components/GoogleSignInButton';
+import { RecaptchaCheckbox } from '../components/RecaptchaCheckbox';
 
 export default function Signup() {
   const [email, setEmail] = useState('');
@@ -13,14 +14,13 @@ export default function Signup() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
 
   const { user, signup, error, clearError } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (user) {
-      router.push('/app');
-    }
+    if (user) router.push('/app');
   }, [user, router]);
 
   const passwordChecks = {
@@ -28,26 +28,36 @@ export default function Signup() {
     match: password === confirmPassword && password.length > 0,
   };
 
+  const handleVerify = useCallback((token: string) => {
+    setRecaptchaToken(token);
+    setLocalError(null);
+  }, []);
+
+  const handleExpire = useCallback(() => setRecaptchaToken(null), []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLocalError(null);
-
-    if (!email || !password) {
-      setLocalError('Please fill in all fields');
-      return;
-    }
-    if (password !== confirmPassword) {
-      setLocalError('Passwords do not match');
-      return;
-    }
-    if (password.length < 6) {
-      setLocalError('Password must be at least 6 characters');
-      return;
-    }
+    if (!email || !password) { setLocalError('Please fill in all fields'); return; }
+    if (password !== confirmPassword) { setLocalError('Passwords do not match'); return; }
+    if (password.length < 6) { setLocalError('Password must be at least 6 characters'); return; }
+    if (!recaptchaToken) { setLocalError('Please tick the "I\'m not a robot" box first.'); return; }
 
     setIsSubmitting(true);
     clearError();
     try {
+      const res = await fetch('/api/recaptcha/v2/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: recaptchaToken }),
+      });
+      const result = await res.json();
+      if (!result.success && !result.skipped) {
+        setLocalError('Verification failed. Please tick the checkbox again.');
+        setRecaptchaToken(null);
+        setIsSubmitting(false);
+        return;
+      }
       await signup(email, password);
       router.push('/app');
     } catch {
@@ -88,7 +98,7 @@ export default function Signup() {
             </div>
           )}
 
-          <div className="space-y-3 mb-6">
+          <div className="mb-6">
             <GoogleSignInButton disabled={isSubmitting} />
           </div>
 
@@ -150,31 +160,23 @@ export default function Signup() {
             {password && (
               <div className="bg-slate-700/30 rounded-lg p-3 space-y-2">
                 <div className="flex items-center gap-2 text-sm">
-                  {passwordChecks.length ? (
-                    <Check className="w-4 h-4 text-green-500" />
-                  ) : (
-                    <X className="w-4 h-4 text-slate-500" />
-                  )}
-                  <span className={passwordChecks.length ? 'text-green-400' : 'text-slate-400'}>
-                    At least 6 characters
-                  </span>
+                  {passwordChecks.length ? <Check className="w-4 h-4 text-green-500" /> : <X className="w-4 h-4 text-slate-500" />}
+                  <span className={passwordChecks.length ? 'text-green-400' : 'text-slate-400'}>At least 6 characters</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  {passwordChecks.match ? (
-                    <Check className="w-4 h-4 text-green-500" />
-                  ) : (
-                    <X className="w-4 h-4 text-slate-500" />
-                  )}
-                  <span className={passwordChecks.match ? 'text-green-400' : 'text-slate-400'}>
-                    Passwords match
-                  </span>
+                  {passwordChecks.match ? <Check className="w-4 h-4 text-green-500" /> : <X className="w-4 h-4 text-slate-500" />}
+                  <span className={passwordChecks.match ? 'text-green-400' : 'text-slate-400'}>Passwords match</span>
                 </div>
               </div>
             )}
 
+            <div className="bg-slate-700/30 rounded-lg p-3">
+              <RecaptchaCheckbox onVerify={handleVerify} onExpire={handleExpire} />
+            </div>
+
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || !recaptchaToken}
               className="w-full btn-accent py-3 rounded-lg font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (

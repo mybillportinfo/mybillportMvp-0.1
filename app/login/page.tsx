@@ -1,24 +1,25 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Mail, Lock, Loader2, Receipt, DollarSign, ShieldCheck } from "lucide-react";
 import { useAuth } from '../contexts/AuthContext';
 import GoogleSignInButton from '../components/GoogleSignInButton';
+import { RecaptchaCheckbox } from '../components/RecaptchaCheckbox';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [googleError, setGoogleError] = useState<string | null>(null);
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
 
   const { user, login, error, clearError } = useAuth();
   const router = useRouter();
-  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
-  const urlError = searchParams?.get('error');
 
   useEffect(() => {
+    const urlError = new URLSearchParams(window.location.search).get('error');
     if (urlError) {
       const errorMap: Record<string, string> = {
         google_init_failed: 'Could not start Google sign-in. Please try again.',
@@ -31,21 +32,42 @@ export default function Login() {
       setGoogleError(errorMap[urlError] || `Google sign-in error: ${decodeURIComponent(urlError)}`);
       window.history.replaceState({}, '', '/login');
     }
-  }, [urlError]);
+  }, []);
 
   useEffect(() => {
-    if (user) {
-      router.push('/app');
-    }
+    if (user) router.push('/app');
   }, [user, router]);
+
+  const handleVerify = useCallback((token: string) => {
+    setRecaptchaToken(token);
+    setGoogleError(null);
+  }, []);
+
+  const handleExpire = useCallback(() => setRecaptchaToken(null), []);
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) return;
+    if (!recaptchaToken) {
+      setGoogleError('Please tick the "I\'m not a robot" box first.');
+      return;
+    }
     setIsSubmitting(true);
     clearError();
     setGoogleError(null);
     try {
+      const res = await fetch('/api/recaptcha/v2/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: recaptchaToken }),
+      });
+      const result = await res.json();
+      if (!result.success && !result.skipped) {
+        setGoogleError('Verification failed. Please tick the checkbox again.');
+        setRecaptchaToken(null);
+        setIsSubmitting(false);
+        return;
+      }
       await login(email, password);
       router.push('/app');
     } catch {
@@ -86,7 +108,7 @@ export default function Login() {
             </div>
           )}
 
-          <div className="space-y-3 mb-6">
+          <div className="mb-6">
             <GoogleSignInButton disabled={isSubmitting} />
           </div>
 
@@ -135,9 +157,13 @@ export default function Login() {
               </div>
             </div>
 
+            <div className="bg-slate-700/30 rounded-lg p-3">
+              <RecaptchaCheckbox onVerify={handleVerify} onExpire={handleExpire} />
+            </div>
+
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || !recaptchaToken}
               className="w-full btn-accent py-3 rounded-lg font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (

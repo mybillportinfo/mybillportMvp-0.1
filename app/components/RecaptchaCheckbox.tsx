@@ -14,64 +14,50 @@ export function RecaptchaCheckbox({ onVerify, onExpire }: Props) {
   const widgetIdRef = useRef<number | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const renderWidget = useCallback(() => {
+  const tryRender = useCallback(() => {
     const w = window as any;
-    if (!containerRef.current) return;
-    if (widgetIdRef.current !== null) return;
-    const enterprise = w.grecaptcha?.enterprise;
-    if (!enterprise?.render) return;
+    if (!containerRef.current) return false;
+    if (widgetIdRef.current !== null) return true;
+    if (!w.grecaptcha?.render) return false;
 
     try {
-      enterprise.ready(() => {
-        if (!containerRef.current || widgetIdRef.current !== null) return;
-        try {
-          widgetIdRef.current = enterprise.render(containerRef.current, {
-            sitekey: V2_SITE_KEY,
-            theme: 'dark',
-            callback: onVerify,
-            'expired-callback': onExpire,
-          });
-        } catch (e) {
-          console.warn('[recaptcha] render failed:', e);
-        }
+      widgetIdRef.current = w.grecaptcha.render(containerRef.current, {
+        sitekey: V2_SITE_KEY,
+        theme: 'dark',
+        callback: onVerify,
+        'expired-callback': onExpire,
       });
-      if (pollRef.current) {
-        clearInterval(pollRef.current);
-        pollRef.current = null;
-      }
-    } catch (e) {
-      console.warn('[recaptcha] ready failed:', e);
+      return true;
+    } catch {
+      return false;
     }
   }, [onVerify, onExpire]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    renderWidget();
+    if (tryRender()) return;
 
-    if (widgetIdRef.current === null) {
-      pollRef.current = setInterval(() => {
-        const w = window as any;
-        if (w.grecaptcha?.enterprise?.render) {
-          renderWidget();
-        }
-      }, 250);
+    pollRef.current = setInterval(() => {
+      if (tryRender() && pollRef.current) {
+        clearInterval(pollRef.current);
+        pollRef.current = null;
+      }
+    }, 300);
 
-      setTimeout(() => {
-        if (pollRef.current) {
-          clearInterval(pollRef.current);
-          pollRef.current = null;
-        }
-      }, 15000);
-    }
-
-    return () => {
+    const timeout = setTimeout(() => {
       if (pollRef.current) {
         clearInterval(pollRef.current);
         pollRef.current = null;
       }
+    }, 12000);
+
+    return () => {
+      clearInterval(pollRef.current!);
+      clearTimeout(timeout);
+      pollRef.current = null;
     };
-  }, [renderWidget]);
+  }, [tryRender]);
 
   return (
     <div className="flex justify-center py-1">
