@@ -77,7 +77,7 @@ self.addEventListener('push', (event) => {
       data: { url: payload.url },
       vibrate: [200, 100, 200],
       requireInteraction: false,
-      tag: 'billport-notification',
+      tag: 'mybillport-notification',
     })
   );
 });

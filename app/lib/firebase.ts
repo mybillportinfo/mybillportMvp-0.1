@@ -1353,7 +1353,7 @@ export async function submitFeedback(
   const docRef = await addDoc(collection(db, 'feedback'), {
     userId,
     userEmail,
-    userName: userName || 'BillPort User',
+    userName: userName || 'MyBillPort User',
     category: category.trim(),
     message: message.trim(),
     status: 'new',

@@ -1,6 +1,6 @@
 {
   "name": "MyBillPort",
-  "short_name": "BillPort",
+  "short_name": "MyBillPort",
   "description": "Track all your Canadian bills in one place. Due dates, amounts, and payment links — always at your fingertips.",
   "start_url": "/app",
   "scope": "/",
