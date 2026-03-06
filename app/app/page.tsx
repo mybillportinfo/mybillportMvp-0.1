@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Home, Plus, Settings, Loader2, Trash2, AlertTriangle, Bell, BellOff, DollarSign, CheckCircle, ExternalLink, Check, X, Clock, ChevronDown, ChevronUp, Pencil, Receipt, TrendingUp, TrendingDown, Minus, Sparkles, BarChart3, Target, ArrowUpRight, ArrowDownRight, Smartphone } from "lucide-react";
 import { usePushNotifications } from '../hooks/usePushNotifications';
 import { useAuth } from '../contexts/AuthContext';
-import { fetchBills, deleteBill, fetchNotifications, checkAndCreateDueDateNotifications, sortBills, Bill, markBillAsPaid, getPaymentHistory, BillPaymentRecord, PaymentMethod, updateBill, BillingCycle, applyRecurringDetection, persistRecurringFlags, detectRecurringPatterns, dismissAmountAlert, RecurringFrequency } from '../lib/firebase';
+import { fetchBills, deleteBill, fetchNotifications, checkAndCreateDueDateNotifications, sortBills, Bill, markBillAsPaid, getPaymentHistory, BillPaymentRecord, PaymentMethod, updateBill, BillingCycle, applyRecurringDetection, persistRecurringFlags, detectRecurringPatterns, dismissAmountAlert, RecurringFrequency, getUserProfile } from '../lib/firebase';
 import { CATEGORIES, getCategoryByValue, getSubcategory } from '../lib/categories';
 import { trackBillPaid, trackBillDeleted, trackBillEdited, trackPaymentRedirect } from '../lib/analyticsService';
 import { detectSpike, calculateAnnualProjections, calculateSavingsScore, SpikeInfo, AnnualProjection, SavingsScore } from '../lib/billAnalytics';
@@ -46,6 +46,7 @@ export default function Dashboard() {
   const [savingsScore, setSavingsScore] = useState<SavingsScore | null>(null);
   const [showProjectionDetail, setShowProjectionDetail] = useState(false);
   const [showInsights, setShowInsights] = useState(false);
+  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const [insightsModal, setInsightsModal] = useState<{ bill: Bill; loading: boolean; data: any | null; error: string | null } | null>(null);
   const { supported: pushSupported, permission: pushPermission, isSubscribed: pushSubscribed, subscribe: subscribePush } = usePushNotifications(user?.uid || null);
 
@@ -66,6 +67,11 @@ export default function Dashboard() {
   useEffect(() => {
     if (user) {
       loadBills();
+      getUserProfile(user.uid).then(p => {
+        setProfilePhoto(p?.photoURL || user.photoURL || null);
+      }).catch(() => {
+        setProfilePhoto(user.photoURL || null);
+      });
     }
   }, [user]);
 
@@ -419,14 +425,27 @@ export default function Dashboard() {
             </div>
             <span className="text-white font-bold text-xl tracking-tighter">My<span className="text-teal-500">BillPort</span></span>
           </div>
-          <Link href="/notifications" className="relative p-2 hover:bg-slate-800 rounded-lg transition-colors">
-            <Bell className="w-6 h-6 text-slate-300" />
-            {unreadNotifCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
-                {unreadNotifCount > 9 ? '9+' : unreadNotifCount}
-              </span>
-            )}
-          </Link>
+          <div className="flex items-center gap-1">
+            <Link href="/notifications" className="relative p-2 hover:bg-slate-800 rounded-lg transition-colors">
+              <Bell className="w-6 h-6 text-slate-300" />
+              {unreadNotifCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                  {unreadNotifCount > 9 ? '9+' : unreadNotifCount}
+                </span>
+              )}
+            </Link>
+            <Link href="/settings" className="p-1 hover:bg-slate-800 rounded-lg transition-colors">
+              {profilePhoto ? (
+                <img src={profilePhoto} alt="Profile" className="w-8 h-8 rounded-full object-cover border border-slate-600" />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center border border-slate-600">
+                  <span className="text-slate-300 text-xs font-semibold">
+                    {(user?.displayName?.[0] || user?.email?.[0] || '?').toUpperCase()}
+                  </span>
+                </div>
+              )}
+            </Link>
+          </div>
         </div>
         <p className="text-slate-400">{greeting()}</p>
         {loading ? (
@@ -1345,3 +1364,4 @@ export default function Dashboard() {
     </div>
   );
 }
+

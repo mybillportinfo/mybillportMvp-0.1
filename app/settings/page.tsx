@@ -107,7 +107,7 @@ export default function SettingsPage() {
       await saveUserProfile(user.uid, {
         username: username.trim(),
         email: user.email || '',
-        photoURL: user.photoURL || null,
+        photoURL: profile?.photoURL ?? user.photoURL ?? null,
       });
       if (newEmail && newEmail !== user.email) {
         try {
@@ -132,29 +132,48 @@ export default function SettingsPage() {
     }
   };
 
+  const resizeImage = (dataUrl: string): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = () => {
+        const MAX = 256;
+        const ratio = Math.min(MAX / img.width, MAX / img.height, 1);
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(img.width * ratio);
+        canvas.height = Math.round(img.height * ratio);
+        canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', 0.82));
+      };
+      img.src = dataUrl;
+    });
+
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
 
-    if (file.size > 2 * 1024 * 1024) {
-      setProfileError('Photo must be under 2MB');
+    if (file.size > 5 * 1024 * 1024) {
+      setProfileError('Photo must be under 5MB');
       return;
     }
 
     setSavingProfile(true);
     setProfileError(null);
     try {
-      const reader = new FileReader();
-      reader.onload = async () => {
-        const dataUrl = reader.result as string;
-        await updateUserProfilePhoto(dataUrl);
-        await saveUserProfile(user.uid, { photoURL: dataUrl });
-        setProfile(prev => prev ? { ...prev, photoURL: dataUrl } : null);
-        setSavingProfile(false);
-      };
-      reader.readAsDataURL(file);
+      const raw = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = reject;
+        reader.onload = () => resolve(reader.result as string);
+        reader.readAsDataURL(file);
+      });
+      const dataUrl = await resizeImage(raw);
+      await saveUserProfile(user.uid, { photoURL: dataUrl });
+      setProfile(prev => prev
+        ? { ...prev, photoURL: dataUrl }
+        : { userId: user.uid, username: '', email: user.email || '', photoURL: dataUrl });
     } catch (err: any) {
-      setProfileError('Failed to upload photo');
+      setProfileError('Failed to upload photo. Please try again.');
+    } finally {
       setSavingProfile(false);
     }
   };
