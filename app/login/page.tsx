@@ -1,19 +1,17 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Mail, Lock, Loader2, Receipt, DollarSign, ShieldCheck } from "lucide-react";
 import { useAuth } from '../contexts/AuthContext';
 import GoogleSignInButton from '../components/GoogleSignInButton';
-import { RecaptchaCheckbox } from '../components/RecaptchaCheckbox';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [googleError, setGoogleError] = useState<string | null>(null);
-  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
 
   const { user, login, error, clearError } = useAuth();
   const router = useRouter();
@@ -41,39 +39,13 @@ export default function Login() {
     }
   }, [user, router]);
 
-  const handleVerify = useCallback((token: string) => {
-    setRecaptchaToken(token);
-    setGoogleError(null);
-  }, []);
-
-  const handleExpire = useCallback(() => {
-    setRecaptchaToken(null);
-  }, []);
-
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) return;
-
-    if (!recaptchaToken) {
-      setGoogleError('Please confirm you are human by checking the box.');
-      return;
-    }
-
     setIsSubmitting(true);
     clearError();
+    setGoogleError(null);
     try {
-      const res = await fetch('/api/recaptcha/v2/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: recaptchaToken }),
-      });
-      const result = await res.json();
-      if (!result.success && !result.skipped) {
-        setGoogleError('Human verification failed. Please try the checkbox again.');
-        setRecaptchaToken(null);
-        setIsSubmitting(false);
-        return;
-      }
       await login(email, password);
       router.push('/app');
     } catch {
@@ -115,9 +87,7 @@ export default function Login() {
           )}
 
           <div className="space-y-3 mb-6">
-            <GoogleSignInButton
-              disabled={isSubmitting}
-            />
+            <GoogleSignInButton disabled={isSubmitting} />
           </div>
 
           <div className="relative mb-6">
@@ -165,13 +135,9 @@ export default function Login() {
               </div>
             </div>
 
-            <div className="bg-slate-700/30 rounded-lg p-3">
-              <RecaptchaCheckbox onVerify={handleVerify} onExpire={handleExpire} />
-            </div>
-
             <button
               type="submit"
-              disabled={isSubmitting || !recaptchaToken}
+              disabled={isSubmitting}
               className="w-full btn-accent py-3 rounded-lg font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
