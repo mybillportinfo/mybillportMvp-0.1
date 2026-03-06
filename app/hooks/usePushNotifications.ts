@@ -52,6 +52,27 @@ export function usePushNotifications(userId: string | null) {
       .catch(() => {});
   }, [supported, userId]);
 
+  // Stale subscription fix: if permission is already granted and we have a subscription,
+  // upsert it to Firestore. This handles PWA reinstall / browser data clear scenarios
+  // where the browser generates a new push endpoint that Firestore doesn't know about yet.
+  useEffect(() => {
+    if (!supported || !userId || !VAPID_PUBLIC_KEY) return;
+    if (Notification.permission !== 'granted') return;
+
+    navigator.serviceWorker.ready
+      .then(reg => reg.pushManager.getSubscription())
+      .then(sub => {
+        if (!sub) return;
+        fetch('/api/push/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId, subscription: sub }),
+        }).catch(() => {});
+        setIsSubscribed(true);
+      })
+      .catch(() => {});
+  }, [supported, userId]);
+
   const subscribe = useCallback(async (): Promise<boolean> => {
     setError(null);
     const uid = userIdRef.current;

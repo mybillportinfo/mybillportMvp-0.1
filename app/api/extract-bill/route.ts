@@ -8,6 +8,7 @@ import {
   validateAndSanitizeExtraction,
 } from '../../lib/extractionGuards';
 import { verifyFirebaseToken, verifyAppCheckToken, isValidMimeType, sanitizeString } from '../../lib/authVerify';
+import { checkServerRateLimit } from '../../lib/serverRateLimit';
 
 export const runtime = "nodejs";
 
@@ -123,6 +124,18 @@ export async function POST(request: NextRequest) {
         success: false,
         error: 'Too many requests from this location. Please try again later.',
         rateLimited: true,
+      }, { status: 429 });
+    }
+
+    // Server-side durable rate limit (survives cold starts, blocks API-level abuse)
+    const serverRateCheck = await checkServerRateLimit(`extract_${verifiedUserId}`, 10, 60 * 60 * 1000);
+    if (!serverRateCheck.allowed) {
+      const hoursLeft = Math.ceil(serverRateCheck.resetsIn / (1000 * 60 * 60));
+      return NextResponse.json({
+        success: false,
+        error: `You've reached the scan limit (10 scans/hour). Try again in ${hoursLeft} hour${hoursLeft !== 1 ? 's' : ''}.`,
+        rateLimited: true,
+        resetsIn: serverRateCheck.resetsIn,
       }, { status: 429 });
     }
 

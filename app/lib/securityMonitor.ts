@@ -1,8 +1,5 @@
 'use client';
 
-import { getFunctions, httpsCallable } from 'firebase/functions';
-import { getApp, getApps } from 'firebase/app';
-
 interface SecurityReport {
   activityType: string;
   details: string;
@@ -23,16 +20,8 @@ function cleanOldTimestamps(timestamps: number[], windowMs: number): number[] {
   return timestamps.filter(t => t > cutoff);
 }
 
-async function reportToCloud(report: SecurityReport) {
-  try {
-    if (getApps().length === 0) return;
-    const app = getApp();
-    const functions = getFunctions(app);
-    const reportFn = httpsCallable(functions, 'reportSuspiciousActivity');
-    await reportFn(report);
-  } catch {
-    // Silently fail - don't block user flow for security reporting
-  }
+function logSecurityEvent(report: SecurityReport) {
+  console.warn('[security]', report.activityType, report.confidence, report.details, report.metadata ?? {});
 }
 
 export function trackBillCreation() {
@@ -43,7 +32,7 @@ export function trackBillCreation() {
 
   if (recent.length >= BILL_CREATION_THRESHOLD) {
     const confidence = recent.length >= BILL_CREATION_THRESHOLD * 2 ? 'high' : 'medium';
-    reportToCloud({
+    logSecurityEvent({
       activityType: 'rapid_bill_creation',
       details: `${recent.length} bills created in the last hour`,
       confidence,
@@ -60,7 +49,7 @@ export function trackFailedScan(errorType: string) {
 
   if (recent.length >= SCAN_FAILURE_THRESHOLD) {
     const confidence = recent.length >= SCAN_FAILURE_THRESHOLD * 2 ? 'high' : 'medium';
-    reportToCloud({
+    logSecurityEvent({
       activityType: 'excessive_scan_failures',
       details: `${recent.length} scan failures in 10 minutes (${errorType})`,
       confidence,
@@ -70,7 +59,7 @@ export function trackFailedScan(errorType: string) {
 }
 
 export function trackSuspiciousPaymentPattern(billId: string, details: string) {
-  reportToCloud({
+  logSecurityEvent({
     activityType: 'suspicious_payment',
     details,
     confidence: 'medium',

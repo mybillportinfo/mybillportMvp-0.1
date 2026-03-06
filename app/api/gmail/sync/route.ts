@@ -14,6 +14,7 @@ import { computeConfidence, scoreToLabel, detectionMethod, ExtractionSources } f
 import { validateExtractedFields, getRoutingAction } from '../../../lib/validation';
 import { classifyEmail, EmailType } from '../../../lib/emailClassifier';
 import Anthropic from '@anthropic-ai/sdk';
+import { checkServerRateLimit } from '../../../lib/serverRateLimit';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -335,6 +336,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     const userId = authResult.uid;
+
+    // Server-side rate limit: 5 Gmail syncs per user per hour
+    const syncRateCheck = await checkServerRateLimit(`gmail_sync_${userId}`, 5, 60 * 60 * 1000);
+    if (!syncRateCheck.allowed) {
+      const minutesLeft = Math.ceil(syncRateCheck.resetsIn / (1000 * 60));
+      return NextResponse.json({
+        error: `Gmail scan limit reached (5 scans/hour). Try again in ${minutesLeft} minute${minutesLeft !== 1 ? 's' : ''}.`,
+        rateLimited: true,
+        resetsIn: syncRateCheck.resetsIn,
+      }, { status: 429 });
+    }
 
     // Get Gmail client
     let gmail: any;
