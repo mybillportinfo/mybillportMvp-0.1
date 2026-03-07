@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   ChevronLeft, ChevronRight, Home, Plus, Settings, CalendarDays,
   DollarSign, TrendingDown, TrendingUp, X, AlertTriangle, Wallet, Loader2, CheckCircle
@@ -56,7 +57,8 @@ function groupBillsByDay(bills: Bill[], year: number, month: number): Map<number
 }
 
 export default function CalendarPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
   const today = useMemo(() => new Date(), []);
 
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
@@ -69,6 +71,10 @@ export default function CalendarPage() {
   const [incomeForm, setIncomeForm] = useState({ type: 'biweekly', amount: '', nextPayday: '' });
   const [savingIncome, setSavingIncome] = useState(false);
   const [markingPaid, setMarkingPaid] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!authLoading && !user) router.push('/login');
+  }, [user, authLoading, router]);
 
   useEffect(() => {
     if (!user) return;
@@ -201,6 +207,14 @@ export default function CalendarPage() {
       setSavingIncome(false);
     }
   };
+
+  if (authLoading || !user) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-teal-400" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 pb-24">
