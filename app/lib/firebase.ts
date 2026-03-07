@@ -227,9 +227,16 @@ export interface BillPaymentRecord {
   notes?: string;
 }
 
+export interface PaydaySchedule {
+  type: 'weekly' | 'biweekly' | 'semimonthly' | 'monthly';
+  amount: number;
+  nextPayday: string; // YYYY-MM-DD
+}
+
 export interface UserPreferences {
   inAppReminders: boolean;
   notifyDays: number[];
+  paydaySchedule?: PaydaySchedule;
 }
 
 export interface UserProfile {

@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
 import {
-  ArrowLeft, Home, Plus, Settings, Loader2, AlertTriangle,
+  ArrowLeft, Home, Plus, Settings, CalendarDays, Loader2, AlertTriangle,
   ChevronDown, X, Search, Camera, ImageIcon, FileText,
   CheckCircle, AlertCircle, Pencil, Sparkles, Receipt, DollarSign,
   Mail, RefreshCw, Inbox,
@@ -945,11 +945,15 @@ export default function AddBillPage() {
         </div>
       )}
 
-      <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur border-t border-slate-700 py-3 px-6">
+      <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur border-t border-slate-700 py-3 px-4">
         <div className="max-w-md mx-auto flex justify-around">
           <Link href="/app" className="nav-item">
             <Home className="w-6 h-6" />
             <span className="text-xs">Home</span>
+          </Link>
+          <Link href="/calendar" className="nav-item">
+            <CalendarDays className="w-6 h-6" />
+            <span className="text-xs">Calendar</span>
           </Link>
           <Link href="/add-bill" className="nav-item nav-item-active">
             <Plus className="w-6 h-6" />
