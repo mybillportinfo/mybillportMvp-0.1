@@ -7,9 +7,10 @@ const V2_SITE_KEY = '6Le8B4IsAAAAAPPjIrCIA1396bULHve3ZLImPNT0';
 interface Props {
   onVerify: (token: string) => void;
   onExpire: () => void;
+  onReady?: () => void;
 }
 
-export function RecaptchaCheckbox({ onVerify, onExpire }: Props) {
+export function RecaptchaCheckbox({ onVerify, onExpire, onReady }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<number | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -24,14 +25,18 @@ export function RecaptchaCheckbox({ onVerify, onExpire }: Props) {
       widgetIdRef.current = w.grecaptcha.render(containerRef.current, {
         sitekey: V2_SITE_KEY,
         theme: 'dark',
-        callback: onVerify,
+        callback: (token: string) => {
+          onVerify(token);
+          onReady?.();
+        },
         'expired-callback': onExpire,
       });
+      onReady?.();
       return true;
     } catch {
       return false;
     }
-  }, [onVerify, onExpire]);
+  }, [onVerify, onExpire, onReady]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;

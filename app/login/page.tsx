@@ -14,6 +14,7 @@ export default function Login() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [googleError, setGoogleError] = useState<string | null>(null);
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+  const [captchaLoaded, setCaptchaLoaded] = useState(false);
 
   const { user, login, error, clearError } = useAuth();
   const router = useRouter();
@@ -40,33 +41,39 @@ export default function Login() {
 
   const handleVerify = useCallback((token: string) => {
     setRecaptchaToken(token);
+    setCaptchaLoaded(true);
     setGoogleError(null);
   }, []);
 
   const handleExpire = useCallback(() => setRecaptchaToken(null), []);
+  const handleCaptchaReady = useCallback(() => setCaptchaLoaded(true), []);
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) return;
-    if (!recaptchaToken) {
+
+    if (captchaLoaded && !recaptchaToken) {
       setGoogleError('Please tick the "I\'m not a robot" box first.');
       return;
     }
+
     setIsSubmitting(true);
     clearError();
     setGoogleError(null);
     try {
-      const res = await fetch('/api/recaptcha/v2/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: recaptchaToken }),
-      });
-      const result = await res.json();
-      if (!result.success && !result.skipped) {
-        setGoogleError('Verification failed. Please tick the checkbox again.');
-        setRecaptchaToken(null);
-        setIsSubmitting(false);
-        return;
+      if (recaptchaToken) {
+        const res = await fetch('/api/recaptcha/v2/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: recaptchaToken }),
+        });
+        const result = await res.json();
+        if (!result.success && !result.skipped) {
+          setGoogleError('Verification failed. Please tick the checkbox again.');
+          setRecaptchaToken(null);
+          setIsSubmitting(false);
+          return;
+        }
       }
       await login(email, password);
       router.push('/app');
@@ -77,6 +84,7 @@ export default function Login() {
   };
 
   const displayError = googleError || error;
+  const buttonDisabled = isSubmitting || (captchaLoaded && !recaptchaToken);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 flex items-center justify-center px-4">
@@ -157,13 +165,17 @@ export default function Login() {
               </div>
             </div>
 
-            <div className="bg-slate-700/30 rounded-lg p-3">
-              <RecaptchaCheckbox onVerify={handleVerify} onExpire={handleExpire} />
+            <div className="bg-slate-700/30 rounded-lg p-3 min-h-[78px] flex items-center justify-center">
+              <RecaptchaCheckbox
+                onVerify={handleVerify}
+                onExpire={handleExpire}
+                onReady={handleCaptchaReady}
+              />
             </div>
 
             <button
               type="submit"
-              disabled={isSubmitting || !recaptchaToken}
+              disabled={buttonDisabled}
               className="w-full btn-accent py-3 rounded-lg font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (

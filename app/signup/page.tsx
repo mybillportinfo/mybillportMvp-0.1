@@ -15,6 +15,7 @@ export default function Signup() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+  const [captchaLoaded, setCaptchaLoaded] = useState(false);
 
   const { user, signup, error, clearError } = useAuth();
   const router = useRouter();
@@ -30,10 +31,12 @@ export default function Signup() {
 
   const handleVerify = useCallback((token: string) => {
     setRecaptchaToken(token);
+    setCaptchaLoaded(true);
     setLocalError(null);
   }, []);
 
   const handleExpire = useCallback(() => setRecaptchaToken(null), []);
+  const handleCaptchaReady = useCallback(() => setCaptchaLoaded(true), []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,22 +44,27 @@ export default function Signup() {
     if (!email || !password) { setLocalError('Please fill in all fields'); return; }
     if (password !== confirmPassword) { setLocalError('Passwords do not match'); return; }
     if (password.length < 6) { setLocalError('Password must be at least 6 characters'); return; }
-    if (!recaptchaToken) { setLocalError('Please tick the "I\'m not a robot" box first.'); return; }
+    if (captchaLoaded && !recaptchaToken) {
+      setLocalError('Please tick the "I\'m not a robot" box first.');
+      return;
+    }
 
     setIsSubmitting(true);
     clearError();
     try {
-      const res = await fetch('/api/recaptcha/v2/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: recaptchaToken }),
-      });
-      const result = await res.json();
-      if (!result.success && !result.skipped) {
-        setLocalError('Verification failed. Please tick the checkbox again.');
-        setRecaptchaToken(null);
-        setIsSubmitting(false);
-        return;
+      if (recaptchaToken) {
+        const res = await fetch('/api/recaptcha/v2/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: recaptchaToken }),
+        });
+        const result = await res.json();
+        if (!result.success && !result.skipped) {
+          setLocalError('Verification failed. Please tick the checkbox again.');
+          setRecaptchaToken(null);
+          setIsSubmitting(false);
+          return;
+        }
       }
       await signup(email, password);
       router.push('/app');
@@ -67,6 +75,7 @@ export default function Signup() {
   };
 
   const displayError = localError || error;
+  const buttonDisabled = isSubmitting || (captchaLoaded && !recaptchaToken);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 flex items-center justify-center px-4">
@@ -170,13 +179,17 @@ export default function Signup() {
               </div>
             )}
 
-            <div className="bg-slate-700/30 rounded-lg p-3">
-              <RecaptchaCheckbox onVerify={handleVerify} onExpire={handleExpire} />
+            <div className="bg-slate-700/30 rounded-lg p-3 min-h-[78px] flex items-center justify-center">
+              <RecaptchaCheckbox
+                onVerify={handleVerify}
+                onExpire={handleExpire}
+                onReady={handleCaptchaReady}
+              />
             </div>
 
             <button
               type="submit"
-              disabled={isSubmitting || !recaptchaToken}
+              disabled={buttonDisabled}
               className="w-full btn-accent py-3 rounded-lg font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
