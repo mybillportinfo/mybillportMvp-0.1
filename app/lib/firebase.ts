@@ -645,6 +645,27 @@ export async function deleteBill(billId: string) {
   await deleteDoc(doc(db, "bills", billId));
 }
 
+// --- Quick mark as paid (no payment processor required) ---
+export async function markBillFullyPaid(
+  billId: string,
+  userId: string
+): Promise<void> {
+  const db = getFirebaseDb();
+  if (!db) throw new Error('Firebase not available');
+  const auth = getFirebaseAuth();
+  if (!auth?.currentUser) throw new Error('User must be authenticated');
+  const billRef = doc(db, 'bills', billId);
+  const snap = await getDoc(billRef);
+  if (!snap.exists()) throw new Error('Bill not found');
+  if (snap.data().userId !== userId) throw new Error('Unauthorized');
+  const totalAmount = snap.data().totalAmount || snap.data().amount || 0;
+  await updateDoc(billRef, {
+    status: 'paid' as BillStatus,
+    paidAmount: totalAmount,
+    updatedAt: serverTimestamp(),
+  });
+}
+
 // --- Payment update (client-side, after Stripe confirms) ---
 // Updates bill in Firestore after Stripe PaymentIntent succeeds
 // Uses Firestore transaction to prevent race conditions

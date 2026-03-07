@@ -4,13 +4,14 @@ import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import {
   ChevronLeft, ChevronRight, Home, Plus, Settings, CalendarDays,
-  DollarSign, TrendingDown, TrendingUp, X, AlertTriangle, Wallet, Loader2
+  DollarSign, TrendingDown, TrendingUp, X, AlertTriangle, Wallet, Loader2, CheckCircle
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import {
-  fetchBills, getUserPreferences, setUserPreferences,
+  fetchBills, getUserPreferences, setUserPreferences, markBillFullyPaid,
   Bill, PaydaySchedule
 } from '../lib/firebase';
+import toast from 'react-hot-toast';
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -67,6 +68,7 @@ export default function CalendarPage() {
   const [showIncomeSetup, setShowIncomeSetup] = useState(false);
   const [incomeForm, setIncomeForm] = useState({ type: 'biweekly', amount: '', nextPayday: '' });
   const [savingIncome, setSavingIncome] = useState(false);
+  const [markingPaid, setMarkingPaid] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!user) return;
@@ -158,6 +160,27 @@ export default function CalendarPage() {
   const selectedIsPayday = selectedDay ? paydayDaySet.has(selectedDay) : false;
   const selectedIncome = (selectedIsPayday && paydaySchedule) ? paydaySchedule.amount : 0;
   const selectedBillsTotal = selectedBills.reduce((s, b) => s + (b.totalAmount - b.paidAmount), 0);
+
+  const handleMarkAsPaid = async (bill: Bill) => {
+    if (!user || !bill.id || markingPaid.has(bill.id)) return;
+    const billId = bill.id;
+    setMarkingPaid(prev => new Set(prev).add(billId));
+    try {
+      await markBillFullyPaid(billId, user.uid);
+      setBills(prev => prev.map(b =>
+        b.id === billId ? { ...b, status: 'paid' as const, paidAmount: b.totalAmount } : b
+      ));
+      toast.success(`${bill.companyName ?? 'Bill'} marked as paid`);
+      if ((billsByDay.get(selectedDay!)?.filter(b => b.id !== billId && b.status !== 'paid').length ?? 0) === 0) {
+        setSelectedDay(null);
+      }
+    } catch (e) {
+      console.error('[calendar] mark paid error:', e);
+      toast.error('Failed to update bill');
+    } finally {
+      setMarkingPaid(prev => { const s = new Set(prev); s.delete(billId); return s; });
+    }
+  };
 
   const handleSaveIncome = async () => {
     if (!user || !incomeForm.amount || !incomeForm.nextPayday) return;
@@ -372,17 +395,33 @@ export default function CalendarPage() {
 
             {selectedBills.length > 0 ? (
               <div className="space-y-2 mb-4">
-                {selectedBills.map(bill => (
-                  <div key={bill.id} className="flex items-center justify-between bg-slate-700/60 rounded-xl px-4 py-3">
-                    <div>
-                      <p className="text-white text-sm font-medium">{bill.companyName}</p>
-                      <p className="text-xs text-slate-400 capitalize">{bill.status}</p>
+                {selectedBills.map(bill => {
+                  const isPending = bill.id ? markingPaid.has(bill.id) : false;
+                  const remaining = bill.totalAmount - bill.paidAmount;
+                  return (
+                    <div key={bill.id} className="bg-slate-700/60 rounded-xl px-4 py-3">
+                      <div className="flex items-center justify-between">
+                        <div className="min-w-0 flex-1 pr-2">
+                          <p className="text-white text-sm font-medium truncate">{bill.companyName}</p>
+                          <p className="text-xs text-slate-400 capitalize">{bill.status}</p>
+                        </div>
+                        <span className="text-white font-semibold text-sm shrink-0">
+                          ${remaining.toLocaleString('en-CA', { minimumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => handleMarkAsPaid(bill)}
+                        disabled={isPending}
+                        className="mt-2 w-full flex items-center justify-center gap-1.5 text-xs font-semibold text-emerald-400 border border-emerald-500/40 rounded-lg py-1.5 hover:bg-emerald-500/10 disabled:opacity-50 transition-colors"
+                      >
+                        {isPending
+                          ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />Saving...</>
+                          : <><CheckCircle className="w-3.5 h-3.5" />Mark as Paid</>
+                        }
+                      </button>
                     </div>
-                    <span className="text-white font-semibold text-sm">
-                      ${(bill.totalAmount - bill.paidAmount).toLocaleString('en-CA', { minimumFractionDigits: 2 })}
-                    </span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <p className="text-slate-400 text-sm mb-4">No bills due this day.</p>
