@@ -37,11 +37,6 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <meta name="mobile-web-app-capable" content="yes" />
-        <script
-          src="https://www.google.com/recaptcha/api.js?render=explicit"
-          async
-          defer
-        />
         <script src="https://accounts.google.com/gsi/client" async />
       </head>
       <body className={inter.className}>
