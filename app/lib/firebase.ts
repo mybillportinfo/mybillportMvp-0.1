@@ -707,17 +707,18 @@ export async function getIncomeForMonth(
   const auth = getFirebaseAuth();
   if (!auth?.currentUser) return [];
 
-  const monthStart = `${year}-${String(month + 1).padStart(2, '0')}-01`;
-  const monthEnd   = `${year}-${String(month + 1).padStart(2, '0')}-31`;
-
+  // Query by userId only to avoid requiring a composite Firestore index.
+  // Date filtering is done client-side — income entries per user stay small.
   const q = query(
     collection(db, 'income'),
-    where('userId', '==', userId),
-    where('date', '>=', monthStart),
-    where('date', '<=', monthEnd)
+    where('userId', '==', userId)
   );
   const snap = await getDocs(q);
-  return snap.docs.map(d => ({ id: d.id, ...d.data() } as IncomeEntry));
+  const all = snap.docs.map(d => ({ id: d.id, ...d.data() } as IncomeEntry));
+
+  const monthStart = `${year}-${String(month + 1).padStart(2, '0')}-01`;
+  const monthEnd   = `${year}-${String(month + 1).padStart(2, '0')}-31`;
+  return all.filter(e => e.date >= monthStart && e.date <= monthEnd);
 }
 
 export async function deleteIncomeEntry(userId: string, incomeId: string): Promise<void> {
