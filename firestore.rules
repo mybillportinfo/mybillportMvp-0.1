@@ -56,6 +56,18 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // Per-day income entries — users can only access their own
+    match /income/{incomeId} {
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null
+                     && request.resource.data.userId == request.auth.uid
+                     && request.resource.data.amount is number
+                     && request.resource.data.amount > 0
+                     && request.resource.data.date is string;
+      allow update: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+
     // Pending bills from Gmail scanner — per-user read/write, no client deletes
     match /pendingBills/{billId} {
       allow read: if request.auth != null && resource.data.userId == request.auth.uid;

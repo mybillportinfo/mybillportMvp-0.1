@@ -666,6 +666,71 @@ export async function markBillFullyPaid(
   });
 }
 
+// --- Income entries (tap-to-add per-day income) ---
+
+export interface IncomeEntry {
+  id?: string;
+  userId: string;
+  amount: number;
+  date: string; // YYYY-MM-DD
+  description?: string;
+  frequency: 'once' | 'weekly' | 'biweekly' | 'monthly';
+  createdAt?: any;
+}
+
+export async function addIncomeEntry(
+  userId: string,
+  entry: Pick<IncomeEntry, 'amount' | 'date' | 'description' | 'frequency'>
+): Promise<string> {
+  const db = getFirebaseDb();
+  if (!db) throw new Error('Firebase not available');
+  const auth = getFirebaseAuth();
+  if (!auth?.currentUser) throw new Error('User must be authenticated');
+  const ref = await addDoc(collection(db, 'income'), {
+    userId,
+    amount: entry.amount,
+    date: entry.date,
+    description: entry.description ?? '',
+    frequency: entry.frequency,
+    createdAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
+export async function getIncomeForMonth(
+  userId: string,
+  year: number,
+  month: number
+): Promise<IncomeEntry[]> {
+  const db = getFirebaseDb();
+  if (!db) return [];
+  const auth = getFirebaseAuth();
+  if (!auth?.currentUser) return [];
+
+  const monthStart = `${year}-${String(month + 1).padStart(2, '0')}-01`;
+  const monthEnd   = `${year}-${String(month + 1).padStart(2, '0')}-31`;
+
+  const q = query(
+    collection(db, 'income'),
+    where('userId', '==', userId),
+    where('date', '>=', monthStart),
+    where('date', '<=', monthEnd)
+  );
+  const snap = await getDocs(q);
+  return snap.docs.map(d => ({ id: d.id, ...d.data() } as IncomeEntry));
+}
+
+export async function deleteIncomeEntry(userId: string, incomeId: string): Promise<void> {
+  const db = getFirebaseDb();
+  if (!db) throw new Error('Firebase not available');
+  const auth = getFirebaseAuth();
+  if (!auth?.currentUser) throw new Error('User must be authenticated');
+  const ref = doc(db, 'income', incomeId);
+  const snap = await getDoc(ref);
+  if (!snap.exists() || snap.data().userId !== userId) throw new Error('Not found or unauthorized');
+  await deleteDoc(ref);
+}
+
 // --- Payment update (client-side, after Stripe confirms) ---
 // Updates bill in Firestore after Stripe PaymentIntent succeeds
 // Uses Firestore transaction to prevent race conditions
@@ -878,6 +943,7 @@ export async function getUserPreferences(userId: string): Promise<UserPreference
       return {
         inAppReminders: data.inAppReminders !== false,
         notifyDays,
+        paydaySchedule: data.paydaySchedule ?? undefined,
       };
     }
     return { inAppReminders: true, notifyDays: DEFAULT_NOTIFY_DAYS };
