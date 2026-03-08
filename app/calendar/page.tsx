@@ -6,12 +6,12 @@ import { useRouter } from 'next/navigation';
 import {
   ChevronLeft, ChevronRight, Home, Plus, Settings, CalendarDays,
   DollarSign, TrendingDown, TrendingUp, X, AlertTriangle, Wallet,
-  Loader2, CheckCircle, PlusCircle, Trash2
+  Loader2, CheckCircle, PlusCircle, Trash2, Pencil, Save
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import {
   fetchBills, getUserPreferences, setUserPreferences, markBillFullyPaid,
-  addIncomeEntry, getIncomeForMonth, deleteIncomeEntry,
+  addIncomeEntry, getIncomeForMonth, updateIncomeEntry, deleteIncomeEntry,
   Bill, PaydaySchedule, IncomeEntry,
 } from '../lib/firebase';
 import toast from 'react-hot-toast';
@@ -94,6 +94,9 @@ export default function CalendarPage() {
   const [addIncomeForm, setAddIncomeForm] = useState({ amount: '', description: '', frequency: 'once' as IncomeEntry['frequency'] });
   const [savingEntry,   setSavingEntry]   = useState(false);
   const [deletingEntry, setDeletingEntry] = useState<Set<string>>(new Set());
+  const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({ amount: '', description: '', frequency: 'once' as IncomeEntry['frequency'] });
+  const [savingEdit, setSavingEdit] = useState(false);
 
   // Auth guard
   useEffect(() => {
@@ -275,6 +278,41 @@ export default function CalendarPage() {
     }
   };
 
+  const startEditIncome = (entry: IncomeEntry) => {
+    setEditingEntryId(entry.id ?? null);
+    setEditForm({
+      amount: String(entry.amount),
+      description: entry.description ?? '',
+      frequency: entry.frequency,
+    });
+  };
+
+  const handleUpdateIncome = async (entry: IncomeEntry) => {
+    if (!user || !entry.id || savingEdit) return;
+    const amount = parseFloat(editForm.amount);
+    if (!amount || amount <= 0) { toast.error('Enter a valid amount'); return; }
+    setSavingEdit(true);
+    try {
+      await updateIncomeEntry(user.uid, entry.id, {
+        amount,
+        description: editForm.description,
+        frequency: editForm.frequency,
+      });
+      setIncomes(prev => prev.map(e =>
+        e.id === entry.id
+          ? { ...e, amount, description: editForm.description, frequency: editForm.frequency }
+          : e
+      ));
+      setEditingEntryId(null);
+      toast.success('Income updated');
+    } catch (e) {
+      console.error('[calendar] update income error:', e);
+      toast.error('Failed to update income');
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
   const handleDeleteIncome = async (entry: IncomeEntry) => {
     if (!user || !entry.id || deletingEntry.has(entry.id)) return;
     const entryId = entry.id;
@@ -384,6 +422,7 @@ export default function CalendarPage() {
                   onClick={() => {
                     setSelectedDay(isSelected ? null : day);
                     setShowAddIncome(false);
+                    setEditingEntryId(null);
                     setAddIncomeForm({ amount: '', description: '', frequency: 'once' });
                   }}
                   className={`
@@ -494,7 +533,7 @@ export default function CalendarPage() {
 
       {/* ── Day detail bottom sheet ── */}
       {selectedDay !== null && (
-        <div className="fixed inset-0 z-50 flex items-end" onClick={() => { setSelectedDay(null); setShowAddIncome(false); }}>
+        <div className="fixed inset-0 z-50 flex items-end" onClick={() => { setSelectedDay(null); setShowAddIncome(false); setEditingEntryId(null); }}>
           <div
             className="w-full max-w-md mx-auto bg-slate-800 border border-slate-700 rounded-t-3xl p-5 pb-10 shadow-2xl max-h-[85vh] overflow-y-auto"
             onClick={e => e.stopPropagation()}
@@ -503,7 +542,7 @@ export default function CalendarPage() {
 
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-white font-bold text-lg">{MONTHS[currentMonth]} {selectedDay}</h3>
-              <button onClick={() => { setSelectedDay(null); setShowAddIncome(false); }} className="text-slate-400 hover:text-white p-1">
+              <button onClick={() => { setSelectedDay(null); setShowAddIncome(false); setEditingEntryId(null); }} className="text-slate-400 hover:text-white p-1">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -521,31 +560,97 @@ export default function CalendarPage() {
             {/* Individual income entries */}
             {selectedIncomes.length > 0 && (
               <div className="space-y-2 mb-3">
-                {selectedIncomes.map(entry => (
-                  <div key={entry.id} className="flex items-center justify-between bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-4 py-3">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-emerald-300 text-sm font-medium">
-                        +${entry.amount.toLocaleString('en-CA', { minimumFractionDigits: 2 })}
-                        {entry.frequency !== 'once' && (
-                          <span className="text-xs text-emerald-500 ml-2 capitalize">({entry.frequency})</span>
+                {selectedIncomes.map(entry => {
+                  const isEditing = editingEntryId === entry.id;
+                  const isDeleting = entry.id ? deletingEntry.has(entry.id) : false;
+
+                  if (isEditing) {
+                    return (
+                      <div key={entry.id} className="bg-teal-500/10 border border-teal-500/30 rounded-xl p-3 space-y-2">
+                        <div className="flex gap-2">
+                          <input
+                            type="number" min="0.01" step="0.01"
+                            value={editForm.amount}
+                            onChange={e => setEditForm(f => ({ ...f, amount: e.target.value }))}
+                            className="flex-1 bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                            placeholder="Amount ($)"
+                            autoFocus
+                          />
+                          <select
+                            value={editForm.frequency}
+                            onChange={e => setEditForm(f => ({ ...f, frequency: e.target.value as IncomeEntry['frequency'] }))}
+                            className="bg-slate-700 border border-slate-600 text-white rounded-lg px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-teal-500"
+                          >
+                            <option value="once">Once</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="biweekly">Bi-weekly</option>
+                            <option value="monthly">Monthly</option>
+                            <option value="yearly">Yearly</option>
+                          </select>
+                        </div>
+                        <input
+                          type="text"
+                          value={editForm.description}
+                          onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))}
+                          className="w-full bg-slate-700 border border-slate-600 text-white placeholder-slate-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                          placeholder="Description (optional)"
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleUpdateIncome(entry)}
+                            disabled={savingEdit || !editForm.amount}
+                            className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold bg-teal-500/20 text-teal-400 border border-teal-500/40 rounded-lg py-2 hover:bg-teal-500/30 disabled:opacity-50 transition-colors"
+                          >
+                            {savingEdit ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                            {savingEdit ? 'Saving…' : 'Save'}
+                          </button>
+                          <button
+                            onClick={() => setEditingEntryId(null)}
+                            className="px-3 py-2 text-xs text-slate-400 bg-slate-700/60 hover:bg-slate-700 rounded-lg transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div key={entry.id} className="flex items-center justify-between bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-4 py-3">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-emerald-300 text-sm font-medium">
+                          +${entry.amount.toLocaleString('en-CA', { minimumFractionDigits: 2 })}
+                          {entry.frequency !== 'once' && (
+                            <span className="text-xs text-emerald-500 ml-2 capitalize">({entry.frequency})</span>
+                          )}
+                        </p>
+                        {entry.description && (
+                          <p className="text-xs text-slate-400 truncate">{entry.description}</p>
                         )}
-                      </p>
-                      {entry.description && (
-                        <p className="text-xs text-slate-400 truncate">{entry.description}</p>
-                      )}
+                      </div>
+                      <div className="flex items-center gap-1 ml-2 shrink-0">
+                        <button
+                          onClick={() => startEditIncome(entry)}
+                          className="p-1.5 text-slate-500 hover:text-teal-400 transition-colors"
+                          title="Edit"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteIncome(entry)}
+                          disabled={isDeleting}
+                          className="p-1.5 text-slate-500 hover:text-red-400 disabled:opacity-40 transition-colors"
+                          title="Delete"
+                        >
+                          {isDeleting
+                            ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            : <Trash2 className="w-3.5 h-3.5" />
+                          }
+                        </button>
+                      </div>
                     </div>
-                    <button
-                      onClick={() => handleDeleteIncome(entry)}
-                      disabled={entry.id ? deletingEntry.has(entry.id) : false}
-                      className="ml-3 p-1.5 text-slate-500 hover:text-red-400 disabled:opacity-40 transition-colors"
-                    >
-                      {entry.id && deletingEntry.has(entry.id)
-                        ? <Loader2 className="w-4 h-4 animate-spin" />
-                        : <Trash2 className="w-4 h-4" />
-                      }
-                    </button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
 
@@ -642,6 +747,7 @@ export default function CalendarPage() {
                     <option value="weekly">Weekly</option>
                     <option value="biweekly">Bi-weekly</option>
                     <option value="monthly">Monthly</option>
+                    <option value="yearly">Yearly</option>
                   </select>
                 </div>
                 <input

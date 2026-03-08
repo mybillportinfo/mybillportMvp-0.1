@@ -674,7 +674,7 @@ export interface IncomeEntry {
   amount: number;
   date: string; // YYYY-MM-DD
   description?: string;
-  frequency: 'once' | 'weekly' | 'biweekly' | 'monthly';
+  frequency: 'once' | 'weekly' | 'biweekly' | 'monthly' | 'yearly';
   createdAt?: any;
 }
 
@@ -719,6 +719,25 @@ export async function getIncomeForMonth(
   const monthStart = `${year}-${String(month + 1).padStart(2, '0')}-01`;
   const monthEnd   = `${year}-${String(month + 1).padStart(2, '0')}-31`;
   return all.filter(e => e.date >= monthStart && e.date <= monthEnd);
+}
+
+export async function updateIncomeEntry(
+  userId: string,
+  incomeId: string,
+  updates: Pick<IncomeEntry, 'amount' | 'description' | 'frequency'>
+): Promise<void> {
+  const db = getFirebaseDb();
+  if (!db) throw new Error('Firebase not available');
+  const auth = getFirebaseAuth();
+  if (!auth?.currentUser) throw new Error('User must be authenticated');
+  const ref = doc(db, 'income', incomeId);
+  const snap = await getDoc(ref);
+  if (!snap.exists() || snap.data().userId !== userId) throw new Error('Not found or unauthorized');
+  await updateDoc(ref, {
+    amount: updates.amount,
+    description: updates.description ?? '',
+    frequency: updates.frequency,
+  });
 }
 
 export async function deleteIncomeEntry(userId: string, incomeId: string): Promise<void> {
