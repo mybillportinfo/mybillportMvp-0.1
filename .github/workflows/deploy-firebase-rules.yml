@@ -1,0 +1,19 @@
+name: Deploy Firebase Rules
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'firestore.rules'
+
+jobs:
+  deploy-rules:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy Firestore Security Rules
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}' > /tmp/sa.json
+          npx firebase-tools@latest deploy --only firestore:rules --project mybillport-8e05a
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: /tmp/sa.json
