@@ -7,7 +7,6 @@ import {
   ArrowLeft, Home, Plus, Settings, CalendarDays, Loader2, AlertTriangle,
   ChevronDown, X, Search, Camera, ImageIcon, FileText,
   CheckCircle, AlertCircle, Pencil, Sparkles, Receipt, DollarSign,
-  Mail, RefreshCw, Inbox,
 } from "lucide-react";
 import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
@@ -63,68 +62,13 @@ export default function AddBillPage() {
   const photoInputRef = useRef<HTMLInputElement>(null);
   const pdfInputRef = useRef<HTMLInputElement>(null);
 
-  const [gmailConnected, setGmailConnected] = useState(false);
-  const [gmailEmail, setGmailEmail] = useState('');
-  const [gmailLoading, setGmailLoading] = useState(false);
-  const [gmailSyncing, setGmailSyncing] = useState(false);
-  const [gmailMessage, setGmailMessage] = useState<string | null>(null);
-  const [gmailError, setGmailError] = useState<string | null>(null);
-  // If the OAuth callback just redirected here, trust the URL param immediately
-  // so the status API call can't race and override it to false.
-  const justConnectedRef = useRef(false);
-
   useEffect(() => {
     if (!authLoading && !user) router.push('/login');
   }, [user, authLoading, router]);
 
   useEffect(() => {
-    if (user) {
-      loadBillCount();
-      // If we just finished OAuth, skip the status check for 3 s to avoid a
-      // race where Firestore hasn't propagated the new tokens yet and returns
-      // connected: false, overriding the just-set connected: true state.
-      if (justConnectedRef.current) return;
-      user.getIdToken().then(token => {
-        fetch('/api/gmail/status', { headers: { Authorization: `Bearer ${token}` } })
-          .then(r => r.json())
-          .then(data => {
-            // Only update state if OAuth didn't just set it (avoids flash)
-            if (!justConnectedRef.current) {
-              setGmailConnected(data.connected || false);
-              setGmailEmail(data.email || '');
-            }
-          })
-          .catch(() => {});
-      });
-    }
+    if (user) loadBillCount();
   }, [user]);
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const gmailStatus = params.get('gmail');
-    if (gmailStatus === 'connected') {
-      justConnectedRef.current = true;
-      setGmailConnected(true);
-      setGmailMessage('Gmail connected! Click "Scan for Bills" to import your bills.');
-      window.history.replaceState({}, '', '/add-bill');
-      // After 2 s, do a real status check (Firestore should have the tokens by now)
-      // and clear the justConnected flag so future status checks work normally.
-      setTimeout(() => {
-        justConnectedRef.current = false;
-      }, 2000);
-    } else if (gmailStatus === 'error') {
-      const rawReason = params.get('reason') || 'Unknown error';
-      const reason = rawReason === 'no_refresh_token'
-        ? 'Connection incomplete — please tap Connect Gmail and try again.'
-        : rawReason === 'invalid_state'
-        ? 'Session expired. Please tap Connect Gmail and try again.'
-        : rawReason === 'no_code'
-        ? 'Authorization was cancelled. Please try again.'
-        : rawReason;
-      setGmailError(`Failed to connect Gmail: ${reason}`);
-      window.history.replaceState({}, '', '/add-bill');
-    }
-  }, []);
 
   const loadBillCount = async () => {
     if (!user) return;
@@ -135,50 +79,6 @@ export default function AddBillPage() {
       setExistingBills(bills);
     } catch { setBillCount(null); }
     finally { setLoadingCount(false); }
-  };
-
-  const handleConnectGmail = async () => {
-    if (!user) return;
-    setGmailLoading(true);
-    setGmailError(null);
-    try {
-      const token = await user.getIdToken();
-      const res = await fetch('/api/gmail/auth', { headers: { Authorization: `Bearer ${token}` } });
-      const data = await res.json();
-      if (data.authUrl) window.location.href = data.authUrl;
-      else setGmailError(data.error || 'Failed to get authorization URL');
-    } catch { setGmailError('Failed to connect Gmail'); }
-    finally { setGmailLoading(false); }
-  };
-
-  const handleSyncGmail = async () => {
-    if (!user) return;
-    setGmailSyncing(true);
-    setGmailError(null);
-    setGmailMessage(null);
-    try {
-      const token = await user.getIdToken();
-      const res = await fetch('/api/gmail/sync', { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
-      let data: any = {};
-      try { data = await res.json(); } catch { /* non-JSON body */ }
-
-      if (!res.ok || data.error) {
-        // Surface a helpful error — expired tokens get a reconnect prompt
-        const errMsg: string = data.error || `Scan failed (${res.status})`;
-        const isExpired = res.status === 401 || errMsg.toLowerCase().includes('expired') || errMsg.toLowerCase().includes('reconnect');
-        setGmailError(isExpired
-          ? 'Gmail access expired. Tap "Reconnect Gmail" below to refresh your connection, then scan again.'
-          : errMsg
-        );
-        if (isExpired) setGmailConnected(false);
-      } else {
-        setGmailMessage(data.message || `Found ${data.drafted ?? 0} new bills.`);
-        // Redirect to Pending Bills if new bills were found OR if there are already pending bills waiting
-        const hasPending = (data.drafted ?? 0) > 0 || (data.skippedAlreadyPending ?? 0) > 0 || (data.pendingCount ?? 0) > 0;
-        if (hasPending) setTimeout(() => router.push('/pending-bills'), 2000);
-      }
-    } catch { setGmailError('Could not reach the server. Check your connection and try again.'); }
-    finally { setGmailSyncing(false); }
   };
 
   const selectedCategory = useMemo(() => getCategoryByValue(category), [category]);
@@ -538,80 +438,43 @@ export default function AddBillPage() {
               </div>
             </button>
 
-            {/* Gmail Bill Scanner */}
+            {/* AI Scan & Upload */}
             <div className="bg-white rounded-xl p-5 space-y-3">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Mail className="w-6 h-6 text-red-500" />
+                <div className="w-12 h-12 bg-teal-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Sparkles className="w-6 h-6 text-teal-600" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="font-semibold text-slate-800">Gmail Bill Scanner</p>
-                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-700 border border-amber-200">BETA</span>
-                  </div>
-                  <p className="text-sm text-slate-500 truncate">
-                    {gmailConnected ? `Connected: ${gmailEmail}` : 'Auto-import bills from your inbox'}
-                  </p>
+                <div className="flex-1">
+                  <p className="font-semibold text-slate-800">Scan or Upload Bill</p>
+                  <p className="text-sm text-slate-500">AI reads your bill automatically</p>
                 </div>
-                {gmailConnected && (
-                  <span className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0" title="Connected" />
-                )}
               </div>
-
-              {gmailMessage && (
-                <div className="bg-teal-50 border border-teal-200 text-teal-700 px-3 py-2 rounded-lg text-xs flex items-center gap-2">
-                  <CheckCircle className="w-3.5 h-3.5 flex-shrink-0" />
-                  {gmailMessage}
-                </div>
-              )}
-              {gmailError && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg text-xs flex items-center gap-2">
-                  <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
-                  {gmailError}
-                </div>
-              )}
-
-              {gmailConnected ? (
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleSyncGmail}
-                    disabled={gmailSyncing}
-                    className="flex-1 py-2.5 bg-teal-500 text-white rounded-lg font-medium text-sm hover:bg-teal-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                  >
-                    {gmailSyncing ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-                    {gmailSyncing ? 'Scanning...' : 'Scan for Bills'}
-                  </button>
-                  <Link
-                    href="/pending-bills"
-                    className="py-2.5 px-4 bg-slate-100 text-slate-700 rounded-lg font-medium text-sm hover:bg-slate-200 transition-colors flex items-center gap-2"
-                  >
-                    <Inbox className="w-4 h-4" />
-                    Review
-                  </Link>
-                </div>
-              ) : (
+              <div className="grid grid-cols-3 gap-2">
                 <button
-                  onClick={handleConnectGmail}
-                  disabled={gmailLoading}
-                  className="w-full py-2.5 bg-red-500 text-white rounded-lg font-medium text-sm hover:bg-red-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  onClick={() => cameraInputRef.current?.click()}
+                  className="flex flex-col items-center gap-1.5 py-3 bg-slate-50 hover:bg-teal-50 border border-slate-200 hover:border-teal-300 rounded-xl transition-colors"
                 >
-                  {gmailLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
-                  {gmailLoading ? 'Connecting...' : gmailError ? 'Reconnect Gmail' : 'Connect Gmail'}
+                  <Camera className="w-5 h-5 text-teal-600" />
+                  <span className="text-xs font-medium text-slate-700">Camera</span>
                 </button>
-              )}
-            </div>
-
-            <div className="w-full bg-slate-100 rounded-xl p-5 flex items-center gap-4 opacity-60 cursor-not-allowed">
-              <div className="w-12 h-12 bg-slate-200 rounded-xl flex items-center justify-center flex-shrink-0">
-                <Camera className="w-6 h-6 text-slate-400" />
+                <button
+                  onClick={() => photoInputRef.current?.click()}
+                  className="flex flex-col items-center gap-1.5 py-3 bg-slate-50 hover:bg-teal-50 border border-slate-200 hover:border-teal-300 rounded-xl transition-colors"
+                >
+                  <ImageIcon className="w-5 h-5 text-teal-600" />
+                  <span className="text-xs font-medium text-slate-700">Photo</span>
+                </button>
+                <button
+                  onClick={() => pdfInputRef.current?.click()}
+                  className="flex flex-col items-center gap-1.5 py-3 bg-slate-50 hover:bg-teal-50 border border-slate-200 hover:border-teal-300 rounded-xl transition-colors"
+                >
+                  <FileText className="w-5 h-5 text-teal-600" />
+                  <span className="text-xs font-medium text-slate-700">PDF</span>
+                </button>
               </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <p className="font-semibold text-slate-500">Scan or Upload Bill</p>
-                </div>
-                <p className="text-sm text-slate-400">AI-powered bill scanning</p>
-              </div>
-              <span className="text-xs bg-slate-200 text-slate-500 px-3 py-1 rounded-full font-medium whitespace-nowrap">Coming Soon</span>
+              <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => handleInputChange(e, 'camera')} />
+              <input ref={photoInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => handleInputChange(e, 'photo')} />
+              <input ref={pdfInputRef} type="file" accept="application/pdf" className="hidden" onChange={(e) => handleInputChange(e, 'pdf')} />
             </div>
           </div>
         )}
