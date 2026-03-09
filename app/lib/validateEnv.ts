@@ -1,7 +1,5 @@
 const REQUIRED_SERVER_VARS: Array<{ key: string; description: string }> = [
   { key: 'FIREBASE_SERVICE_ACCOUNT_KEY', description: 'Firebase Admin SDK service account JSON' },
-  { key: 'GMAIL_CLIENT_ID', description: 'Google OAuth Client ID for Gmail' },
-  { key: 'GMAIL_CLIENT_SECRET', description: 'Google OAuth Client Secret for Gmail' },
   { key: 'APP_URL', description: 'Production app URL (e.g. https://mybillport.com)' },
 ];
 
