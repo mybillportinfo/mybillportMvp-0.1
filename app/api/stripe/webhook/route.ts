@@ -37,11 +37,13 @@ export async function POST(req: NextRequest) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
         if (session.mode !== 'subscription') break;
-        const uid = session.metadata?.firebaseUid ||
-          session.subscription_data?.metadata?.firebaseUid ||
-          (session.customer ? await getUidFromCustomer(session.customer as string) : null);
-        if (!uid) break;
+        let uid = session.metadata?.firebaseUid ?? null;
+        if (!uid && session.customer) {
+          uid = await getUidFromCustomer(session.customer as string);
+        }
         const sub = await stripe.subscriptions.retrieve(session.subscription as string);
+        if (!uid) uid = sub.metadata?.firebaseUid ?? null;
+        if (!uid) break;
         await db.collection('userProfiles').doc(uid).set({
           subscription: {
             status: 'active',
