@@ -220,7 +220,7 @@ export default function LandingPage() {
                 <p className="text-xs text-slate-500 mt-1">Coming soon during pilot</p>
               </div>
               <ul className="space-y-2.5 text-sm text-slate-300">
-                {["Everything in Starter", "Unlimited bills", "Gmail auto-import", "Price spike alerts", "Recurring bill detection", "Priority support"].map((i) => (
+                {["Everything in Starter", "Unlimited bills", "AI bill scanning", "Price spike alerts", "Recurring bill detection", "Priority support"].map((i) => (
                   <li key={i} className="flex items-center gap-2.5">
                     <CheckCircle className="w-4 h-4 text-teal-400 flex-shrink-0" />
                     {i}
