@@ -1449,6 +1449,100 @@ export interface FeedbackData {
   createdAt: Date;
 }
 
+// ─── Subscription helpers ────────────────────────────────────────────────────
+
+export interface UserSubscription {
+  status: 'free' | 'active' | 'canceled' | 'inactive' | 'past_due';
+  stripeSubscriptionId?: string;
+  stripePriceId?: string;
+  currentPeriodEnd?: number;
+}
+
+export async function getUserSubscription(userId: string): Promise<UserSubscription> {
+  const db = getFirebaseDb();
+  if (!db) return { status: 'free' };
+  try {
+    const snap = await getDoc(doc(db, 'userProfiles', userId));
+    if (!snap.exists()) return { status: 'free' };
+    const sub = snap.data()?.subscription as UserSubscription | undefined;
+    if (!sub || !sub.status) return { status: 'free' };
+    if (sub.status === 'active' && sub.currentPeriodEnd) {
+      const now = Math.floor(Date.now() / 1000);
+      if (sub.currentPeriodEnd < now) return { ...sub, status: 'canceled' };
+    }
+    return sub;
+  } catch { return { status: 'free' }; }
+}
+
+export function isPremiumUser(subscription: UserSubscription): boolean {
+  return subscription.status === 'active';
+}
+
+// ─── Email alias helpers ──────────────────────────────────────────────────────
+
+export async function getEmailAlias(userId: string): Promise<string | null> {
+  const db = getFirebaseDb();
+  if (!db) return null;
+  try {
+    const snap = await getDoc(doc(db, 'emailAliases', userId));
+    if (snap.exists()) return snap.data()?.aliasTag || null;
+    const aliasTag = userId.slice(0, 8).toLowerCase().replace(/[^a-z0-9]/g, 'x');
+    await setDoc(doc(db, 'emailAliases', userId), {
+      userId,
+      aliasTag,
+      email: `bills+${aliasTag}@mybillport.com`,
+      createdAt: serverTimestamp(),
+    });
+    return aliasTag;
+  } catch { return null; }
+}
+
+// ─── Pending bills helpers ────────────────────────────────────────────────────
+
+export interface PendingBill {
+  id?: string;
+  userId: string;
+  source: string;
+  emailSubject?: string;
+  vendor: string | null;
+  amount: number | null;
+  dueDate: string | null;
+  accountNumber: string | null;
+  category: string | null;
+  confidence: number;
+  matchedProviderId?: string | null;
+  matchedProviderName?: string | null;
+  status: 'pending' | 'approved' | 'dismissed';
+  createdAt?: any;
+}
+
+export async function getPendingBills(userId: string): Promise<PendingBill[]> {
+  const db = getFirebaseDb();
+  if (!db) return [];
+  try {
+    const snap = await getDocs(
+      query(
+        collection(db, 'pendingBills', userId, 'items'),
+        where('status', '==', 'pending'),
+        orderBy('createdAt', 'desc')
+      )
+    );
+    return snap.docs.map(d => ({ id: d.id, ...d.data() } as PendingBill));
+  } catch { return []; }
+}
+
+export async function approvePendingBill(userId: string, billId: string): Promise<void> {
+  const db = getFirebaseDb();
+  if (!db) return;
+  await updateDoc(doc(db, 'pendingBills', userId, 'items', billId), { status: 'approved' });
+}
+
+export async function dismissPendingBill(userId: string, billId: string): Promise<void> {
+  const db = getFirebaseDb();
+  if (!db) return;
+  await updateDoc(doc(db, 'pendingBills', userId, 'items', billId), { status: 'dismissed' });
+}
+
 export async function submitFeedback(
   userId: string,
   userEmail: string,
