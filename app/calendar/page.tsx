@@ -123,14 +123,16 @@ export default function CalendarPage() {
     if (!user) return;
     setLoading(true);
     try {
-      const [allBills, monthIncomes] = await Promise.all([
-        fetchBills(user.uid),
-        getIncomeForMonth(user.uid, year, month),
-      ]);
+      // Run independently so an income Firestore error never blocks bill display
+      const allBills = await fetchBills(user.uid);
+      console.log('[calendar] bills fetched:', allBills.length, allBills.map(b => ({ id: b.id, due: b.dueDate, status: b.status })));
       setBills(allBills);
-      setIncomes(monthIncomes);
+
+      getIncomeForMonth(user.uid, year, month)
+        .then(entries => setIncomes(entries))
+        .catch(e => console.warn('[calendar] income fetch failed (check Firestore rules):', e));
     } catch (e) {
-      console.error('[calendar] load error:', e);
+      console.error('[calendar] bill load error:', e);
     } finally {
       setLoading(false);
     }
@@ -153,21 +155,23 @@ export default function CalendarPage() {
     setCurrentYear(y); setCurrentMonth(m); setSelectedDay(null);
   };
 
-  const { calendarDays, billsByDay, paydaysInMonth, incomeByDay } = useMemo(() => {
+  const { calendarDays, billsByDay, overdueBills, paydaysInMonth, incomeByDay } = useMemo(() => {
     const firstDay    = new Date(currentYear, currentMonth, 1).getDay();
     const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
     const calendarDays: (number | null)[] = [];
     for (let i = 0; i < firstDay; i++) calendarDays.push(null);
     for (let d = 1; d <= daysInMonth; d++) calendarDays.push(d);
 
+    const monthStart  = new Date(currentYear, currentMonth, 1);
     const activeBills = bills.filter(b => b.status !== 'paid');
     const billsByDay  = groupBillsByDay(activeBills, currentYear, currentMonth);
+    const overdueBills = activeBills.filter(b => new Date(b.dueDate) < monthStart);
     const paydaysInMonth = paydaySchedule
       ? getPaydaysInMonth(paydaySchedule, currentYear, currentMonth)
       : [];
     const incomeByDay = groupIncomeByDay(incomes);
 
-    return { calendarDays, billsByDay, paydaysInMonth, incomeByDay };
+    return { calendarDays, billsByDay, overdueBills, paydaysInMonth, incomeByDay };
   }, [currentYear, currentMonth, bills, paydaySchedule, incomes]);
 
   const paydayDaySet = useMemo(
@@ -526,8 +530,37 @@ export default function CalendarPage() {
           </div>
         </div>
 
-        {!loading && billsByDay.size === 0 && (
+        {!loading && billsByDay.size === 0 && overdueBills.length === 0 && (
           <p className="text-center text-slate-500 text-sm py-2">No unpaid bills this month. Tap any day to add income.</p>
+        )}
+
+        {/* Overdue bills from previous months */}
+        {!loading && overdueBills.length > 0 && (
+          <div className="mt-4 px-1">
+            <h3 className="text-xs font-semibold text-red-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+              <span>⚠</span> Overdue Bills
+            </h3>
+            <div className="space-y-2">
+              {overdueBills.map(bill => (
+                <div key={bill.id} className="flex items-center justify-between bg-slate-800/60 border border-red-500/20 rounded-xl px-4 py-3">
+                  <div>
+                    <p className="text-sm font-medium text-white">{bill.companyName}</p>
+                    <p className="text-xs text-red-400">
+                      Due {new Date(bill.dueDate).toLocaleDateString('en-CA', { month: 'short', day: 'numeric' })}
+                      {bill.paidAmount > 0 ? ` · Paid $${bill.paidAmount.toFixed(2)} of` : ' ·'} ${bill.totalAmount.toFixed(2)}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleMarkAsPaid(bill)}
+                    disabled={markingPaid.has(bill.id!)}
+                    className="text-xs bg-teal-600 hover:bg-teal-500 text-white px-3 py-1.5 rounded-lg disabled:opacity-50 transition-colors"
+                  >
+                    {markingPaid.has(bill.id!) ? '…' : 'Mark Paid'}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
       </div>
 
