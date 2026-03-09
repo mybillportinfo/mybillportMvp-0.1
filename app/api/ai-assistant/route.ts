@@ -272,8 +272,8 @@ export async function POST(req: NextRequest) {
 
     const updatedHistory: Anthropic.MessageParam[] = [
       ...history,
-      { role: 'user', content: message },
-      { role: 'assistant', content: text },
+      { role: 'user' as const, content: message },
+      { role: 'assistant' as const, content: text },
     ].slice(-MAX_MESSAGES);
 
     return NextResponse.json({ reply: text, history: updatedHistory });
