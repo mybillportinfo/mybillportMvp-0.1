@@ -11,7 +11,7 @@ import {
 import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
 import {
-  addBill, fetchBills, createBillAddedNotification,
+  addBill, fetchBills, createBillAddedNotification, getUserSubscription, isPremiumUser,
   checkForRecurringProvider, confirmRecurring, Bill, RecurringFrequency,
   getAppCheckToken,
 } from '../lib/firebase';
@@ -53,6 +53,7 @@ export default function AddBillPage() {
   const [success, setSuccess] = useState(false);
   const [billCount, setBillCount] = useState<number | null>(null);
   const [loadingCount, setLoadingCount] = useState(true);
+  const [isPremium, setIsPremium] = useState(false);
   const [existingBills, setExistingBills] = useState<Bill[]>([]);
   const [recurringModal, setRecurringModal] = useState<{
     billId: string; billerName: string; frequency: RecurringFrequency; matchCount: number;
@@ -67,7 +68,10 @@ export default function AddBillPage() {
   }, [user, authLoading, router]);
 
   useEffect(() => {
-    if (user) loadBillCount();
+    if (user) {
+      loadBillCount();
+      getUserSubscription(user.uid).then(sub => setIsPremium(isPremiumUser(sub))).catch(() => {});
+    }
   }, [user]);
 
   const loadBillCount = async () => {
@@ -101,7 +105,7 @@ export default function AddBillPage() {
   const handleCategoryChange = (val: string) => { setCategory(val); setSubcategory(''); setCompanyName(''); setMetadataValues({}); };
   const handleSubcategoryChange = (val: string) => { setSubcategory(val); setCompanyName(''); setMetadataValues({}); };
   const handleMetadataChange = (key: string, value: string) => { setMetadataValues(prev => ({ ...prev, [key]: value })); };
-  const isAtLimit = billCount !== null && billCount >= FREE_PLAN_LIMIT;
+  const isAtLimit = !isPremium && billCount !== null && billCount >= FREE_PLAN_LIMIT;
 
   const handleFileUpload = async (file: File, uploadMethod: string) => {
     if (isExtracting) return;
