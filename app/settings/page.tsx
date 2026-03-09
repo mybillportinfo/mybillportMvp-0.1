@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Home, Plus, Settings, CalendarDays, User, Bell, Shield, Lock, LogOut, ChevronRight, Loader2, X, Eye, EyeOff, MessageSquare, Receipt, DollarSign, Check, AlertTriangle, Camera, Trash2, Mail, Smartphone } from "lucide-react";
+import { ArrowLeft, Home, Plus, Settings, CalendarDays, User, Bell, Shield, Lock, LogOut, ChevronRight, Loader2, X, Eye, EyeOff, MessageSquare, Receipt, DollarSign, Check, AlertTriangle, Camera, Trash2, Mail, Smartphone, CreditCard, Forward, Copy, CheckCheck, Sparkles, Inbox } from "lucide-react";
 import { usePushNotifications } from '../hooks/usePushNotifications';
 import { useAuth } from '../contexts/AuthContext';
 import {
@@ -12,7 +12,8 @@ import {
   getUserProfile, saveUserProfile,
   updateUserDisplayName, updateUserProfilePhoto,
   updateUserEmail, deleteUserAccount,
-  type UserProfile,
+  getUserSubscription, getEmailAlias,
+  type UserProfile, type UserSubscription,
 } from '../lib/firebase';
 
 type SettingsModal = 'notifications' | 'privacy' | 'security' | 'profile' | null;
@@ -27,6 +28,13 @@ export default function SettingsPage() {
   const [savingPrefs, setSavingPrefs] = useState(false);
   const [prefsSaved, setPrefsSaved] = useState(false);
   const [loadingPrefs, setLoadingPrefs] = useState(true);
+
+  const [subscription, setSubscription] = useState<UserSubscription>({ status: 'free' });
+  const [subscriptionLoading, setSubscriptionLoading] = useState(false);
+  const [billingLoading, setBillingLoading] = useState(false);
+
+  const [emailAlias, setEmailAlias] = useState<string | null>(null);
+  const [aliasCopied, setAliasCopied] = useState(false);
 
   const { supported: pushSupported, permission: pushPermission, isSubscribed: pushSubscribed, isLoading: pushLoading, error: pushError, subscribe: subscribePush, unsubscribe: unsubscribePush } = usePushNotifications(user?.uid || null);
 
@@ -72,6 +80,8 @@ export default function SettingsPage() {
         setNewEmail(user.email || '');
       });
 
+      getUserSubscription(user.uid).then(setSubscription).catch(() => {});
+      getEmailAlias(user.uid).then(setEmailAlias).catch(() => {});
     }
   }, [user]);
 
@@ -215,6 +225,48 @@ export default function SettingsPage() {
     } catch {}
   };
 
+  const handleUpgrade = async () => {
+    if (!user) return;
+    setBillingLoading(true);
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (data.url) window.location.href = data.url;
+      else alert(data.error || 'Failed to start checkout');
+    } catch { alert('Could not connect to billing. Please try again.'); }
+    finally { setBillingLoading(false); }
+  };
+
+  const handleManageBilling = async () => {
+    if (!user) return;
+    setBillingLoading(true);
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch('/api/stripe/portal', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (data.url) window.location.href = data.url;
+      else alert(data.error || 'Failed to open billing portal');
+    } catch { alert('Could not open billing portal. Please try again.'); }
+    finally { setBillingLoading(false); }
+  };
+
+  const handleCopyAlias = () => {
+    if (!emailAlias) return;
+    const email = `bills+${emailAlias}@mybillport.com`;
+    navigator.clipboard.writeText(email).catch(() => {});
+    setAliasCopied(true);
+    setTimeout(() => setAliasCopied(false), 2000);
+  };
+
+  const isPremium = subscription.status === 'active';
+
   if (loading || !user) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 flex items-center justify-center">
@@ -269,16 +321,82 @@ export default function SettingsPage() {
           </div>
         </button>
 
-        <div className="bg-white rounded-xl p-4">
+        {/* Plan & Billing */}
+        <div className="bg-white rounded-xl p-4 space-y-3">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="font-semibold text-slate-800">Free Plan</p>
-              <p className="text-sm text-slate-500">Up to 5 bills</p>
+            <div className="flex items-center gap-3">
+              <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${isPremium ? 'bg-amber-100' : 'bg-slate-100'}`}>
+                <CreditCard className={`w-5 h-5 ${isPremium ? 'text-amber-600' : 'text-slate-500'}`} />
+              </div>
+              <div>
+                <p className="font-semibold text-slate-800">{isPremium ? 'Premium Plan' : 'Free Plan'}</p>
+                <p className="text-xs text-slate-500">
+                  {isPremium
+                    ? subscription.currentPeriodEnd
+                      ? `Renews ${new Date(subscription.currentPeriodEnd * 1000).toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' })}`
+                      : 'Active subscription'
+                    : 'Up to 5 bills'}
+                </p>
+              </div>
             </div>
-            <span className="px-3 py-1 bg-teal-100 text-teal-700 text-sm font-medium rounded-full">
-              Active
+            <span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${isPremium ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'}`}>
+              {isPremium ? '✦ Premium' : 'Free'}
             </span>
           </div>
+          {!isPremium && (
+            <button
+              onClick={handleUpgrade}
+              disabled={billingLoading}
+              className="w-full py-2.5 bg-gradient-to-r from-teal-600 to-teal-500 text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity disabled:opacity-60 flex items-center justify-center gap-2"
+            >
+              {billingLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+              Upgrade to Premium — $7/month
+            </button>
+          )}
+          {isPremium && (
+            <button
+              onClick={handleManageBilling}
+              disabled={billingLoading}
+              className="w-full py-2.5 bg-slate-100 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+            >
+              {billingLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
+              Manage Subscription
+            </button>
+          )}
+        </div>
+
+        {/* Email Forwarding */}
+        <div className="bg-white rounded-xl p-4 space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-teal-50 rounded-lg flex items-center justify-center">
+              <Forward className="w-5 h-5 text-teal-600" />
+            </div>
+            <div className="flex-1">
+              <p className="font-semibold text-slate-800">Bill Forwarding Email</p>
+              <p className="text-xs text-slate-500">Forward bills here for automatic detection</p>
+            </div>
+            <Link href="/pending-bills" className="text-xs text-teal-600 font-medium hover:underline flex items-center gap-1">
+              <Inbox className="w-3.5 h-3.5" />
+              Inbox
+            </Link>
+          </div>
+          {emailAlias ? (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
+                <span className="flex-1 text-sm text-slate-700 font-mono truncate">bills+{emailAlias}@mybillport.com</span>
+                <button onClick={handleCopyAlias} className="text-teal-600 hover:text-teal-700 transition-colors flex-shrink-0">
+                  {aliasCopied ? <CheckCheck className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                </button>
+              </div>
+              <p className="text-xs text-slate-400">
+                Forward bill emails to this address or set up auto-forwarding in Gmail / Outlook. Bills will appear in your inbox for review.
+              </p>
+            </div>
+          ) : (
+            <div className="h-8 flex items-center">
+              <Loader2 className="w-4 h-4 text-teal-500 animate-spin" />
+            </div>
+          )}
         </div>
 
         <div className="bg-white rounded-xl overflow-hidden divide-y divide-slate-100">
