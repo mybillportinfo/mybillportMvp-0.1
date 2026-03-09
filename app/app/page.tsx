@@ -11,6 +11,7 @@ import { CATEGORIES, getCategoryByValue, getSubcategory } from '../lib/categorie
 import { trackBillPaid, trackBillDeleted, trackBillEdited, trackPaymentRedirect } from '../lib/analyticsService';
 import { detectSpike, calculateAnnualProjections, calculateSavingsScore, SpikeInfo, AnnualProjection, SavingsScore } from '../lib/billAnalytics';
 import { findSavingsOpportunities } from '../lib/providerOffers';
+import AIChatWidget from '../components/AIChatWidget';
 
 const FREE_PLAN_LIMIT = 5;
 const BILLS_PER_PAGE = 10;
@@ -1485,6 +1486,8 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
+      <AIChatWidget />
 
       {/* Bottom nav */}
       <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur border-t border-slate-700 py-3 px-4">
