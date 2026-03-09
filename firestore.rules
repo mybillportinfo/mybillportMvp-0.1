@@ -68,21 +68,8 @@ service cloud.firestore {
       allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
     }
 
-    // Pending bills from Gmail scanner — per-user read/write, no client deletes
-    match /pendingBills/{billId} {
-      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-      allow update: if request.auth != null && resource.data.userId == request.auth.uid;
-      allow delete: if false;
-    }
-
     // Push subscriptions — server Admin SDK only, zero client access
     match /pushSubscriptions/{userId} {
-      allow read, write: if false;
-    }
-
-    // Gmail OAuth tokens — highly sensitive, server Admin SDK only, zero client access
-    match /gmailTokens/{userId} {
       allow read, write: if false;
     }
 
