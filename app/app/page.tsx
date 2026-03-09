@@ -3,13 +3,14 @@
 import { useEffect, useState } from 'react';
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
-import { Home, Plus, Settings, CalendarDays, Loader2, Trash2, AlertTriangle, Bell, BellOff, DollarSign, CheckCircle, ExternalLink, Check, X, Clock, ChevronDown, ChevronUp, Pencil, Receipt, TrendingUp, TrendingDown, Minus, Sparkles, BarChart3, Target, ArrowUpRight, ArrowDownRight, Smartphone } from "lucide-react";
+import { Home, Plus, Settings, CalendarDays, Loader2, Trash2, AlertTriangle, Bell, BellOff, DollarSign, CheckCircle, ExternalLink, Check, X, Clock, ChevronDown, ChevronUp, Pencil, Receipt, TrendingUp, TrendingDown, Minus, Sparkles, BarChart3, Target, ArrowUpRight, ArrowDownRight, Smartphone, MessageCircle, Zap, Copy, CheckCheck, Inbox } from "lucide-react";
 import { usePushNotifications } from '../hooks/usePushNotifications';
 import { useAuth } from '../contexts/AuthContext';
-import { fetchBills, deleteBill, fetchNotifications, checkAndCreateDueDateNotifications, sortBills, Bill, markBillAsPaid, getPaymentHistory, BillPaymentRecord, PaymentMethod, updateBill, BillingCycle, applyRecurringDetection, persistRecurringFlags, detectRecurringPatterns, dismissAmountAlert, RecurringFrequency, getUserProfile } from '../lib/firebase';
+import { fetchBills, deleteBill, fetchNotifications, checkAndCreateDueDateNotifications, sortBills, Bill, markBillAsPaid, getPaymentHistory, BillPaymentRecord, PaymentMethod, updateBill, BillingCycle, applyRecurringDetection, persistRecurringFlags, detectRecurringPatterns, dismissAmountAlert, RecurringFrequency, getUserProfile, getUserSubscription, isPremiumUser, getPendingBills } from '../lib/firebase';
 import { CATEGORIES, getCategoryByValue, getSubcategory } from '../lib/categories';
 import { trackBillPaid, trackBillDeleted, trackBillEdited, trackPaymentRedirect } from '../lib/analyticsService';
 import { detectSpike, calculateAnnualProjections, calculateSavingsScore, SpikeInfo, AnnualProjection, SavingsScore } from '../lib/billAnalytics';
+import { findSavingsOpportunities } from '../lib/providerOffers';
 
 const FREE_PLAN_LIMIT = 5;
 const BILLS_PER_PAGE = 10;
@@ -48,6 +49,10 @@ export default function Dashboard() {
   const [showInsights, setShowInsights] = useState(false);
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const [insightsModal, setInsightsModal] = useState<{ bill: Bill; loading: boolean; data: any | null; error: string | null } | null>(null);
+  const [negotiateModal, setNegotiateModal] = useState<{ bill: Bill; loading: boolean; script: string | null; error: string | null; copied: boolean } | null>(null);
+  const [isPremium, setIsPremium] = useState(false);
+  const [dismissedOfferIds, setDismissedOfferIds] = useState<Set<string>>(new Set());
+  const [pendingBillCount, setPendingBillCount] = useState(0);
   const { supported: pushSupported, permission: pushPermission, isSubscribed: pushSubscribed, subscribe: subscribePush } = usePushNotifications(user?.uid || null);
 
   // Auto-subscribe on first load — push notifications are ON by default
@@ -72,6 +77,8 @@ export default function Dashboard() {
       }).catch(() => {
         setProfilePhoto(user.photoURL || null);
       });
+      getUserSubscription(user.uid).then(sub => setIsPremium(isPremiumUser(sub))).catch(() => {});
+      getPendingBills(user.uid).then(pb => setPendingBillCount(pb.length)).catch(() => {});
     }
   }, [user]);
 
@@ -113,6 +120,27 @@ export default function Dashboard() {
       setError('Failed to load bills. Please try again.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleNegotiate = async (bill: Bill) => {
+    if (!user || !bill.id) return;
+    setNegotiateModal({ bill, loading: true, script: null, error: null, copied: false });
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch('/api/negotiate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ billId: bill.id }),
+      });
+      const data = await res.json();
+      if (data.script) {
+        setNegotiateModal(prev => prev ? { ...prev, loading: false, script: data.script } : null);
+      } else {
+        setNegotiateModal(prev => prev ? { ...prev, loading: false, error: data.error || 'Failed to generate script' } : null);
+      }
+    } catch {
+      setNegotiateModal(prev => prev ? { ...prev, loading: false, error: 'Network error. Please try again.' } : null);
     }
   };
 
@@ -407,7 +435,13 @@ export default function Dashboard() {
     return "Good evening";
   };
 
-  const isAtLimit = bills.length >= FREE_PLAN_LIMIT;
+  const isAtLimit = !isPremium && bills.length >= FREE_PLAN_LIMIT;
+
+  const savingsOpportunities = findSavingsOpportunities(
+    bills
+      .filter(b => b.status !== 'paid' && b.category)
+      .map(b => ({ id: b.id, companyName: b.companyName, totalAmount: b.totalAmount, category: b.category }))
+  ).filter(op => !dismissedOfferIds.has(op.offer.id)).slice(0, 2);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 pb-24">
@@ -572,11 +606,56 @@ export default function Dashboard() {
         );
       })()}
 
+      {/* Pending bills notification */}
+      {pendingBillCount > 0 && (
+        <div className="px-4 mb-4">
+          <Link href="/pending-bills" className="flex items-center gap-3 bg-teal-500/10 border border-teal-500/30 rounded-xl px-4 py-3 hover:bg-teal-500/15 transition-colors">
+            <Inbox className="w-4 h-4 text-teal-400 flex-shrink-0" />
+            <div className="flex-1">
+              <span className="text-teal-300 font-semibold text-sm">{pendingBillCount} bill{pendingBillCount !== 1 ? 's' : ''} waiting for review</span>
+              <p className="text-teal-400/70 text-xs">Detected from your forwarding email</p>
+            </div>
+            <span className="w-5 h-5 bg-teal-500 rounded-full flex items-center justify-center text-xs text-white font-bold">{pendingBillCount}</span>
+          </Link>
+        </div>
+      )}
+
+      {/* Switch & Save recommendations */}
+      {savingsOpportunities.length > 0 && (
+        <div className="px-4 mb-4 space-y-2">
+          <p className="text-slate-400 text-xs font-medium uppercase tracking-wider">Switch & Save</p>
+          {savingsOpportunities.map(({ bill, offer, monthlySavings }) => (
+            <div key={offer.id} className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 bg-emerald-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Zap className="w-4 h-4 text-emerald-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-white font-semibold text-sm">Save ${monthlySavings.toFixed(0)}/month on {bill.companyName}</p>
+                  <p className="text-emerald-300/80 text-xs mt-0.5">Switch to {offer.providerName} {offer.planName} at ${offer.monthlyPrice}/mo</p>
+                  {offer.badge && (
+                    <span className="inline-block mt-1 text-[10px] px-1.5 py-0.5 bg-emerald-500/20 text-emerald-300 rounded font-medium">{offer.badge}</span>
+                  )}
+                </div>
+                <div className="flex flex-col gap-1 flex-shrink-0">
+                  <a href={offer.affiliateUrl} target="_blank" rel="noopener noreferrer" className="text-[11px] font-semibold text-emerald-400 hover:text-emerald-300 whitespace-nowrap">
+                    View Deal →
+                  </a>
+                  <button onClick={() => setDismissedOfferIds(prev => new Set([...prev, offer.id]))} className="text-[11px] text-slate-500 hover:text-slate-400">
+                    Dismiss
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
       {isAtLimit && (
         <div className="px-4 mb-4">
           <div className="bg-amber-500/10 border border-amber-500/30 text-amber-400 px-4 py-3 rounded-lg text-sm flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-            <span>Free plan limit reached ({FREE_PLAN_LIMIT}/{FREE_PLAN_LIMIT} bills). Remove a bill to add more.</span>
+            <span>Free plan limit reached ({FREE_PLAN_LIMIT}/{FREE_PLAN_LIMIT} bills). <Link href="/settings" className="underline hover:no-underline">Upgrade to Premium</Link></span>
           </div>
         </div>
       )}
@@ -782,6 +861,14 @@ export default function Dashboard() {
                         title="AI Insights"
                       >
                         <Sparkles className="w-4 h-4" />
+                      </button>
+
+                      <button
+                        onClick={() => handleNegotiate(bill)}
+                        className="p-2 transition-colors rounded-lg flex-shrink-0 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50"
+                        title="Negotiate Lower Rate"
+                      >
+                        <MessageCircle className="w-4 h-4" />
                       </button>
 
                       <button
@@ -1338,6 +1425,61 @@ export default function Dashboard() {
                     </div>
                   )}
                 </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Negotiate Modal */}
+      {negotiateModal && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setNegotiateModal(null)}>
+          <div className="bg-white rounded-2xl w-full max-w-md max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 bg-emerald-100 rounded-xl flex items-center justify-center">
+                  <MessageCircle className="w-5 h-5 text-emerald-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-slate-800">Negotiation Script</h3>
+                  <p className="text-xs text-slate-400">{negotiateModal.bill.companyName}</p>
+                </div>
+              </div>
+              <button onClick={() => setNegotiateModal(null)} className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+                <X className="w-5 h-5 text-slate-400" />
+              </button>
+            </div>
+            <div className="p-5 space-y-4">
+              {negotiateModal.loading && (
+                <div className="flex flex-col items-center gap-3 py-8">
+                  <Loader2 className="w-8 h-8 text-emerald-500 animate-spin" />
+                  <p className="text-slate-500 text-sm">Generating your script…</p>
+                </div>
+              )}
+              {negotiateModal.error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                  {negotiateModal.error}
+                </div>
+              )}
+              {negotiateModal.script && (
+                <>
+                  <p className="text-xs text-slate-500 bg-slate-50 rounded-lg px-3 py-2">
+                    Use this script when calling or emailing {negotiateModal.bill.companyName} to negotiate a lower rate.
+                  </p>
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                    <p className="text-slate-700 text-sm leading-relaxed whitespace-pre-wrap">{negotiateModal.script}</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(negotiateModal.script || '').catch(() => {});
+                      setNegotiateModal(prev => prev ? { ...prev, copied: true } : null);
+                      setTimeout(() => setNegotiateModal(prev => prev ? { ...prev, copied: false } : null), 2000);
+                    }}
+                    className="w-full py-3 bg-emerald-600 text-white rounded-xl font-semibold text-sm hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2"
+                  >
+                    {negotiateModal.copied ? <><CheckCheck className="w-4 h-4" />Copied!</> : <><Copy className="w-4 h-4" />Copy Script</>}
+                  </button>
+                </>
               )}
             </div>
           </div>
