@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
 import { Home, Plus, Settings, CalendarDays, Loader2, Trash2, AlertTriangle, Bell, BellOff, DollarSign, CheckCircle, ExternalLink, Check, X, Clock, ChevronDown, ChevronUp, Pencil, Receipt, TrendingUp, TrendingDown, Minus, Sparkles, BarChart3, Target, ArrowUpRight, ArrowDownRight, Smartphone, MessageCircle, Zap, Copy, CheckCheck, Inbox } from "lucide-react";
 import { usePushNotifications } from '../hooks/usePushNotifications';
 import { useAuth } from '../contexts/AuthContext';
-import { fetchBills, deleteBill, fetchNotifications, checkAndCreateDueDateNotifications, sortBills, Bill, markBillAsPaid, getPaymentHistory, BillPaymentRecord, PaymentMethod, updateBill, BillingCycle, applyRecurringDetection, persistRecurringFlags, detectRecurringPatterns, dismissAmountAlert, RecurringFrequency, getUserProfile, getUserSubscription, isPremiumUser, getPendingBills } from '../lib/firebase';
+import { useData } from '../contexts/DataContext';
+import { deleteBill, sortBills, Bill, markBillAsPaid, getPaymentHistory, BillPaymentRecord, PaymentMethod, updateBill, BillingCycle, applyRecurringDetection, persistRecurringFlags, detectRecurringPatterns, dismissAmountAlert, RecurringFrequency } from '../lib/firebase';
 import { CATEGORIES, getCategoryByValue, getSubcategory } from '../lib/categories';
 import { trackBillPaid, trackBillDeleted, trackBillEdited, trackPaymentRedirect } from '../lib/analyticsService';
 import { detectSpike, calculateAnnualProjections, calculateSavingsScore, SpikeInfo, AnnualProjection, SavingsScore } from '../lib/billAnalytics';
@@ -19,13 +20,36 @@ const BILLS_PER_PAGE = 10;
 export default function Dashboard() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [bills, setBills] = useState<Bill[]>([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    bills: rawBills,
+    notifications,
+    billsLoading: loading,
+    isPremium,
+    pendingBillCount,
+    profile,
+    refreshBills,
+    updateBillsLocally,
+  } = useData();
+
+  // Apply recurring detection as a cheap in-memory transform (no Firebase call)
+  const bills = useMemo(() => {
+    if (!rawBills.length) return rawBills;
+    const withRecurring = applyRecurringDetection(rawBills);
+    // Kick off persistence in background — don't block render
+    const detections = detectRecurringPatterns(rawBills);
+    detections.forEach((det, billId) => { persistRecurringFlags(billId, det).catch(() => {}); });
+    return withRecurring;
+  }, [rawBills]);
+
+  const unreadNotifCount = useMemo(() => notifications.filter(n => !n.isRead).length, [notifications]);
+  const profilePhoto = profile?.photoURL || user?.photoURL || null;
+
+  const annualProjection = useMemo(() => bills.length ? calculateAnnualProjections(bills) : null, [bills]);
+  const savingsScore = useMemo(() => bills.length ? calculateSavingsScore(bills) : null, [bills]);
+
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
-  const [unreadNotifCount, setUnreadNotifCount] = useState(0);
-  const [dueSoonChecked, setDueSoonChecked] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [markingPaidId, setMarkingPaidId] = useState<string | null>(null);
   const [markPaidModal, setMarkPaidModal] = useState<{ bill: Bill; method: PaymentMethod; confirmationCode: string; notes: string } | null>(null);
@@ -44,44 +68,23 @@ export default function Dashboard() {
   } | null>(null);
   const [editLoading, setEditLoading] = useState(false);
   const [visibleCount, setVisibleCount] = useState(BILLS_PER_PAGE);
-  const [annualProjection, setAnnualProjection] = useState<{ perBiller: AnnualProjection[]; totalAnnual: number } | null>(null);
-  const [savingsScore, setSavingsScore] = useState<SavingsScore | null>(null);
   const [showProjectionDetail, setShowProjectionDetail] = useState(false);
   const [showInsights, setShowInsights] = useState(false);
-  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const [insightsModal, setInsightsModal] = useState<{ bill: Bill; loading: boolean; data: any | null; error: string | null } | null>(null);
   const [negotiateModal, setNegotiateModal] = useState<{ bill: Bill; loading: boolean; script: string | null; error: string | null; copied: boolean } | null>(null);
-  const [isPremium, setIsPremium] = useState(false);
   const [dismissedOfferIds, setDismissedOfferIds] = useState<Set<string>>(new Set());
-  const [pendingBillCount, setPendingBillCount] = useState(0);
   const { supported: pushSupported, permission: pushPermission, isSubscribed: pushSubscribed, subscribe: subscribePush } = usePushNotifications(user?.uid || null);
 
   // Auto-subscribe on first load — push notifications are ON by default
   useEffect(() => {
     if (!pushSupported || pushSubscribed || pushPermission === 'denied' || pushPermission === 'granted') return;
-    // Permission not yet decided — auto-request after 3 seconds so the page loads first
     const timer = setTimeout(() => { subscribePush().catch(() => {}); }, 3000);
     return () => clearTimeout(timer);
   }, [pushSupported, pushSubscribed, pushPermission, subscribePush]);
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/login');
-    }
+    if (!authLoading && !user) router.push('/login');
   }, [user, authLoading, router]);
-
-  useEffect(() => {
-    if (user) {
-      loadBills();
-      getUserProfile(user.uid).then(p => {
-        setProfilePhoto(p?.photoURL || user.photoURL || null);
-      }).catch(() => {
-        setProfilePhoto(user.photoURL || null);
-      });
-      getUserSubscription(user.uid).then(sub => setIsPremium(isPremiumUser(sub))).catch(() => {});
-      getPendingBills(user.uid).then(pb => setPendingBillCount(pb.length)).catch(() => {});
-    }
-  }, [user]);
 
   useEffect(() => {
     if (successMessage) {
@@ -89,40 +92,6 @@ export default function Dashboard() {
       return () => clearTimeout(timer);
     }
   }, [successMessage]);
-
-  const loadBills = async () => {
-    if (!user) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const userBills = await fetchBills(user.uid);
-      const withRecurring = applyRecurringDetection(userBills);
-      setBills(sortBills(withRecurring));
-
-      const detections = detectRecurringPatterns(userBills);
-      detections.forEach((det, billId) => {
-        persistRecurringFlags(billId, det).catch(console.error);
-      });
-
-      if (!dueSoonChecked && userBills.length > 0) {
-        setDueSoonChecked(true);
-        await checkAndCreateDueDateNotifications(user.uid, userBills).catch(console.error);
-      }
-
-      const notifs = await fetchNotifications(user.uid).catch(() => []);
-      setUnreadNotifCount(notifs.filter(n => !n.isRead).length);
-
-      const projections = calculateAnnualProjections(withRecurring);
-      setAnnualProjection(projections);
-      const scoreResult = calculateSavingsScore(withRecurring);
-      setSavingsScore(scoreResult);
-    } catch (err) {
-      console.error('Failed to fetch bills:', err);
-      setError('Failed to load bills. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleNegotiate = async (bill: Bill) => {
     if (!user || !bill.id) return;
@@ -176,10 +145,7 @@ export default function Dashboard() {
     setDeletingId(billId);
     try {
       await deleteBill(billId);
-      const updated = bills.filter(b => b.id !== billId);
-      setBills(updated);
-      setAnnualProjection(calculateAnnualProjections(updated));
-      setSavingsScore(calculateSavingsScore(updated));
+      updateBillsLocally(prev => prev.filter(b => b.id !== billId));
       setConfirmDeleteId(null);
       trackBillDeleted();
     } catch (err) {
@@ -194,7 +160,7 @@ export default function Dashboard() {
     if (!bill.id || !user) return;
     try {
       await dismissAmountAlert(bill.id, user.uid);
-      setBills(prev => prev.map(b => b.id === bill.id ? { ...b, amountDeviationFlag: false } : b));
+      updateBillsLocally(prev => prev.map(b => b.id === bill.id ? { ...b, amountDeviationFlag: false } : b));
     } catch (err) {
       console.error('Failed to dismiss alert:', err);
     }
@@ -231,7 +197,7 @@ export default function Dashboard() {
         dueDate: new Date(dueDate),
         notes: notes.trim() || undefined,
       });
-      const updatedBills = sortBills(bills.map(b =>
+      updateBillsLocally(prev => prev.map(b =>
         b.id === bill.id ? {
           ...b,
           companyName: companyName.trim(),
@@ -241,9 +207,6 @@ export default function Dashboard() {
           status: amount <= (b.paidAmount || 0) && amount > 0 ? 'paid' : (b.paidAmount || 0) > 0 ? 'partial' : 'unpaid',
         } : b
       ));
-      setBills(updatedBills);
-      setAnnualProjection(calculateAnnualProjections(updatedBills));
-      setSavingsScore(calculateSavingsScore(updatedBills));
       setEditModal(null);
       setSuccessMessage(`${companyName} updated!`);
       trackBillEdited();
@@ -275,12 +238,9 @@ export default function Dashboard() {
         confirmationCode || undefined,
         notes || undefined
       );
-      const updatedPaid = sortBills(bills.map(b =>
+      updateBillsLocally(prev => prev.map(b =>
         b.id === bill.id ? { ...b, status: result.newStatus, paidAmount: result.newPaidAmount } : b
       ));
-      setBills(updatedPaid);
-      setAnnualProjection(calculateAnnualProjections(updatedPaid));
-      setSavingsScore(calculateSavingsScore(updatedPaid));
       setMarkPaidModal(null);
       setSuccessMessage(`${bill.companyName} marked as paid!`);
       const isOnTime = new Date(bill.dueDate) >= new Date();
