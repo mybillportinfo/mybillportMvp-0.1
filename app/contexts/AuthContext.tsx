@@ -11,6 +11,9 @@ import {
   signInWithGoogle as firebaseSignInWithGoogle,
   signInWithGoogleCredential,
   handleGoogleRedirectResult,
+  createReferralCode,
+  lookupReferralCode,
+  applyReferral,
 } from '../lib/firebase';
 import { trackUserLogin, trackUserSignup } from '../lib/analyticsService';
 
@@ -19,7 +22,7 @@ interface AuthContextType {
   loading: boolean;
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string) => Promise<void>;
+  signup: (email: string, password: string, referralCode?: string) => Promise<void>;
   loginWithGoogle: () => void;
   loginWithGoogleToken: (idToken: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -82,7 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const signup = async (email: string, password: string) => {
+  const signup = async (email: string, password: string, referralCode?: string) => {
     setError(null);
     setLoading(true);
     try {
@@ -94,6 +97,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, displayName: newUser.displayName || undefined }),
         });
+      } catch {}
+      try {
+        await createReferralCode(newUser.uid);
+        if (referralCode) {
+          const referrerUid = await lookupReferralCode(referralCode.trim().toUpperCase());
+          if (referrerUid) await applyReferral(newUser.uid, referrerUid);
+        }
       } catch {}
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Signup failed';
