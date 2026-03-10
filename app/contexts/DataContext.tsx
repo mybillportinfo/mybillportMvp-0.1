@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useRef, useState, useCallback, Re
 import { useAuth } from './AuthContext';
 import {
   fetchBills, fetchNotifications, getUserProfile, getUserSubscription,
-  isPremiumUser, getPendingBills, getUserPreferences, getEmailAlias,
+  isPremiumUser, getPendingBills, getUserPreferences,
   checkAndCreateDueDateNotifications, sortBills, createReferralCode,
   Bill, AppNotification, UserProfile, UserPreferences, UserSubscription,
 } from '../lib/firebase';
@@ -36,9 +36,25 @@ const DEFAULT_SUB: UserSubscription = { status: 'free' };
 
 const DataContext = createContext<DataContextValue | null>(null);
 
+async function fetchEmailAliasFromAPI(token: string): Promise<string | null> {
+  try {
+    const res = await fetch('/api/email-alias', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.aliasTag || null;
+  } catch {
+    return null;
+  }
+}
+
 export function DataProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const fetchedRef = useRef<string | null>(null);
+  const userRef = useRef(user);
+
+  useEffect(() => { userRef.current = user; }, [user]);
 
   const [state, setState] = useState<DataState>({
     bills: [],
@@ -64,6 +80,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const loadAll = useCallback(async (uid: string) => {
     setState(prev => ({ ...prev, billsLoading: true, profileLoading: true }));
 
+    const token = await userRef.current?.getIdToken().catch(() => '') ?? '';
+
     const [bills, notifications, profile, sub, pendingArr, prefs, alias] = await Promise.allSettled([
       fetchBillsData(uid),
       fetchNotifications(uid).catch(() => []),
@@ -71,7 +89,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       getUserSubscription(uid),
       getPendingBills(uid).catch(() => []),
       getUserPreferences(uid).catch(() => DEFAULT_PREFS),
-      getEmailAlias(uid).catch(() => null),
+      fetchEmailAliasFromAPI(token),
     ]);
 
     const resolvedBills   = bills.status        === 'fulfilled' ? bills.value        : [];
