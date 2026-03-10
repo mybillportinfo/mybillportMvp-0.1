@@ -73,7 +73,7 @@ function groupIncomeByDay(entries: IncomeEntry[]): Map<number, IncomeEntry[]> {
 
 export default function CalendarPage() {
   const { user, loading: authLoading } = useAuth();
-  const { bills, billsLoading, preferences } = useData();
+  const { bills, billsLoading, preferences, updateBillsLocally } = useData();
   const router = useRouter();
   const today = useMemo(() => new Date(), []);
 
@@ -219,7 +219,7 @@ export default function CalendarPage() {
     setMarkingPaid(prev => new Set(prev).add(billId));
     try {
       await markBillFullyPaid(billId, user.uid);
-      setBills(prev => prev.map(b =>
+      updateBillsLocally(prev => prev.map(b =>
         b.id === billId ? { ...b, status: 'paid' as const, paidAmount: b.totalAmount } : b
       ));
       toast.success(`${bill.companyName ?? 'Bill'} marked as paid`);
