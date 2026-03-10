@@ -349,22 +349,20 @@ export default function SettingsPage() {
           </div>
           {!isPremium && (
             <button
-              onClick={handleUpgrade}
-              disabled={billingLoading}
-              className="w-full py-2.5 bg-gradient-to-r from-teal-600 to-teal-500 text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity disabled:opacity-60 flex items-center justify-center gap-2"
+              disabled
+              className="w-full py-2.5 bg-gradient-to-r from-teal-600 to-teal-500 text-white text-sm font-semibold rounded-lg opacity-60 flex items-center justify-center gap-2 cursor-not-allowed"
             >
-              {billingLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-              Upgrade to Premium — $7/month
+              <Sparkles className="w-4 h-4" />
+              Payments coming soon
             </button>
           )}
           {isPremium && (
             <button
-              onClick={handleManageBilling}
-              disabled={billingLoading}
-              className="w-full py-2.5 bg-slate-100 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+              disabled
+              className="w-full py-2.5 bg-slate-100 text-slate-700 text-sm font-medium rounded-lg opacity-60 flex items-center justify-center gap-2 cursor-not-allowed"
             >
-              {billingLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
-              Manage Subscription
+              <CreditCard className="w-4 h-4" />
+              Payments coming soon
             </button>
           )}
         </div>
