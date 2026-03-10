@@ -191,7 +191,7 @@ function SignupForm() {
                 />
               </div>
               {referralCode && (
-                <p className="text-xs text-teal-400 mt-1">Your friend will get credit when you complete your 2nd month.</p>
+                <p className="text-xs text-teal-400 mt-1">Your friend gets 1 free month when you subscribe to Premium.</p>
               )}
             </div>
 
