@@ -5,6 +5,7 @@ import { getAdminDb } from '../../lib/adminSdk';
 import { Timestamp } from 'firebase-admin/firestore';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
