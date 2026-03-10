@@ -1,3 +1,6 @@
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 import { NextRequest, NextResponse } from 'next/server';
 
 const SITE_KEY = '6Lfby0ksAAAAAPcrsjoe3qZjjD03IxkvRW8pZanp';
