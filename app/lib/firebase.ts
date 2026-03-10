@@ -1590,7 +1590,9 @@ export async function createReferralCode(uid: string): Promise<string> {
   const existingCode = data?.referralCode as string | undefined;
   if (existingCode) return existingCode;
 
-  const base = makeUsernameCode(data?.username || data?.displayName || uid.slice(0, 6));
+  const authDisplayName = getFirebaseAuth()?.currentUser?.displayName || '';
+  const raw = data?.username || data?.displayName || authDisplayName || uid.slice(0, 6);
+  const base = makeUsernameCode(raw);
   const fallback = base.length >= 3 ? base : uid.slice(0, 6).toUpperCase().replace(/[^A-Z0-9]/g, 'X');
 
   let code = fallback;
