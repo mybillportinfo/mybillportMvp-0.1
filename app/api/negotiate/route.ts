@@ -4,6 +4,7 @@ import { verifyFirebaseToken } from '../../lib/authVerify';
 import { getAdminDb } from '../../lib/adminSdk';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
