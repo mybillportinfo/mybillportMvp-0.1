@@ -4,6 +4,7 @@ import { parseEmailForBill } from '../../lib/emailParser';
 import { Timestamp } from 'firebase-admin/firestore';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 function extractAliasTag(toField: string): string | null {
   const match = toField.match(/bills\+([a-zA-Z0-9_-]+)@/i);
