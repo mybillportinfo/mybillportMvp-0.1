@@ -38,6 +38,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const referralFreeMonths: number = profile?.referralFreeMonths || 0;
+    const trialDays = referralFreeMonths > 0 ? referralFreeMonths * 30 : undefined;
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       mode: 'subscription',
@@ -47,8 +50,13 @@ export async function POST(req: NextRequest) {
       allow_promotion_codes: true,
       subscription_data: {
         metadata: { firebaseUid: auth.uid },
+        ...(trialDays ? { trial_period_days: trialDays } : {}),
       },
     });
+
+    if (referralFreeMonths > 0) {
+      await db.collection('userProfiles').doc(auth.uid).update({ referralFreeMonths: 0 });
+    }
 
     return NextResponse.json({ url: session.url });
   } catch (err: any) {
