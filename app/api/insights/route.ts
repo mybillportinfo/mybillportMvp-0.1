@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 interface BillData {
   companyName: string;
