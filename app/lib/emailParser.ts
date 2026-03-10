@@ -64,7 +64,7 @@ export async function parseEmailForBill(
 
     if (parsed.vendor) {
       const match = fuzzyMatchProvider(parsed.vendor);
-      if (match.matched) {
+      if (match) {
         matchedProviderId = match.providerId;
         matchedProviderName = match.providerName;
       }
