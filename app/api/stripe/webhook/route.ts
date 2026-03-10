@@ -94,6 +94,45 @@ export async function POST(req: NextRequest) {
         }, { merge: true });
         break;
       }
+
+      case 'invoice.payment_succeeded': {
+        const invoice = event.data.object as Stripe.Invoice;
+        if (!(invoice as any).subscription) break;
+        const uid = await getUidFromCustomer(invoice.customer as string);
+        if (!uid) break;
+        const profileDoc = await db.collection('userProfiles').doc(uid).get();
+        const profile = profileDoc.data();
+        if (!profile?.referredBy) break;
+        const paymentCount = (profile.referralPaymentCount || 0) + 1;
+        await db.collection('userProfiles').doc(uid).update({ referralPaymentCount: paymentCount });
+        if (paymentCount === 2) {
+          const referrerUid = profile.referredBy as string;
+          const referrerDoc = await db.collection('userProfiles').doc(referrerUid).get();
+          const referrer = referrerDoc.data();
+          const newFreeMonths = (referrer?.referralFreeMonths || 0) + 1;
+          const newReferralCount = (referrer?.referralCount || 0) + 1;
+          await db.collection('userProfiles').doc(referrerUid).set({
+            referralFreeMonths: newFreeMonths,
+            referralCount: newReferralCount,
+          }, { merge: true });
+          if (referrer?.stripeCustomerId && referrer?.subscription?.status === 'active') {
+            try {
+              await stripe.invoiceItems.create({
+                customer: referrer.stripeCustomerId as string,
+                amount: -700,
+                currency: 'cad',
+                description: 'MyBillPort referral reward — 1 free month',
+              });
+              await db.collection('userProfiles').doc(referrerUid).update({
+                referralFreeMonths: newFreeMonths - 1,
+              });
+            } catch (e: any) {
+              console.error('[stripe/webhook] Failed to apply referral credit:', e.message);
+            }
+          }
+        }
+        break;
+      }
     }
   } catch (err: any) {
     console.error('[stripe/webhook] Handler error:', err.message);
