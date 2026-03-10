@@ -1,3 +1,6 @@
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 import { NextRequest, NextResponse } from 'next/server';
 import webpush from 'web-push';
 import { getAdminDb } from '../../../lib/adminSdk';
