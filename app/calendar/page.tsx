@@ -9,8 +9,9 @@ import {
   Loader2, CheckCircle, PlusCircle, Trash2, Pencil, Save
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useData } from '../contexts/DataContext';
 import {
-  fetchBills, getUserPreferences, setUserPreferences, markBillFullyPaid,
+  getUserPreferences, setUserPreferences, markBillFullyPaid,
   addIncomeEntry, getIncomeForMonth, updateIncomeEntry, deleteIncomeEntry,
   Bill, PaydaySchedule, IncomeEntry,
 } from '../lib/firebase';
@@ -72,15 +73,15 @@ function groupIncomeByDay(entries: IncomeEntry[]): Map<number, IncomeEntry[]> {
 
 export default function CalendarPage() {
   const { user, loading: authLoading } = useAuth();
+  const { bills, billsLoading, preferences } = useData();
   const router = useRouter();
   const today = useMemo(() => new Date(), []);
 
   const [currentYear,  setCurrentYear]  = useState(today.getFullYear());
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
 
-  const [bills,    setBills]    = useState<Bill[]>([]);
   const [incomes,  setIncomes]  = useState<IncomeEntry[]>([]);
-  const [loading,  setLoading]  = useState(true);
+  const loading = billsLoading;
 
   const [selectedDay,    setSelectedDay]    = useState<number | null>(null);
   const [paydaySchedule, setPaydaySchedule] = useState<PaydaySchedule | null>(null);
@@ -103,44 +104,26 @@ export default function CalendarPage() {
     if (!authLoading && !user) router.push('/login');
   }, [user, authLoading, router]);
 
-  // Load payday schedule
+  // Sync payday schedule from context preferences (no Firebase call needed)
   useEffect(() => {
-    if (!user) return;
-    getUserPreferences(user.uid).then(prefs => {
-      if (prefs.paydaySchedule) {
-        setPaydaySchedule(prefs.paydaySchedule);
-        setIncomeForm({
-          type: prefs.paydaySchedule.type,
-          amount: String(prefs.paydaySchedule.amount),
-          nextPayday: prefs.paydaySchedule.nextPayday,
-        });
-      }
-    });
-  }, [user]);
-
-  // Load bills + income entries for current month
-  const loadMonthData = useCallback(async (year: number, month: number) => {
-    if (!user) return;
-    setLoading(true);
-    try {
-      // Run independently so an income Firestore error never blocks bill display
-      const allBills = await fetchBills(user.uid);
-      console.log('[calendar] bills fetched:', allBills.length, allBills.map(b => ({ id: b.id, due: b.dueDate, status: b.status })));
-      setBills(allBills);
-
-      getIncomeForMonth(user.uid, year, month)
-        .then(entries => setIncomes(entries))
-        .catch(e => console.warn('[calendar] income fetch failed (check Firestore rules):', e));
-    } catch (e) {
-      console.error('[calendar] bill load error:', e);
-    } finally {
-      setLoading(false);
+    const sched = preferences?.paydaySchedule;
+    if (sched) {
+      setPaydaySchedule(sched);
+      setIncomeForm({ type: sched.type, amount: String(sched.amount), nextPayday: sched.nextPayday });
     }
+  }, [preferences]);
+
+  // Only fetch income entries (month-specific, not shared in context)
+  const loadIncomeData = useCallback(async (year: number, month: number) => {
+    if (!user) return;
+    getIncomeForMonth(user.uid, year, month)
+      .then(entries => setIncomes(entries))
+      .catch(e => console.warn('[calendar] income fetch failed:', e));
   }, [user]);
 
   useEffect(() => {
-    loadMonthData(currentYear, currentMonth);
-  }, [loadMonthData, currentYear, currentMonth]);
+    loadIncomeData(currentYear, currentMonth);
+  }, [loadIncomeData, currentYear, currentMonth]);
 
   const prevMonth = () => {
     const [y, m] = currentMonth === 0
