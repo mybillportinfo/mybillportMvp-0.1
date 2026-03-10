@@ -245,6 +245,11 @@ export interface UserProfile {
   email: string;
   photoURL: string | null;
   updatedAt?: any;
+  referralCode?: string;
+  referredBy?: string;
+  referralCount?: number;
+  referralFreeMonths?: number;
+  referralPaymentCount?: number;
 }
 
 // --- Auth functions ---
@@ -1571,4 +1576,54 @@ export async function submitFeedback(
   });
 
   return docRef.id;
+}
+
+function generateReferralCode(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for (let i = 0; i < 8; i++) {
+    code += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return code;
+}
+
+export async function createReferralCode(uid: string): Promise<string> {
+  const db = getFirebaseDb();
+  if (!db) throw new Error('Firebase not available');
+  const profileSnap = await getDoc(doc(db, 'userProfiles', uid));
+  const existingCode = profileSnap.data()?.referralCode as string | undefined;
+  if (existingCode) return existingCode;
+  let code = generateReferralCode();
+  for (let i = 0; i < 5; i++) {
+    const codeSnap = await getDoc(doc(db, 'referralCodes', code));
+    if (!codeSnap.exists()) break;
+    code = generateReferralCode();
+  }
+  await setDoc(doc(db, 'referralCodes', code), { uid, createdAt: serverTimestamp() });
+  await setDoc(doc(db, 'userProfiles', uid), {
+    referralCode: code,
+    referralCount: 0,
+    referralFreeMonths: 0,
+  }, { merge: true });
+  return code;
+}
+
+export async function lookupReferralCode(code: string): Promise<string | null> {
+  const db = getFirebaseDb();
+  if (!db) return null;
+  try {
+    const snap = await getDoc(doc(db, 'referralCodes', code.toUpperCase().trim()));
+    return snap.exists() ? (snap.data().uid as string) : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function applyReferral(newUserUid: string, referrerUid: string): Promise<void> {
+  const db = getFirebaseDb();
+  if (!db || newUserUid === referrerUid) return;
+  await setDoc(doc(db, 'userProfiles', newUserUid), {
+    referredBy: referrerUid,
+    referralPaymentCount: 0,
+  }, { merge: true });
 }
