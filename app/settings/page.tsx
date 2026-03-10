@@ -13,7 +13,6 @@ import {
   saveUserProfile,
   updateUserDisplayName, updateUserProfilePhoto,
   updateUserEmail, deleteUserAccount,
-  createReferralCode,
   type UserProfile, type UserSubscription,
 } from '../lib/firebase';
 
@@ -38,7 +37,6 @@ export default function SettingsPage() {
   const [aliasCopied, setAliasCopied] = useState(false);
   const [referralCopied, setReferralCopied] = useState(false);
   const [referralCode, setReferralCode] = useState<string>('');
-  const [referralLoading, setReferralLoading] = useState(false);
 
   const { supported: pushSupported, permission: pushPermission, isSubscribed: pushSubscribed, isLoading: pushLoading, error: pushError, subscribe: subscribePush, unsubscribe: unsubscribePush } = usePushNotifications(user?.uid || null);
 
@@ -84,14 +82,8 @@ export default function SettingsPage() {
   useEffect(() => {
     if (ctxProfile?.referralCode) {
       setReferralCode(ctxProfile.referralCode);
-    } else if (user && activeModal === 'referral' && !referralLoading) {
-      setReferralLoading(true);
-      createReferralCode(user.uid)
-        .then(setReferralCode)
-        .catch(() => {})
-        .finally(() => setReferralLoading(false));
     }
-  }, [ctxProfile, user, activeModal]);
+  }, [ctxProfile]);
 
   const handleSavePreferences = async () => {
     if (!user) return;
