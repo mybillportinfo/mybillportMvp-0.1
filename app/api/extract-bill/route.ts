@@ -1,6 +1,3 @@
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
-
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { fuzzyMatchProvider } from '../../lib/fuzzyMatch';
@@ -14,6 +11,7 @@ import { verifyFirebaseToken, verifyAppCheckToken, isValidMimeType, sanitizeStri
 import { checkServerRateLimit } from '../../lib/serverRateLimit';
 
 export const runtime = "nodejs";
+export const dynamic = 'force-dynamic';
 
 const DEFAULT_MODEL = "claude-3-5-sonnet-20241022";
 
