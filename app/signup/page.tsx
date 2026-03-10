@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from "next/link";
-import { useRouter } from 'next/navigation';
-import { ArrowLeft, Mail, Lock, Loader2, Check, X, Receipt, DollarSign, ShieldCheck } from "lucide-react";
+import { useRouter, useSearchParams } from 'next/navigation';
+import { ArrowLeft, Mail, Lock, Loader2, Check, X, Receipt, DollarSign, ShieldCheck, Gift } from "lucide-react";
 import { useAuth } from '../contexts/AuthContext';
 import GoogleSignInButton from '../components/GoogleSignInButton';
 import { RecaptchaCheckbox } from '../components/RecaptchaCheckbox';
@@ -12,6 +12,7 @@ export default function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [referralCode, setReferralCode] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
@@ -19,6 +20,12 @@ export default function Signup() {
 
   const { user, signup, error, clearError } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const ref = searchParams.get('ref');
+    if (ref) setReferralCode(ref.toUpperCase());
+  }, [searchParams]);
 
   useEffect(() => {
     if (user) router.push('/app');
@@ -66,7 +73,7 @@ export default function Signup() {
           return;
         }
       }
-      await signup(email, password);
+      await signup(email, password, referralCode.trim() || undefined);
       router.push('/app');
     } catch {
     } finally {
@@ -164,6 +171,26 @@ export default function Signup() {
                   required
                 />
               </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Referral Code <span className="text-slate-500 font-normal">(optional)</span>
+              </label>
+              <div className="relative">
+                <Gift className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <input
+                  type="text"
+                  value={referralCode}
+                  onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                  placeholder="e.g. ABCD1234"
+                  maxLength={12}
+                  className="w-full pl-10 pr-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 uppercase tracking-widest"
+                />
+              </div>
+              {referralCode && (
+                <p className="text-xs text-teal-400 mt-1">Your friend will get credit when you complete your 2nd month.</p>
+              )}
             </div>
 
             {password && (
