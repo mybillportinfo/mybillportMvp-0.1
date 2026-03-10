@@ -5,7 +5,7 @@ import { useAuth } from './AuthContext';
 import {
   fetchBills, fetchNotifications, getUserProfile, getUserSubscription,
   isPremiumUser, getPendingBills, getUserPreferences, getEmailAlias,
-  checkAndCreateDueDateNotifications, sortBills,
+  checkAndCreateDueDateNotifications, sortBills, createReferralCode,
   Bill, AppNotification, UserProfile, UserPreferences, UserSubscription,
 } from '../lib/firebase';
 
@@ -95,6 +95,15 @@ export function DataProvider({ children }: { children: ReactNode }) {
       profileLoading: false,
       initialized: true,
     });
+
+    if (!resolvedProfile?.referralCode) {
+      createReferralCode(uid)
+        .then(code => setState(prev => ({
+          ...prev,
+          profile: prev.profile ? { ...prev.profile, referralCode: code } : prev.profile,
+        })))
+        .catch(() => {});
+    }
   }, [fetchBillsData]);
 
   useEffect(() => {
