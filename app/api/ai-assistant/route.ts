@@ -7,8 +7,6 @@ import { Timestamp } from 'firebase-admin/firestore';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-
 const MAX_MESSAGES = 20;
 
 function toDate(val: any): Date {
@@ -205,6 +203,7 @@ async function runTool(name: string, userId: string): Promise<any> {
 }
 
 export async function POST(req: NextRequest) {
+  const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
   const auth = await verifyFirebaseToken(req.headers.get('authorization'));
   if (!auth.valid || !auth.uid) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
