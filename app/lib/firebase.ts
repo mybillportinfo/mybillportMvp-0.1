@@ -1578,27 +1578,29 @@ export async function submitFeedback(
   return docRef.id;
 }
 
-function generateReferralCode(): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let code = '';
-  for (let i = 0; i < 8; i++) {
-    code += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return code;
+function makeUsernameCode(raw: string): string {
+  return raw.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12);
 }
 
 export async function createReferralCode(uid: string): Promise<string> {
   const db = getFirebaseDb();
   if (!db) throw new Error('Firebase not available');
   const profileSnap = await getDoc(doc(db, 'userProfiles', uid));
-  const existingCode = profileSnap.data()?.referralCode as string | undefined;
+  const data = profileSnap.data();
+  const existingCode = data?.referralCode as string | undefined;
   if (existingCode) return existingCode;
-  let code = generateReferralCode();
-  for (let i = 0; i < 5; i++) {
+
+  const base = makeUsernameCode(data?.username || data?.displayName || uid.slice(0, 6));
+  const fallback = base.length >= 3 ? base : uid.slice(0, 6).toUpperCase().replace(/[^A-Z0-9]/g, 'X');
+
+  let code = fallback;
+  let suffix = 2;
+  for (let i = 0; i < 10; i++) {
     const codeSnap = await getDoc(doc(db, 'referralCodes', code));
     if (!codeSnap.exists()) break;
-    code = generateReferralCode();
+    code = `${fallback}${suffix++}`;
   }
+
   await setDoc(doc(db, 'referralCodes', code), { uid, createdAt: serverTimestamp() });
   await setDoc(doc(db, 'userProfiles', uid), {
     referralCode: code,
