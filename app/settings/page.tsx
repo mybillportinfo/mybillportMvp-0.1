@@ -6,13 +6,13 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Home, Plus, Settings, CalendarDays, User, Bell, Shield, Lock, LogOut, ChevronRight, Loader2, X, Eye, EyeOff, MessageSquare, Receipt, DollarSign, Check, AlertTriangle, Camera, Trash2, Mail, Smartphone, CreditCard, Forward, Copy, CheckCheck, Sparkles, Inbox } from "lucide-react";
 import { usePushNotifications } from '../hooks/usePushNotifications';
 import { useAuth } from '../contexts/AuthContext';
+import { useData } from '../contexts/DataContext';
 import {
-  getUserPreferences, setUserPreferences,
+  setUserPreferences,
   getLinkedProviders,
-  getUserProfile, saveUserProfile,
+  saveUserProfile,
   updateUserDisplayName, updateUserProfilePhoto,
   updateUserEmail, deleteUserAccount,
-  getUserSubscription, getEmailAlias,
   type UserProfile, type UserSubscription,
 } from '../lib/firebase';
 
@@ -20,6 +20,7 @@ type SettingsModal = 'notifications' | 'privacy' | 'security' | 'profile' | null
 
 export default function SettingsPage() {
   const { user, loading, logout } = useAuth();
+  const { profile: ctxProfile, subscription: ctxSub, preferences: ctxPrefs, emailAlias, refreshProfile } = useData();
   const router = useRouter();
   const [activeModal, setActiveModal] = useState<SettingsModal>(null);
 
@@ -27,13 +28,12 @@ export default function SettingsPage() {
   const [inAppReminders, setInAppReminders] = useState(true);
   const [savingPrefs, setSavingPrefs] = useState(false);
   const [prefsSaved, setPrefsSaved] = useState(false);
-  const [loadingPrefs, setLoadingPrefs] = useState(true);
+  const loadingPrefs = false;
 
-  const [subscription, setSubscription] = useState<UserSubscription>({ status: 'free' });
+  const subscription = ctxSub;
   const [subscriptionLoading, setSubscriptionLoading] = useState(false);
   const [billingLoading, setBillingLoading] = useState(false);
 
-  const [emailAlias, setEmailAlias] = useState<string | null>(null);
   const [aliasCopied, setAliasCopied] = useState(false);
 
   const { supported: pushSupported, permission: pushPermission, isSubscribed: pushSubscribed, isLoading: pushLoading, error: pushError, subscribe: subscribePush, unsubscribe: unsubscribePush } = usePushNotifications(user?.uid || null);
@@ -51,38 +51,30 @@ export default function SettingsPage() {
   const [deletingAccount, setDeletingAccount] = useState(false);
   const photoInputRef = useRef<HTMLInputElement>(null);
 
-
   useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
-    }
+    if (!loading && !user) router.push('/login');
   }, [user, loading, router]);
 
+  // Hydrate local state from context (instant — no Firebase call)
   useEffect(() => {
-    if (user) {
-      setLoadingPrefs(true);
-      getUserPreferences(user.uid).then(prefs => {
-        setInAppReminders(prefs.inAppReminders);
-        setNotifyDays(prefs.notifyDays || [7, 2, 1, 0]);
-      }).catch(() => {}).finally(() => {
-        setLoadingPrefs(false);
-      });
-
-      setLinkedProviders(getLinkedProviders());
-
-      getUserProfile(user.uid).then(p => {
-        if (p) {
-          setProfile(p);
-          setUsername(p.username || '');
-        } else {
-          setUsername(user.displayName || '');
-        }
-        setNewEmail(user.email || '');
-      });
-
-      getUserSubscription(user.uid).then(setSubscription).catch(() => {});
-      getEmailAlias(user.uid).then(setEmailAlias).catch(() => {});
+    if (ctxPrefs) {
+      setInAppReminders(ctxPrefs.inAppReminders);
+      setNotifyDays(ctxPrefs.notifyDays || [7, 2, 1, 0]);
     }
+  }, [ctxPrefs]);
+
+  useEffect(() => {
+    if (ctxProfile) {
+      setProfile(ctxProfile);
+      setUsername(ctxProfile.username || '');
+    } else if (user) {
+      setUsername(user.displayName || '');
+    }
+    if (user) setNewEmail(user.email || '');
+  }, [ctxProfile, user]);
+
+  useEffect(() => {
+    if (user) setLinkedProviders(getLinkedProviders());
   }, [user]);
 
   const handleSavePreferences = async () => {
@@ -135,6 +127,7 @@ export default function SettingsPage() {
       }
       setProfileSaved(true);
       setTimeout(() => setProfileSaved(false), 2000);
+      refreshProfile().catch(() => {});
     } catch (err: any) {
       setProfileError(err.message || 'Failed to save profile');
     } finally {
