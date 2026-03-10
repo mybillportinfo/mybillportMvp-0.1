@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Home, Plus, Settings, CalendarDays, User, Bell, Shield, Lock, LogOut, ChevronRight, Loader2, X, Eye, EyeOff, MessageSquare, Receipt, DollarSign, Check, AlertTriangle, Camera, Trash2, Mail, Smartphone, CreditCard, Forward, Copy, CheckCheck, Sparkles, Inbox } from "lucide-react";
+import { ArrowLeft, Home, Plus, Settings, CalendarDays, User, Bell, Shield, Lock, LogOut, ChevronRight, Loader2, X, Eye, EyeOff, MessageSquare, Receipt, DollarSign, Check, AlertTriangle, Camera, Trash2, Mail, Smartphone, CreditCard, Forward, Copy, CheckCheck, Sparkles, Inbox, Gift, Users } from "lucide-react";
 import { usePushNotifications } from '../hooks/usePushNotifications';
 import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
@@ -13,10 +13,11 @@ import {
   saveUserProfile,
   updateUserDisplayName, updateUserProfilePhoto,
   updateUserEmail, deleteUserAccount,
+  createReferralCode,
   type UserProfile, type UserSubscription,
 } from '../lib/firebase';
 
-type SettingsModal = 'notifications' | 'privacy' | 'security' | 'profile' | null;
+type SettingsModal = 'notifications' | 'privacy' | 'security' | 'profile' | 'referral' | null;
 
 export default function SettingsPage() {
   const { user, loading, logout } = useAuth();
@@ -35,6 +36,8 @@ export default function SettingsPage() {
   const [billingLoading, setBillingLoading] = useState(false);
 
   const [aliasCopied, setAliasCopied] = useState(false);
+  const [referralCopied, setReferralCopied] = useState(false);
+  const [referralCode, setReferralCode] = useState<string>('');
 
   const { supported: pushSupported, permission: pushPermission, isSubscribed: pushSubscribed, isLoading: pushLoading, error: pushError, subscribe: subscribePush, unsubscribe: unsubscribePush } = usePushNotifications(user?.uid || null);
 
@@ -76,6 +79,14 @@ export default function SettingsPage() {
   useEffect(() => {
     if (user) setLinkedProviders(getLinkedProviders());
   }, [user]);
+
+  useEffect(() => {
+    if (ctxProfile?.referralCode) {
+      setReferralCode(ctxProfile.referralCode);
+    } else if (user && activeModal === 'referral') {
+      createReferralCode(user.uid).then(setReferralCode).catch(() => {});
+    }
+  }, [ctxProfile, user, activeModal]);
 
   const handleSavePreferences = async () => {
     if (!user) return;
@@ -394,6 +405,21 @@ export default function SettingsPage() {
 
         <div className="bg-white rounded-xl overflow-hidden divide-y divide-slate-100">
           <button
+            onClick={() => setActiveModal('referral')}
+            className="w-full p-4 flex items-center gap-4 hover:bg-slate-50 transition-colors"
+          >
+            <Gift className="w-5 h-5 text-teal-500" />
+            <div className="flex-1 text-left">
+              <span className="text-slate-800">Refer a Friend</span>
+              {(ctxProfile?.referralCount ?? 0) > 0 && (
+                <span className="ml-2 text-xs bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full font-medium">
+                  {ctxProfile?.referralCount} referred
+                </span>
+              )}
+            </div>
+            <ChevronRight className="w-5 h-5 text-slate-400" />
+          </button>
+          <button
             onClick={() => setActiveModal('notifications')}
             className="w-full p-4 flex items-center gap-4 hover:bg-slate-50 transition-colors"
           >
@@ -613,6 +639,104 @@ export default function SettingsPage() {
                       </div>
                     )}
                   </div>
+                </div>
+              </div>
+            )}
+
+            {activeModal === 'referral' && (
+              <div>
+                <div className="flex items-center justify-between p-5 border-b border-slate-100">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center">
+                      <Gift className="w-5 h-5 text-teal-600" />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-semibold text-slate-800">Refer a Friend</h2>
+                      <p className="text-xs text-slate-500">Earn a free month when they stay</p>
+                    </div>
+                  </div>
+                  <button onClick={() => setActiveModal(null)} className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+                    <X className="w-5 h-5 text-slate-500" />
+                  </button>
+                </div>
+
+                <div className="p-5 space-y-5">
+                  <div className="bg-gradient-to-br from-teal-50 to-slate-50 border border-teal-200 rounded-xl p-4 space-y-3">
+                    <p className="text-sm font-medium text-slate-700">Your referral code</p>
+                    {referralCode ? (
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 bg-white border-2 border-teal-300 rounded-lg px-4 py-3 text-center">
+                          <span className="text-2xl font-bold text-teal-700 tracking-[0.3em]">{referralCode}</span>
+                        </div>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(referralCode);
+                            setReferralCopied(true);
+                            setTimeout(() => setReferralCopied(false), 2000);
+                          }}
+                          className="p-3 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors"
+                        >
+                          {referralCopied ? <CheckCheck className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center py-4">
+                        <Loader2 className="w-6 h-6 animate-spin text-teal-500" />
+                      </div>
+                    )}
+                    <button
+                      onClick={() => {
+                        const link = `https://mybillport.com/signup?ref=${referralCode}`;
+                        navigator.clipboard.writeText(link);
+                        setReferralCopied(true);
+                        setTimeout(() => setReferralCopied(false), 2000);
+                      }}
+                      className="w-full text-sm text-teal-600 hover:text-teal-700 flex items-center justify-center gap-1.5 py-1"
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                      Copy invite link
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-slate-50 rounded-xl p-4 text-center">
+                      <Users className="w-6 h-6 text-teal-500 mx-auto mb-1" />
+                      <p className="text-2xl font-bold text-slate-800">{ctxProfile?.referralCount ?? 0}</p>
+                      <p className="text-xs text-slate-500">Friends joined</p>
+                    </div>
+                    <div className="bg-slate-50 rounded-xl p-4 text-center">
+                      <Gift className="w-6 h-6 text-teal-500 mx-auto mb-1" />
+                      <p className="text-2xl font-bold text-slate-800">{ctxProfile?.referralFreeMonths ?? 0}</p>
+                      <p className="text-xs text-slate-500">Free months earned</p>
+                    </div>
+                  </div>
+
+                  <div className="bg-slate-50 rounded-xl p-4 space-y-3">
+                    <p className="text-sm font-semibold text-slate-700">How it works</p>
+                    <div className="space-y-2.5">
+                      <div className="flex items-start gap-3">
+                        <span className="w-6 h-6 rounded-full bg-teal-500 text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
+                        <p className="text-sm text-slate-600">Share your referral code or invite link with a friend</p>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <span className="w-6 h-6 rounded-full bg-teal-500 text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
+                        <p className="text-sm text-slate-600">They enter your code when signing up for MyBillPort</p>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <span className="w-6 h-6 rounded-full bg-teal-500 text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">3</span>
+                        <p className="text-sm text-slate-600">After they pay for their <strong>2nd month</strong> of Premium, you get <strong>1 month free</strong> — automatically applied to your next billing cycle</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {(ctxProfile?.referralFreeMonths ?? 0) > 0 && (
+                    <div className="bg-teal-50 border border-teal-200 rounded-xl p-4 flex items-center gap-3">
+                      <Gift className="w-5 h-5 text-teal-600 flex-shrink-0" />
+                      <p className="text-sm text-teal-700">
+                        You have <strong>{ctxProfile?.referralFreeMonths} free month{(ctxProfile?.referralFreeMonths ?? 0) > 1 ? 's' : ''}</strong> waiting — applied automatically to your next Premium renewal.
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
