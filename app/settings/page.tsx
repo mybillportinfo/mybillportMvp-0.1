@@ -38,6 +38,7 @@ export default function SettingsPage() {
   const [aliasCopied, setAliasCopied] = useState(false);
   const [referralCopied, setReferralCopied] = useState(false);
   const [referralCode, setReferralCode] = useState<string>('');
+  const [referralLoading, setReferralLoading] = useState(false);
 
   const { supported: pushSupported, permission: pushPermission, isSubscribed: pushSubscribed, isLoading: pushLoading, error: pushError, subscribe: subscribePush, unsubscribe: unsubscribePush } = usePushNotifications(user?.uid || null);
 
@@ -83,8 +84,12 @@ export default function SettingsPage() {
   useEffect(() => {
     if (ctxProfile?.referralCode) {
       setReferralCode(ctxProfile.referralCode);
-    } else if (user && activeModal === 'referral') {
-      createReferralCode(user.uid).then(setReferralCode).catch(() => {});
+    } else if (user && activeModal === 'referral' && !referralLoading) {
+      setReferralLoading(true);
+      createReferralCode(user.uid)
+        .then(setReferralCode)
+        .catch(() => {})
+        .finally(() => setReferralLoading(false));
     }
   }, [ctxProfile, user, activeModal]);
 
@@ -650,7 +655,7 @@ export default function SettingsPage() {
                     </div>
                     <div>
                       <h2 className="text-lg font-semibold text-slate-800">Refer a Friend</h2>
-                      <p className="text-xs text-slate-500">Earn a free month when they stay</p>
+                      <p className="text-xs text-slate-500">1 free month per friend who subscribes</p>
                     </div>
                   </div>
                   <button onClick={() => setActiveModal(null)} className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
@@ -662,38 +667,41 @@ export default function SettingsPage() {
                   <div className="bg-gradient-to-br from-teal-50 to-slate-50 border border-teal-200 rounded-xl p-4 space-y-3">
                     <p className="text-sm font-medium text-slate-700">Your referral code</p>
                     {referralCode ? (
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1 bg-white border-2 border-teal-300 rounded-lg px-4 py-3 text-center">
-                          <span className="text-2xl font-bold text-teal-700 tracking-[0.3em]">{referralCode}</span>
+                      <>
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 bg-white border-2 border-teal-300 rounded-lg px-4 py-3 text-center">
+                            <span className="text-2xl font-bold text-teal-700 tracking-[0.3em]">{referralCode}</span>
+                          </div>
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(referralCode);
+                              setReferralCopied(true);
+                              setTimeout(() => setReferralCopied(false), 2000);
+                            }}
+                            className="p-3 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors"
+                          >
+                            {referralCopied ? <CheckCheck className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
+                          </button>
                         </div>
                         <button
                           onClick={() => {
-                            navigator.clipboard.writeText(referralCode);
+                            const link = `https://mybillport.com/signup?ref=${referralCode}`;
+                            navigator.clipboard.writeText(link);
                             setReferralCopied(true);
                             setTimeout(() => setReferralCopied(false), 2000);
                           }}
-                          className="p-3 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors"
+                          className="w-full text-sm text-teal-600 hover:text-teal-700 flex items-center justify-center gap-1.5 py-1"
                         >
-                          {referralCopied ? <CheckCheck className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
+                          <Copy className="w-3.5 h-3.5" />
+                          {referralCopied ? 'Copied!' : 'Copy invite link'}
                         </button>
-                      </div>
+                      </>
                     ) : (
-                      <div className="flex items-center justify-center py-4">
+                      <div className="flex items-center justify-center py-6">
                         <Loader2 className="w-6 h-6 animate-spin text-teal-500" />
+                        <span className="ml-2 text-sm text-slate-500">Generating your code...</span>
                       </div>
                     )}
-                    <button
-                      onClick={() => {
-                        const link = `https://mybillport.com/signup?ref=${referralCode}`;
-                        navigator.clipboard.writeText(link);
-                        setReferralCopied(true);
-                        setTimeout(() => setReferralCopied(false), 2000);
-                      }}
-                      className="w-full text-sm text-teal-600 hover:text-teal-700 flex items-center justify-center gap-1.5 py-1"
-                    >
-                      <Copy className="w-3.5 h-3.5" />
-                      Copy invite link
-                    </button>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
@@ -722,7 +730,7 @@ export default function SettingsPage() {
                       </div>
                       <div className="flex items-start gap-3">
                         <span className="w-6 h-6 rounded-full bg-teal-500 text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">3</span>
-                        <p className="text-sm text-slate-600">After they pay for their <strong>2nd month</strong> of Premium, you get <strong>1 month free</strong> — automatically applied to your next billing cycle</p>
+                        <p className="text-sm text-slate-600">When they subscribe to Premium, you get <strong>1 month free</strong>. More referrals = more free months, one per friend.</p>
                       </div>
                     </div>
                   </div>
