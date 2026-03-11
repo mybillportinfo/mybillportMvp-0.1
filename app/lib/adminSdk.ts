@@ -15,7 +15,7 @@ function initAdminApp(): App {
     return _app;
   }
 
-  const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+  const serviceAccountKey = process.env.FIREBASE_SA_JSON || process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
 
   if (!serviceAccountKey) {
     console.error('[adminSdk] FIREBASE_SERVICE_ACCOUNT_KEY is not set — Firebase Admin cannot initialize.');
