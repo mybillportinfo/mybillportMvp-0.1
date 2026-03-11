@@ -5,7 +5,7 @@ import { useAuth } from './AuthContext';
 import {
   fetchBills, fetchNotifications, getUserProfile, getUserSubscription,
   isPremiumUser, getPendingBills, getUserPreferences,
-  checkAndCreateDueDateNotifications, sortBills, createReferralCode,
+  checkAndCreateDueDateNotifications, sortBills,
   Bill, AppNotification, UserProfile, UserPreferences, UserSubscription,
 } from '../lib/firebase';
 
@@ -115,12 +115,20 @@ export function DataProvider({ children }: { children: ReactNode }) {
     });
 
     if (!resolvedProfile?.referralCode) {
-      createReferralCode(uid)
-        .then(code => setState(prev => ({
-          ...prev,
-          profile: prev.profile ? { ...prev.profile, referralCode: code } : prev.profile,
-        })))
-        .catch(() => {});
+      const tok = await userRef.current?.getIdToken().catch(() => '') ?? '';
+      if (tok) {
+        fetch('/api/referral-code', { headers: { Authorization: `Bearer ${tok}` } })
+          .then(r => r.ok ? r.json() : null)
+          .then(data => {
+            if (data?.code) {
+              setState(prev => ({
+                ...prev,
+                profile: prev.profile ? { ...prev.profile, referralCode: data.code } : prev.profile,
+              }));
+            }
+          })
+          .catch(() => {});
+      }
     }
   }, [fetchBillsData]);
 
