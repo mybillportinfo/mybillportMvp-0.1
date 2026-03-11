@@ -82,8 +82,17 @@ export default function SettingsPage() {
   useEffect(() => {
     if (ctxProfile?.referralCode) {
       setReferralCode(ctxProfile.referralCode);
+      return;
     }
-  }, [ctxProfile]);
+    if (activeModal === 'referral' && user && !referralCode) {
+      user.getIdToken().then(token =>
+        fetch('/api/referral-code', { headers: { Authorization: `Bearer ${token}` } })
+          .then(r => r.ok ? r.json() : null)
+          .then(data => { if (data?.code) setReferralCode(data.code); })
+          .catch(() => {})
+      );
+    }
+  }, [ctxProfile, activeModal, user]);
 
   const handleSavePreferences = async () => {
     if (!user) return;
