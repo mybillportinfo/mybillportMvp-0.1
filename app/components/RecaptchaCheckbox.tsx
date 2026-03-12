@@ -1,15 +1,14 @@
 'use client';
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const V2_SITE_KEY = '6Le8B4IsAAAAAPPjIrCIA1396bULHve3ZLImPNT0';
 const SCRIPT_ID = 'recaptcha-v2-api';
-const CALLBACK_NAME = 'onRecaptchaV2Ready';
 
 declare global {
   interface Window {
-    onRecaptchaV2Ready?: () => void;
     grecaptcha: any;
+    __recaptchaCallbacks?: (() => void)[];
   }
 }
 
@@ -22,52 +21,66 @@ interface Props {
 export function RecaptchaCheckbox({ onVerify, onExpire, onReady }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<number | null>(null);
+  const callbacksRef = useRef({ onVerify, onExpire, onReady });
+  const [scriptLoaded, setScriptLoaded] = useState(false);
 
-  const renderWidget = useCallback(() => {
-    const w = window as any;
-    if (!containerRef.current) return;
-    if (widgetIdRef.current !== null) return;
-    if (!w.grecaptcha?.render) return;
-
-    try {
-      widgetIdRef.current = w.grecaptcha.render(containerRef.current, {
-        sitekey: V2_SITE_KEY,
-        theme: 'dark',
-        callback: onVerify,
-        'expired-callback': onExpire,
-      });
-      onReady?.();
-    } catch (e) {
-      console.warn('[recaptcha] render error:', e);
-    }
-  }, [onVerify, onExpire, onReady]);
+  callbacksRef.current = { onVerify, onExpire, onReady };
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    const w = window as any;
-
-    // Script already loaded (e.g. navigating back to page)
-    if (w.grecaptcha?.render) {
-      renderWidget();
+    if (window.grecaptcha?.render) {
+      setScriptLoaded(true);
       return;
     }
 
-    // Register callback BEFORE injecting the script
-    window[CALLBACK_NAME] = () => {
-      renderWidget();
-    };
+    if (!window.__recaptchaCallbacks) {
+      window.__recaptchaCallbacks = [];
+    }
+    window.__recaptchaCallbacks.push(() => setScriptLoaded(true));
 
-    // Only inject once
     if (!document.getElementById(SCRIPT_ID)) {
+      (window as any).onRecaptchaV2Load = () => {
+        const cbs = window.__recaptchaCallbacks || [];
+        cbs.forEach(cb => cb());
+        window.__recaptchaCallbacks = [];
+      };
+
       const script = document.createElement('script');
       script.id = SCRIPT_ID;
-      script.src = `https://www.google.com/recaptcha/api.js?onload=${CALLBACK_NAME}&render=explicit`;
+      script.src = 'https://www.google.com/recaptcha/api.js?onload=onRecaptchaV2Load&render=explicit';
       script.async = true;
       script.defer = true;
       document.head.appendChild(script);
     }
-  }, [renderWidget]);
+  }, []);
+
+  useEffect(() => {
+    if (!scriptLoaded) return;
+    if (!containerRef.current) return;
+    if (widgetIdRef.current !== null) return;
+
+    const w = window as any;
+    if (!w.grecaptcha?.render) return;
+
+    const poll = setInterval(() => {
+      if (!containerRef.current) return;
+      try {
+        widgetIdRef.current = w.grecaptcha.render(containerRef.current, {
+          sitekey: V2_SITE_KEY,
+          theme: 'dark',
+          callback: (token: string) => callbacksRef.current.onVerify(token),
+          'expired-callback': () => callbacksRef.current.onExpire(),
+        });
+        callbacksRef.current.onReady?.();
+        clearInterval(poll);
+      } catch {
+        clearInterval(poll);
+      }
+    }, 100);
+
+    return () => clearInterval(poll);
+  }, [scriptLoaded]);
 
   return (
     <div className="flex justify-center py-1">
