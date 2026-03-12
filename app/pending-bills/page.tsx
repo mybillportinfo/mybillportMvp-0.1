@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Home, Plus, Settings, CalendarDays, CheckCircle, X, Loader2, Inbox, AlertCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { addBill } from '../lib/firebase';
+import { resolveProvider } from '../lib/providerRegistry';
 
 interface PendingBill {
   id: string;
@@ -62,15 +63,19 @@ export default function PendingBillsPage() {
     setProcessingId(bill.id);
     setError(null);
     try {
+      const vendorName = bill.matchedProviderName || bill.vendor || 'Unknown';
+      const resolved = resolveProvider(vendorName);
       await addBill(user.uid, {
-        companyName: bill.vendor || 'Unknown',
+        companyName: vendorName,
         totalAmount: bill.amount || 0,
-        dueDate: bill.dueDate || '',
+        dueDate: bill.dueDate || new Date().toISOString().split('T')[0],
         status: 'unpaid' as any,
         category: bill.category || 'miscellaneous',
         accountNumber: bill.accountNumber || '',
         notes: 'Imported via email forwarding',
-        providerId: bill.matchedProviderId || null,
+        providerId: resolved.providerId,
+        providerName: resolved.providerName,
+        isCustomProvider: resolved.isCustom || undefined,
       } as any);
       const token = await user.getIdToken();
       await fetch('/api/pending-bills', {
