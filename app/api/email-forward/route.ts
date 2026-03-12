@@ -101,8 +101,8 @@ export async function POST(req: NextRequest) {
     const extracted = await parseEmailForBill(subject, textBody, htmlBody);
     console.log('[email-forward] Extracted:', JSON.stringify({ vendor: extracted.vendor, amount: extracted.amount, confidence: extracted.confidence }));
 
-    if (extracted.confidence < 0.3) {
-      console.log('[email-forward] Low confidence, skipping:', extracted.confidence);
+    if (extracted.confidence < 0.1) {
+      console.log('[email-forward] Very low confidence, skipping:', extracted.confidence);
       return NextResponse.json({ received: true, skipped: true, reason: 'low_confidence' });
     }
 
