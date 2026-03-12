@@ -34,8 +34,6 @@ Rules:
 - If this does not appear to be a bill at all, set confidence to 0.1 or below.
 - Return ONLY the JSON, no markdown.`;
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-
 export async function parseEmailForBill(
   subject: string,
   textBody: string,
@@ -44,8 +42,10 @@ export async function parseEmailForBill(
   const content = `Email subject: ${subject}\n\n${textBody || htmlBody || ''}`.slice(0, 8000);
 
   try {
+    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
     const response = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'claude-sonnet-4-20250514',
       max_tokens: 300,
       messages: [
         {
@@ -76,20 +76,24 @@ export async function parseEmailForBill(
       dueDate: parsed.dueDate || null,
       accountNumber: parsed.accountNumber || null,
       category: parsed.category || null,
-      confidence: typeof parsed.confidence === 'number' ? parsed.confidence : 0.3,
+      confidence: typeof parsed.confidence === 'number' ? parsed.confidence : 0.5,
       matchedProviderId,
       matchedProviderName,
       rawText: content.slice(0, 500),
     };
   } catch (err: any) {
     console.error('[emailParser] Extraction failed:', err.message);
+
+    const vendorFromSubject = subject.replace(/^(fw:|fwd:|re:)\s*/gi, '').trim() || null;
+
     return {
-      vendor: null,
+      vendor: vendorFromSubject,
       amount: null,
       dueDate: null,
       accountNumber: null,
       category: null,
-      confidence: 0,
+      confidence: 0.4,
+      rawText: content.slice(0, 500),
     };
   }
 }
