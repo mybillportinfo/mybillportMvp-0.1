@@ -34,12 +34,71 @@ Rules:
 - If this does not appear to be a bill at all, set confidence to 0.1 or below.
 - Return ONLY the JSON, no markdown.`;
 
+function extractAmountFromText(text: string): number | null {
+  const patterns = [
+    /(?:amount\s*due|total\s*due|balance\s*due|total\s*amount|amount\s*owing)[:\s]*\$?\s*([\d,]+\.?\d*)/i,
+    /\$\s*([\d,]+\.\d{2})/,
+    /(?:pay|due|owing|balance)[:\s]*\$?\s*([\d,]+\.?\d*)/i,
+  ];
+  for (const pat of patterns) {
+    const m = text.match(pat);
+    if (m) {
+      const val = parseFloat(m[1].replace(/,/g, ''));
+      if (val > 0 && val < 100000) return val;
+    }
+  }
+  return null;
+}
+
+function extractDateFromText(text: string): string | null {
+  const patterns = [
+    /(?:due\s*date|payment\s*due|due\s*by|due\s*on)[:\s]*(\w+\s+\d{1,2},?\s*\d{4})/i,
+    /(?:due\s*date|payment\s*due|due\s*by|due\s*on)[:\s]*(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/i,
+    /(?:due\s*date|payment\s*due|due\s*by|due\s*on)[:\s]*(\d{4}-\d{2}-\d{2})/i,
+  ];
+  for (const pat of patterns) {
+    const m = text.match(pat);
+    if (m) {
+      const d = new Date(m[1]);
+      if (!isNaN(d.getTime())) {
+        return d.toISOString().split('T')[0];
+      }
+    }
+  }
+  return null;
+}
+
+function extractAccountFromText(text: string): string | null {
+  const patterns = [
+    /(?:account\s*(?:number|no|#|num)?)[:\s]*([A-Z0-9][\w\s\-]{3,25})/i,
+    /(?:acct|a\/c)[:\s#]*([A-Z0-9][\w\s\-]{3,25})/i,
+  ];
+  for (const pat of patterns) {
+    const m = text.match(pat);
+    if (m) return m[1].trim();
+  }
+  return null;
+}
+
+function extractVendorFromSubject(subject: string): string | null {
+  let cleaned = subject.replace(/^(fw:|fwd:|re:)\s*/gi, '').trim();
+  cleaned = cleaned
+    .replace(/\b(your|my|new|monthly|bill|invoice|statement|payment|reminder|notice|alert|notification)\b/gi, '')
+    .replace(/[-–—|:]/g, ' ')
+    .replace(/\b(january|february|march|april|may|june|july|august|september|october|november|december)\b\s*\d{0,4}/gi, '')
+    .replace(/\d{4}/g, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+  return cleaned || null;
+}
+
 export async function parseEmailForBill(
   subject: string,
   textBody: string,
   htmlBody?: string
 ): Promise<ParsedBillData> {
   const content = `Email subject: ${subject}\n\n${textBody || htmlBody || ''}`.slice(0, 8000);
+  const fullText = `${subject} ${textBody || ''} ${htmlBody || ''}`;
 
   try {
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -82,17 +141,33 @@ export async function parseEmailForBill(
       rawText: content.slice(0, 500),
     };
   } catch (err: any) {
-    console.error('[emailParser] Extraction failed:', err.message);
+    console.error('[emailParser] AI extraction failed, using regex fallback:', err.message);
 
-    const vendorFromSubject = subject.replace(/^(fw:|fwd:|re:)\s*/gi, '').trim() || null;
+    const vendorFromSubject = extractVendorFromSubject(subject);
+    const amount = extractAmountFromText(fullText);
+    const dueDate = extractDateFromText(fullText);
+    const accountNumber = extractAccountFromText(fullText);
 
+    let matchedProviderId: string | undefined;
+    let matchedProviderName: string | undefined;
+    if (vendorFromSubject) {
+      const match = fuzzyMatchProvider(vendorFromSubject);
+      if (match) {
+        matchedProviderId = match.providerId;
+        matchedProviderName = match.providerName;
+      }
+    }
+
+    const hasData = !!(amount || dueDate || accountNumber);
     return {
-      vendor: vendorFromSubject,
-      amount: null,
-      dueDate: null,
-      accountNumber: null,
+      vendor: matchedProviderName || vendorFromSubject,
+      amount,
+      dueDate,
+      accountNumber,
       category: null,
-      confidence: 0.4,
+      confidence: hasData ? 0.5 : 0.3,
+      matchedProviderId,
+      matchedProviderName,
       rawText: content.slice(0, 500),
     };
   }
