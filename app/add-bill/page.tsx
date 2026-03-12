@@ -7,6 +7,7 @@ import {
   ArrowLeft, Home, Plus, Settings, CalendarDays, Loader2, AlertTriangle,
   ChevronDown, X, Search, Camera, ImageIcon, FileText,
   CheckCircle, AlertCircle, Pencil, Sparkles, Receipt, DollarSign,
+  Mail, Copy, CheckCheck, Inbox,
 } from "lucide-react";
 import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
@@ -59,6 +60,10 @@ export default function AddBillPage() {
     billId: string; billerName: string; frequency: RecurringFrequency; matchCount: number;
   } | null>(null);
 
+  const [aliasCopied, setAliasCopied] = useState(false);
+  const [emailAlias, setEmailAlias] = useState<string | null>(null);
+  const [aliasLoading, setAliasLoading] = useState(false);
+
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const pdfInputRef = useRef<HTMLInputElement>(null);
@@ -83,6 +88,27 @@ export default function AddBillPage() {
       setExistingBills(bills);
     } catch { setBillCount(null); }
     finally { setLoadingCount(false); }
+  };
+
+  const loadEmailAlias = async () => {
+    if (!user || emailAlias) return;
+    setAliasLoading(true);
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch('/api/email-alias', { headers: { Authorization: `Bearer ${token}` } });
+      if (res.ok) {
+        const data = await res.json();
+        setEmailAlias(data.aliasTag || null);
+      }
+    } catch {}
+    finally { setAliasLoading(false); }
+  };
+
+  const handleCopyAlias = () => {
+    if (!emailAlias) return;
+    navigator.clipboard.writeText(`bills+${emailAlias}@mybillport.com`).catch(() => {});
+    setAliasCopied(true);
+    setTimeout(() => setAliasCopied(false), 2000);
   };
 
   const selectedCategory = useMemo(() => getCategoryByValue(category), [category]);
@@ -479,6 +505,49 @@ export default function AddBillPage() {
               <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => handleInputChange(e, 'camera')} />
               <input ref={photoInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => handleInputChange(e, 'photo')} />
               <input ref={pdfInputRef} type="file" accept="application/pdf" className="hidden" onChange={(e) => handleInputChange(e, 'pdf')} />
+            </div>
+
+            <div className="bg-white rounded-xl p-5 space-y-3">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Mail className="w-6 h-6 text-blue-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold text-slate-800">Forward Bill Emails</p>
+                  <p className="text-sm text-slate-500">Auto-import bills from your email</p>
+                </div>
+              </div>
+              {emailAlias ? (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5">
+                    <span className="flex-1 text-sm text-slate-700 font-mono truncate">bills+{emailAlias}@mybillport.com</span>
+                    <button onClick={handleCopyAlias} className="text-teal-600 hover:text-teal-700 transition-colors flex-shrink-0">
+                      {aliasCopied ? <CheckCheck className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  <p className="text-xs text-slate-400">
+                    Forward bill emails to this address. They will appear in your{' '}
+                    <Link href="/pending-bills" className="text-teal-600 underline hover:no-underline">Pending Bills</Link>{' '}
+                    inbox for review.
+                  </p>
+                </div>
+              ) : (
+                <button
+                  onClick={loadEmailAlias}
+                  disabled={aliasLoading}
+                  className="w-full py-2.5 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg text-blue-700 text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                >
+                  {aliasLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
+                  {aliasLoading ? 'Getting your address...' : 'Get Your Forwarding Address'}
+                </button>
+              )}
+              <Link
+                href="/pending-bills"
+                className="flex items-center justify-center gap-1.5 text-sm text-teal-600 font-medium hover:underline"
+              >
+                <Inbox className="w-4 h-4" />
+                View Pending Bills Inbox
+              </Link>
             </div>
           </div>
         )}
