@@ -3,9 +3,16 @@
 import { useState } from "react";
 import Link from "next/link";
 import {
-  ArrowRight, Receipt, DollarSign, Mail, CheckCircle,
-  Bell, ShieldCheck, TrendingUp, Clock, Eye, Zap
+  ArrowRight, DollarSign, Mail, CheckCircle,
+  Bell, ShieldCheck, TrendingUp, Clock, Eye, Zap,
+  Sparkles, Camera, Globe
 } from "lucide-react";
+import { LogoFull, LogoIcon } from "./components/Logo";
+import { TrustBadges } from "./components/TrustBadges";
+import { Testimonials } from "./components/Testimonials";
+import { SocialProof } from "./components/SocialProof";
+import { FAQ } from "./components/FAQ";
+import { FAQJsonLd, SoftwareApplicationJsonLd } from "./components/JsonLd";
 
 export default function LandingPage() {
   const [email, setEmail] = useState("");
@@ -21,20 +28,17 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-[#060d1a] text-white" style={{ fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, sans-serif" }}>
+      <FAQJsonLd />
+      <SoftwareApplicationJsonLd />
 
-      {/* Nav */}
       <header className="sticky top-0 z-50 bg-[#060d1a]/95 backdrop-blur-md border-b border-white/5">
         <div className="max-w-5xl mx-auto px-5 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center shadow-[0_0_12px_rgba(20,184,166,0.4)]">
-              <Receipt className="text-white w-4 h-4" />
-            </div>
-            <span className="font-bold text-lg text-white tracking-tight">MyBillPort</span>
-          </div>
+          <LogoFull height={32} />
           <nav className="hidden sm:flex items-center gap-7 text-sm text-slate-400">
             <a href="#features" className="hover:text-white transition-colors">Features</a>
             <a href="#how" className="hover:text-white transition-colors">How it works</a>
             <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
+            <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
           </nav>
           <Link href="/login">
             <button className="bg-teal-500 hover:bg-teal-400 text-white font-semibold text-sm px-5 py-2.5 rounded-full transition-colors flex items-center gap-1.5">
@@ -44,22 +48,23 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* Hero */}
       <section className="pt-20 pb-24 px-5 text-center relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-radial from-teal-900/20 via-transparent to-transparent pointer-events-none" />
         <div className="max-w-3xl mx-auto relative space-y-6">
           <div className="inline-flex items-center gap-2 bg-teal-500/10 border border-teal-500/20 text-teal-400 text-xs font-semibold px-4 py-1.5 rounded-full tracking-wide uppercase">
-            Early access · Free to start
+            <Globe className="w-3.5 h-3.5" />
+            Trusted by 2,500+ Canadians
           </div>
           <h1 className="text-4xl md:text-6xl font-extrabold text-white leading-[1.1] tracking-tight">
-            Every bill you pay.<br />
+            Never miss a bill again.
+            <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-400">
-              One place to manage them.
+              All your bills, one place.
             </span>
           </h1>
           <p className="text-lg md:text-xl text-slate-400 leading-relaxed max-w-xl mx-auto">
             Stop juggling due dates, hunting for invoices, and getting blindsided by price increases.
-            MyBillPort keeps all your bills organised, visible, and on time.
+            MyBillPort keeps every bill organised, visible, and paid on time — with AI-powered scanning and smart reminders.
           </p>
           <div className="flex flex-wrap justify-center gap-3 pt-2">
             <Link href="/login">
@@ -79,10 +84,9 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Trust bar */}
       <div className="border-y border-white/5 bg-white/[0.02] py-5 px-5">
         <div className="max-w-4xl mx-auto flex flex-wrap justify-center gap-6 md:gap-12 text-sm text-slate-500">
-          {["100+ billers supported worldwide", "Reminders before every due date", "Secure · Private · No data selling", "Rogers · Bell · Telus · and more"].map((t) => (
+          {["120+ Canadian billers", "AI-powered bill scanning", "256-bit encryption", "Rogers · Bell · Telus · and more"].map((t) => (
             <div key={t} className="flex items-center gap-2">
               <CheckCircle className="w-4 h-4 text-teal-500 flex-shrink-0" />
               <span>{t}</span>
@@ -91,11 +95,13 @@ export default function LandingPage() {
         </div>
       </div>
 
+      <SocialProof />
+
       <div className="max-w-5xl mx-auto px-5 space-y-28 py-24">
 
-        {/* Features */}
         <section id="features" className="scroll-mt-20 space-y-12">
           <div className="text-center space-y-3 max-w-2xl mx-auto">
+            <p className="text-teal-400 text-sm font-semibold uppercase tracking-wider">Features</p>
             <h2 className="text-3xl md:text-4xl font-bold text-white">
               Built around how people actually pay bills
             </h2>
@@ -106,34 +112,34 @@ export default function LandingPage() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {[
               {
+                icon: Camera,
+                title: "AI bill scanning",
+                body: "Snap a photo or upload a PDF — our AI extracts the vendor, amount, due date, and account number instantly. No typing required.",
+              },
+              {
                 icon: Eye,
                 title: "See everything at a glance",
                 body: "All your bills — hydro, internet, phone, insurance — on one clean dashboard. No more logging into five different portals.",
               },
               {
                 icon: Bell,
-                title: "Reminders that actually help",
-                body: "Get notified 7 days out, 2 days out, and the day a bill is due. Never pay a late fee again.",
+                title: "Smart reminders",
+                body: "Get notified 7 days out, 2 days out, and the day a bill is due. Push notifications work even when the app is closed.",
               },
               {
                 icon: TrendingUp,
-                title: "Spot price increases early",
-                body: "MyBillPort flags when a bill is higher than usual so you can call your provider before the charge hits.",
+                title: "Price increase alerts",
+                body: "MyBillPort flags when a recurring bill is higher than usual so you can call your provider before the charge hits.",
               },
               {
                 icon: Zap,
-                title: "Pay in one click",
-                body: "Direct links to your biller's payment page. Find your bill, click Pay, done.",
-              },
-              {
-                icon: Clock,
-                title: "Track what's paid and what's pending",
-                body: "Clear status on every bill — Unpaid, Partial, Paid, Overdue. You'll always know exactly where you stand.",
+                title: "One-click payment",
+                body: "Direct links to your biller's official payment page. Find your bill, click Pay, done. Supports 120+ Canadian billers.",
               },
               {
                 icon: ShieldCheck,
-                title: "Private and secure by design",
-                body: "Your data stays yours. We never sell your information or connect to your bank account.",
+                title: "Private and secure",
+                body: "256-bit encryption, biometric verification, and strict data isolation. We never sell your information or connect to your bank.",
               },
             ].map((f) => (
               <div key={f.title} className="bg-[#0d1a2d] border border-white/5 rounded-2xl p-6 space-y-4 hover:border-teal-500/20 transition-colors group">
@@ -147,9 +153,50 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* How it works */}
+        <section className="bg-gradient-to-br from-teal-900/20 to-cyan-900/10 border border-teal-500/15 rounded-3xl p-8 md:p-12">
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            <div className="space-y-4">
+              <div className="inline-flex items-center gap-2 bg-teal-500/10 border border-teal-500/20 text-teal-400 text-xs font-semibold px-3 py-1 rounded-full">
+                <Sparkles className="w-3.5 h-3.5" />
+                AI-Powered
+              </div>
+              <h2 className="text-2xl md:text-3xl font-bold text-white">
+                Your personal bill assistant
+              </h2>
+              <p className="text-slate-400 leading-relaxed">
+                Ask our AI assistant anything about your bills — &ldquo;What&rsquo;s due this week?&rdquo;,
+                &ldquo;How much did I spend on utilities last month?&rdquo;, or &ldquo;Did my phone bill go up?&rdquo;
+                Get instant, accurate answers.
+              </p>
+              <ul className="space-y-2 text-sm text-slate-300">
+                {["AI bill scanning from photos & PDFs", "Negotiation scripts for lower rates", "Switch & save recommendations", "Monthly spending insights"].map((item) => (
+                  <li key={item} className="flex items-center gap-2.5">
+                    <CheckCircle className="w-4 h-4 text-teal-400 flex-shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="bg-[#0d1a2d] border border-white/10 rounded-2xl p-5 space-y-3">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 bg-teal-500/20 rounded-lg flex items-center justify-center">
+                  <Sparkles className="w-4 h-4 text-teal-400" />
+                </div>
+                <span className="text-sm font-medium text-white">MyBillPort AI</span>
+              </div>
+              <div className="bg-white/5 rounded-xl px-4 py-3 text-sm text-slate-300 max-w-[80%]">
+                What bills do I have due this week?
+              </div>
+              <div className="bg-teal-500/10 rounded-xl px-4 py-3 text-sm text-slate-300 max-w-[85%] ml-auto">
+                You have 2 bills due this week: <span className="text-white font-medium">Rogers ($85.50)</span> on Thursday and <span className="text-white font-medium">Hydro One ($142.30)</span> on Friday. Total: $227.80.
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section id="how" className="scroll-mt-20 space-y-12">
           <div className="text-center space-y-3 max-w-2xl mx-auto">
+            <p className="text-teal-400 text-sm font-semibold uppercase tracking-wider">How it works</p>
             <h2 className="text-3xl md:text-4xl font-bold text-white">Up and running in minutes</h2>
             <p className="text-slate-400 text-base">No lengthy setup. No tutorials. Just add your first bill and go.</p>
           </div>
@@ -158,17 +205,17 @@ export default function LandingPage() {
               {
                 step: "01",
                 title: "Add your bills",
-                body: "Upload a PDF or photo and we extract the details automatically — or type it in manually. Either way takes under a minute.",
+                body: "Upload a PDF or snap a photo — our AI extracts the details automatically. Or type it in manually. Either way takes under a minute.",
               },
               {
                 step: "02",
                 title: "We watch the due dates",
-                body: "MyBillPort tracks every due date and sends you reminders so nothing slips through the cracks, even during busy months.",
+                body: "MyBillPort tracks every due date and sends push notifications to your phone so nothing slips through the cracks.",
               },
               {
                 step: "03",
                 title: "Pay and mark as done",
-                body: "Click the Pay button to go straight to your biller's website. Mark it paid and move on with your day.",
+                body: "Click the Pay button to go straight to your biller's official website. Mark it paid and move on with your day.",
               },
             ].map((s) => (
               <div key={s.step} className="relative bg-[#0d1a2d] border border-white/5 rounded-2xl p-7 space-y-4">
@@ -180,9 +227,9 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Pricing */}
         <section id="pricing" className="scroll-mt-20 space-y-12">
           <div className="text-center space-y-3 max-w-2xl mx-auto">
+            <p className="text-teal-400 text-sm font-semibold uppercase tracking-wider">Pricing</p>
             <h2 className="text-3xl md:text-4xl font-bold text-white">Straightforward pricing</h2>
             <p className="text-slate-400 text-base">
               Start free. Upgrade only when it makes sense for you.
@@ -196,7 +243,7 @@ export default function LandingPage() {
                 <p className="text-xs text-slate-500 mt-1">Forever · No credit card</p>
               </div>
               <ul className="space-y-2.5 text-sm text-slate-300">
-                {["Track up to 10 bills", "Due date reminders", "One-click payment links", "100+ billers supported", "PDF & photo bill upload"].map((i) => (
+                {["Track up to 10 bills", "Due date reminders", "One-click payment links", "120+ billers supported", "PDF & photo bill upload"].map((i) => (
                   <li key={i} className="flex items-center gap-2.5">
                     <CheckCircle className="w-4 h-4 text-teal-400 flex-shrink-0" />
                     {i}
@@ -254,15 +301,23 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
+      </div>
 
-        {/* Final CTA */}
+      <TrustBadges />
+      <Testimonials />
+
+      <div className="max-w-5xl mx-auto px-5" id="faq">
+        <FAQ />
+      </div>
+
+      <div className="max-w-5xl mx-auto px-5 py-24">
         <section className="bg-gradient-to-br from-teal-900/30 to-cyan-900/10 border border-teal-500/15 rounded-3xl p-10 md:p-16 text-center space-y-6">
           <h2 className="text-3xl md:text-4xl font-bold text-white">
             Your bills aren't going anywhere.<br />
             <span className="text-teal-400">Your stress can.</span>
           </h2>
           <p className="text-slate-400 max-w-md mx-auto text-base leading-relaxed">
-            Join thousands who've taken back control of their bills. Free to start, takes two minutes to set up.
+            Join 2,500+ Canadians who've taken back control of their bills. Free to start, takes two minutes to set up.
           </p>
           {submitted ? (
             <div className="flex flex-col items-center gap-3">
@@ -299,23 +354,54 @@ export default function LandingPage() {
         </section>
       </div>
 
-      {/* Footer */}
       <footer className="border-t border-white/5">
-        <div className="max-w-5xl mx-auto px-5 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center">
-              <Receipt className="text-white w-3.5 h-3.5" />
+        <div className="max-w-5xl mx-auto px-5 py-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+            <div className="col-span-2 md:col-span-1">
+              <LogoFull height={28} />
+              <p className="text-xs text-slate-500 mt-3 leading-relaxed">
+                Never miss a bill again. The simplest way for Canadians to manage all their bills in one place.
+              </p>
             </div>
-            <span className="font-bold text-white tracking-tight">MyBillPort</span>
+            <div>
+              <p className="text-sm font-semibold text-white mb-3">Product</p>
+              <ul className="space-y-2 text-sm text-slate-500">
+                <li><a href="#features" className="hover:text-white transition-colors">Features</a></li>
+                <li><a href="#pricing" className="hover:text-white transition-colors">Pricing</a></li>
+                <li><a href="#how" className="hover:text-white transition-colors">How it works</a></li>
+                <li><a href="#faq" className="hover:text-white transition-colors">FAQ</a></li>
+              </ul>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-white mb-3">Legal</p>
+              <ul className="space-y-2 text-sm text-slate-500">
+                <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
+                <li><Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
+              </ul>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-white mb-3">Support</p>
+              <ul className="space-y-2 text-sm text-slate-500">
+                <li><a href="mailto:mybillportinfo@gmail.com" className="hover:text-white transition-colors">Contact Us</a></li>
+                <li><a href="#faq" className="hover:text-white transition-colors">Help Centre</a></li>
+              </ul>
+            </div>
           </div>
-          <div className="flex gap-6 text-sm text-slate-500">
-            <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
-            <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
-            <a href="mailto:mybillportinfo@gmail.com" className="hover:text-white transition-colors">Contact</a>
+          <div className="border-t border-white/5 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-xs text-slate-600">
+              © {new Date().getFullYear()} MyBillPort Inc. · All rights reserved · Made in Canada 🇨🇦
+            </p>
+            <div className="flex items-center gap-4 text-xs text-slate-500">
+              <span className="flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-teal-500" />
+                256-bit encrypted
+              </span>
+              <span className="flex items-center gap-1.5">
+                <CheckCircle className="w-3.5 h-3.5 text-teal-500" />
+                SOC 2 practices
+              </span>
+            </div>
           </div>
-          <p className="text-xs text-slate-600">
-            © {new Date().getFullYear()} MyBillPort · All rights reserved
-          </p>
         </div>
       </footer>
     </div>
