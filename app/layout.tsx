@@ -45,9 +45,9 @@ export const metadata: Metadata = {
     description: 'Track, manage, and pay all your Canadian bills in one place. AI-powered scanning, smart reminders, 120+ billers supported. Free to start.',
     images: [
       {
-        url: '/og-image.png',
-        width: 1200,
-        height: 630,
+        url: '/icon-512.png',
+        width: 512,
+        height: 512,
         alt: 'MyBillPort - Canadian Bill Management App',
       },
     ],
@@ -56,7 +56,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'MyBillPort — Never Miss a Bill Again',
     description: 'Track, manage, and pay all your Canadian bills in one place. AI-powered scanning, smart reminders, 120+ billers. Free to start.',
-    images: ['/og-image.png'],
+    images: ['/icon-512.png'],
   },
   robots: {
     index: true,

@@ -44,30 +44,38 @@ export function FAQ() {
             Everything you need to know about MyBillPort.
           </p>
         </div>
-        <div className="space-y-2">
-          {faqs.map((faq, i) => (
-            <div
-              key={i}
-              className="bg-[#0d1a2d] border border-white/5 rounded-xl overflow-hidden"
-            >
-              <button
-                onClick={() => setOpenIndex(openIndex === i ? null : i)}
-                className="w-full flex items-center justify-between px-5 py-4 text-left"
+        <div className="space-y-2" role="region" aria-label="Frequently asked questions">
+          {faqs.map((faq, i) => {
+            const isOpen = openIndex === i;
+            const panelId = `faq-panel-${i}`;
+            const headingId = `faq-heading-${i}`;
+            return (
+              <div
+                key={i}
+                className="bg-[#0d1a2d] border border-white/5 rounded-xl overflow-hidden"
               >
-                <span className="text-sm font-medium text-white pr-4">{faq.question}</span>
-                <ChevronDown
-                  className={`w-4 h-4 text-slate-400 flex-shrink-0 transition-transform ${
-                    openIndex === i ? 'rotate-180' : ''
-                  }`}
-                />
-              </button>
-              {openIndex === i && (
-                <div className="px-5 pb-4">
-                  <p className="text-sm text-slate-400 leading-relaxed">{faq.answer}</p>
-                </div>
-              )}
-            </div>
-          ))}
+                <button
+                  id={headingId}
+                  onClick={() => setOpenIndex(isOpen ? null : i)}
+                  aria-expanded={isOpen}
+                  aria-controls={panelId}
+                  className="w-full flex items-center justify-between px-5 py-4 text-left"
+                >
+                  <span className="text-sm font-medium text-white pr-4">{faq.question}</span>
+                  <ChevronDown
+                    className={`w-4 h-4 text-slate-400 flex-shrink-0 transition-transform ${
+                      isOpen ? 'rotate-180' : ''
+                    }`}
+                  />
+                </button>
+                {isOpen && (
+                  <div id={panelId} role="region" aria-labelledby={headingId} className="px-5 pb-4">
+                    <p className="text-sm text-slate-400 leading-relaxed">{faq.answer}</p>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>

@@ -40,10 +40,8 @@ export default function LandingPage() {
             <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
             <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
           </nav>
-          <Link href="/login">
-            <button className="bg-teal-500 hover:bg-teal-400 text-white font-semibold text-sm px-5 py-2.5 rounded-full transition-colors flex items-center gap-1.5">
+          <Link href="/login" className="bg-teal-500 hover:bg-teal-400 text-white font-semibold text-sm px-5 py-2.5 rounded-full transition-colors flex items-center gap-1.5">
               Get started free
-            </button>
           </Link>
         </div>
       </header>
@@ -67,15 +65,11 @@ export default function LandingPage() {
             MyBillPort keeps every bill organised, visible, and paid on time — with AI-powered scanning and smart reminders.
           </p>
           <div className="flex flex-wrap justify-center gap-3 pt-2">
-            <Link href="/login">
-              <button className="bg-teal-500 hover:bg-teal-400 text-white font-bold px-8 py-4 rounded-full transition-colors flex items-center gap-2 text-base shadow-lg shadow-teal-900/40">
+            <Link href="/login" className="bg-teal-500 hover:bg-teal-400 text-white font-bold px-8 py-4 rounded-full transition-colors flex items-center gap-2 text-base shadow-lg shadow-teal-900/40">
                 Start for free <ArrowRight className="w-5 h-5" />
-              </button>
             </Link>
-            <a href="#how">
-              <button className="border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 font-medium px-8 py-4 rounded-full transition-colors text-base">
+            <a href="#how" className="border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 font-medium px-8 py-4 rounded-full transition-colors text-base inline-block">
                 See how it works
-              </button>
             </a>
           </div>
           <p className="text-xs text-slate-500 pt-1">
@@ -250,10 +244,8 @@ export default function LandingPage() {
                   </li>
                 ))}
               </ul>
-              <Link href="/login">
-                <button className="w-full border border-teal-500/40 text-teal-400 hover:bg-teal-500/10 font-semibold py-3 rounded-full transition-colors text-sm">
+              <Link href="/login" className="block w-full border border-teal-500/40 text-teal-400 hover:bg-teal-500/10 font-semibold py-3 rounded-full transition-colors text-sm text-center">
                   Get started free
-                </button>
               </Link>
             </div>
 
@@ -293,10 +285,8 @@ export default function LandingPage() {
                   </li>
                 ))}
               </ul>
-              <a href="mailto:mybillportinfo@gmail.com">
-                <button className="w-full border border-white/10 text-slate-300 hover:bg-white/5 font-semibold py-3 rounded-full transition-colors text-sm">
+              <a href="mailto:mybillportinfo@gmail.com" className="block w-full border border-white/10 text-slate-300 hover:bg-white/5 font-semibold py-3 rounded-full transition-colors text-sm text-center">
                   Contact us
-                </button>
               </a>
             </div>
           </div>
@@ -328,10 +318,8 @@ export default function LandingPage() {
             </div>
           ) : (
             <div className="space-y-5">
-              <Link href="/login">
-                <button className="bg-teal-500 hover:bg-teal-400 text-white font-bold px-10 py-4 rounded-full transition-colors inline-flex items-center gap-2 text-base shadow-lg shadow-teal-900/50">
+              <Link href="/login" className="bg-teal-500 hover:bg-teal-400 text-white font-bold px-10 py-4 rounded-full transition-colors inline-flex items-center gap-2 text-base shadow-lg shadow-teal-900/50">
                   Start managing your bills free <ArrowRight className="w-5 h-5" />
-                </button>
               </Link>
               <div>
                 <p className="text-xs text-slate-500 mb-3">Or get notified when new features drop</p>

@@ -40,10 +40,8 @@ export default function PayBillsOnlineCanadaPage() {
             Stop bookmarking 10 different biller websites. MyBillPort gives you one-click payment links
             to every major Canadian biller — utilities, telecom, insurance, and more.
           </p>
-          <Link href="/login">
-            <button className="bg-teal-500 hover:bg-teal-400 text-white font-bold px-8 py-4 rounded-full transition-colors inline-flex items-center gap-2">
+          <Link href="/login" className="bg-teal-500 hover:bg-teal-400 text-white font-bold px-8 py-4 rounded-full transition-colors inline-flex items-center gap-2">
               Start paying bills smarter <ArrowRight className="w-5 h-5" />
-            </button>
           </Link>
         </section>
 
@@ -93,10 +91,8 @@ export default function PayBillsOnlineCanadaPage() {
         <section className="bg-gradient-to-br from-teal-900/30 to-cyan-900/10 border border-teal-500/15 rounded-2xl p-8 text-center space-y-4">
           <h2 className="text-2xl font-bold text-white">All your billers, one dashboard</h2>
           <p className="text-slate-400">Free to start. No credit card required. Supports 120+ Canadian billers.</p>
-          <Link href="/login">
-            <button className="bg-teal-500 hover:bg-teal-400 text-white font-bold px-8 py-4 rounded-full transition-colors inline-flex items-center gap-2">
+          <Link href="/login" className="bg-teal-500 hover:bg-teal-400 text-white font-bold px-8 py-4 rounded-full transition-colors inline-flex items-center gap-2">
               Get started free <ArrowRight className="w-5 h-5" />
-            </button>
           </Link>
         </section>
       </div>

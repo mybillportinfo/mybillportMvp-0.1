@@ -31,10 +31,8 @@ export default function BillTrackerPage() {
             Spreadsheets are tedious. Calendar reminders miss context. Bank apps only show what you've already paid.
             MyBillPort gives you a complete picture of every bill — past, present, and upcoming.
           </p>
-          <Link href="/login">
-            <button className="bg-teal-500 hover:bg-teal-400 text-white font-bold px-8 py-4 rounded-full transition-colors inline-flex items-center gap-2">
+          <Link href="/login" className="bg-teal-500 hover:bg-teal-400 text-white font-bold px-8 py-4 rounded-full transition-colors inline-flex items-center gap-2">
               Try it free <ArrowRight className="w-5 h-5" />
-            </button>
           </Link>
         </section>
 
@@ -97,10 +95,8 @@ export default function BillTrackerPage() {
         <section className="bg-gradient-to-br from-teal-900/30 to-cyan-900/10 border border-teal-500/15 rounded-2xl p-8 text-center space-y-4">
           <h2 className="text-2xl font-bold text-white">Start tracking your bills today</h2>
           <p className="text-slate-400">Free to start. No credit card. Under 2 minutes to set up.</p>
-          <Link href="/login">
-            <button className="bg-teal-500 hover:bg-teal-400 text-white font-bold px-8 py-4 rounded-full transition-colors inline-flex items-center gap-2">
+          <Link href="/login" className="bg-teal-500 hover:bg-teal-400 text-white font-bold px-8 py-4 rounded-full transition-colors inline-flex items-center gap-2">
               Get started free <ArrowRight className="w-5 h-5" />
-            </button>
           </Link>
         </section>
       </div>

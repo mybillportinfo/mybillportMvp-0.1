@@ -63,12 +63,6 @@ export function SoftwareApplicationJsonLd() {
       priceCurrency: 'CAD',
       description: 'Free plan includes up to 10 bills with reminders',
     },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.8',
-      ratingCount: '156',
-      bestRating: '5',
-    },
     description: 'MyBillPort is a Canadian bill management app that helps you track due dates, get reminders, and pay bills with one click. Supports 120+ Canadian billers.',
   };
 
@@ -84,23 +78,27 @@ export function FAQJsonLd() {
   const faqs = [
     {
       question: 'Is MyBillPort free to use?',
-      answer: 'Yes! MyBillPort offers a free plan that lets you track up to 10 bills with full reminder functionality. No credit card required.',
+      answer: 'Yes! MyBillPort offers a free Starter plan that lets you track up to 10 bills with full reminder functionality. No credit card required, no trial period — it\'s free forever.',
     },
     {
       question: 'Does MyBillPort connect to my bank account?',
-      answer: 'No. MyBillPort never connects to your bank. We simply help you organize your bills and redirect you to the official biller website when you want to pay.',
+      answer: 'No. MyBillPort never connects to your bank or stores payment information. When you want to pay a bill, we redirect you to the official biller\'s website so you pay them directly.',
     },
     {
       question: 'What Canadian billers are supported?',
-      answer: 'MyBillPort supports 120+ Canadian billers including Rogers, Bell, Telus, Hydro One, BC Hydro, Enbridge, and many more across all provinces.',
+      answer: 'We support 120+ Canadian billers including Rogers, Bell, Telus, Fido, Koodo, Hydro One, BC Hydro, Enbridge, Toronto Hydro, SaskPower, and many more across all 10 provinces.',
     },
     {
       question: 'How does AI bill scanning work?',
-      answer: 'Simply take a photo of your bill or upload a PDF. Our AI powered by Claude Vision reads the bill and automatically extracts the vendor, amount, due date, and account number.',
+      answer: 'Simply take a photo of your bill or upload a PDF. Our AI reads the document and automatically extracts the vendor name, amount owing, due date, and account number — no manual data entry needed.',
     },
     {
       question: 'Is my data secure?',
-      answer: 'Absolutely. We use 256-bit encryption, never sell your data, and never store payment information. Your bill data is isolated per user with strict Firebase security rules.',
+      answer: 'Absolutely. We use 256-bit AES encryption, strict per-user data isolation with Firebase security rules, and optional biometric authentication. We never sell your data to anyone.',
+    },
+    {
+      question: 'Can I use MyBillPort on my phone?',
+      answer: 'Yes. MyBillPort is a Progressive Web App (PWA) — just visit mybillport.com on your phone and add it to your home screen. You\'ll get native push notifications for bill reminders too.',
     },
   ];
 

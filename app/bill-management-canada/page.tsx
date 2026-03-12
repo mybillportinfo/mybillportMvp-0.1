@@ -40,10 +40,8 @@ export default function BillManagementCanadaPage() {
             Canadians juggle an average of 8-12 recurring bills every month — utilities, telecom, insurance, subscriptions.
             MyBillPort brings them all into one clean dashboard so you never miss a payment again.
           </p>
-          <Link href="/login">
-            <button className="bg-teal-500 hover:bg-teal-400 text-white font-bold px-8 py-4 rounded-full transition-colors inline-flex items-center gap-2">
+          <Link href="/login" className="bg-teal-500 hover:bg-teal-400 text-white font-bold px-8 py-4 rounded-full transition-colors inline-flex items-center gap-2">
               Start for free <ArrowRight className="w-5 h-5" />
-            </button>
           </Link>
         </section>
 
@@ -108,10 +106,8 @@ export default function BillManagementCanadaPage() {
         <section className="bg-gradient-to-br from-teal-900/30 to-cyan-900/10 border border-teal-500/15 rounded-2xl p-8 text-center space-y-4">
           <h2 className="text-2xl font-bold text-white">Ready to simplify your bills?</h2>
           <p className="text-slate-400">Join 2,500+ Canadians already using MyBillPort. Free forever plan available.</p>
-          <Link href="/login">
-            <button className="bg-teal-500 hover:bg-teal-400 text-white font-bold px-8 py-4 rounded-full transition-colors inline-flex items-center gap-2">
+          <Link href="/login" className="bg-teal-500 hover:bg-teal-400 text-white font-bold px-8 py-4 rounded-full transition-colors inline-flex items-center gap-2">
               Get started free <ArrowRight className="w-5 h-5" />
-            </button>
           </Link>
         </section>
       </div>
