@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Home, Plus, Settings, CalendarDays, User, Bell, Shield, Lock, LogOut, ChevronRight, Loader2, X, Eye, EyeOff, MessageSquare, Receipt, DollarSign, Check, AlertTriangle, Camera, Trash2, Mail, Smartphone, CreditCard, Forward, Copy, CheckCheck, Sparkles, Inbox, Gift, Users } from "lucide-react";
+import { ArrowLeft, Home, Plus, Settings, CalendarDays, User, Bell, Shield, Lock, LogOut, ChevronRight, Loader2, X, Eye, EyeOff, MessageSquare, Receipt, DollarSign, Check, AlertTriangle, Camera, Trash2, Mail, Smartphone, CreditCard, Forward, Copy, CheckCheck, Sparkles, Inbox, Gift, Users, Fingerprint } from "lucide-react";
 import { usePushNotifications } from '../hooks/usePushNotifications';
 import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
@@ -53,6 +53,11 @@ export default function SettingsPage() {
   const [deletingAccount, setDeletingAccount] = useState(false);
   const photoInputRef = useRef<HTMLInputElement>(null);
 
+  const [biometricEnabled, setBiometricEnabled] = useState(false);
+  const [biometricLoading, setBiometricLoading] = useState(false);
+  const [biometricSupported, setBiometricSupported] = useState(false);
+  const [biometricError, setBiometricError] = useState<string | null>(null);
+
   useEffect(() => {
     if (!loading && !user) router.push('/login');
   }, [user, loading, router]);
@@ -78,6 +83,18 @@ export default function SettingsPage() {
   useEffect(() => {
     if (user) setLinkedProviders(getLinkedProviders());
   }, [user]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setBiometricSupported(!!window.PublicKeyCredential);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (ctxProfile && typeof ctxProfile.biometricEnabled === 'boolean') {
+      setBiometricEnabled(ctxProfile.biometricEnabled);
+    }
+  }, [ctxProfile]);
 
   useEffect(() => {
     if (ctxProfile?.referralCode) {
@@ -273,6 +290,50 @@ export default function SettingsPage() {
     navigator.clipboard.writeText(email).catch(() => {});
     setAliasCopied(true);
     setTimeout(() => setAliasCopied(false), 2000);
+  };
+
+  const handleBiometricToggle = async () => {
+    if (!user) return;
+    setBiometricLoading(true);
+    setBiometricError(null);
+    try {
+      const token = await user.getIdToken();
+      if (biometricEnabled) {
+        const res = await fetch('/api/webauthn/disable', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error('Failed to disable biometric');
+        setBiometricEnabled(false);
+      } else {
+        const { startRegistration } = await import('@simplewebauthn/browser');
+        const regRes = await fetch('/api/webauthn/register', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!regRes.ok) throw new Error('Failed to start registration');
+        const { options } = await regRes.json();
+        const attResp = await startRegistration({ optionsJSON: options });
+        const verifyRes = await fetch('/api/webauthn/verify-registration', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ response: attResp }),
+        });
+        if (!verifyRes.ok) {
+          const err = await verifyRes.json();
+          throw new Error(err.error || 'Verification failed');
+        }
+        setBiometricEnabled(true);
+      }
+    } catch (err: any) {
+      if (err?.name === 'NotAllowedError') {
+        setBiometricError('Biometric setup was cancelled');
+      } else {
+        setBiometricError(err?.message || 'Failed to toggle biometric');
+      }
+    } finally {
+      setBiometricLoading(false);
+    }
   };
 
   const isPremium = subscription.status === 'active';
@@ -960,6 +1021,32 @@ export default function SettingsPage() {
                     </div>
                     <span className="text-xs bg-slate-100 text-slate-500 px-2 py-1 rounded-full font-medium">Coming Soon</span>
                   </div>
+
+                  {biometricSupported && (
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Fingerprint className="w-5 h-5 text-slate-400" />
+                        <div>
+                          <p className="font-medium text-slate-800">Biometric Payment Auth</p>
+                          <p className="text-sm text-slate-500">
+                            {biometricEnabled ? 'Verify with fingerprint/face before paying' : 'Use fingerprint or face to confirm payments'}
+                          </p>
+                          {biometricError && <p className="text-xs text-red-500 mt-1">{biometricError}</p>}
+                        </div>
+                      </div>
+                      <button
+                        onClick={handleBiometricToggle}
+                        disabled={biometricLoading}
+                        className={`relative w-12 h-7 rounded-full transition-colors ${biometricEnabled ? 'bg-teal-500' : 'bg-slate-300'} ${biometricLoading ? 'opacity-50' : ''}`}
+                      >
+                        {biometricLoading ? (
+                          <Loader2 className="w-4 h-4 text-white animate-spin absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" />
+                        ) : (
+                          <span className={`block w-5 h-5 bg-white rounded-full shadow transition-transform ${biometricEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                        )}
+                      </button>
+                    </div>
+                  )}
 
                   <div className="bg-slate-50 rounded-lg p-4 space-y-3">
                     <h3 className="font-medium text-slate-800">Account Security</h3>

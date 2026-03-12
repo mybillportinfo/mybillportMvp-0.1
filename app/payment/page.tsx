@@ -3,13 +3,20 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, ExternalLink, Search, Loader2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Search, Loader2, AlertCircle, Fingerprint, ShieldCheck } from 'lucide-react';
 import { getPaymentUrl, getGoogleSearchUrl, paymentUrls } from '../lib/paymentUrls';
+import { useAuth } from '../contexts/AuthContext';
+import { useBiometricPayment } from '../hooks/useBiometricPayment';
+import { useData } from '../contexts/DataContext';
 
 function PaymentContent() {
   const searchParams = useSearchParams();
   const billerParam = searchParams.get('biller') || '';
   const amountParam = searchParams.get('amount') || '';
+  const { user } = useAuth();
+  const { profile } = useData();
+  const { authenticate, verifying, error: biometricError } = useBiometricPayment();
+  const [biometricVerified, setBiometricVerified] = useState(false);
 
   const [selectedBiller, setSelectedBiller] = useState(billerParam);
   const [searchInput, setSearchInput] = useState('');
@@ -46,13 +53,24 @@ function PaymentContent() {
     setShowDropdown(false);
   };
 
-  const handlePayNow = () => {
-    if (paymentUrl) {
-      window.open(paymentUrl, '_blank', 'noopener,noreferrer');
+  const biometricRequired = profile?.biometricEnabled === true;
+
+  const handlePayNow = async () => {
+    if (!paymentUrl) return;
+    if (biometricRequired && !biometricVerified) {
+      const ok = await authenticate();
+      if (!ok) return;
+      setBiometricVerified(true);
     }
+    window.open(paymentUrl, '_blank', 'noopener,noreferrer');
   };
 
-  const handleFindPayment = () => {
+  const handleFindPayment = async () => {
+    if (biometricRequired && !biometricVerified) {
+      const ok = await authenticate();
+      if (!ok) return;
+      setBiometricVerified(true);
+    }
     const url = getGoogleSearchUrl(selectedBiller);
     window.open(url, '_blank', 'noopener,noreferrer');
   };
@@ -84,21 +102,52 @@ function PaymentContent() {
                 <p className="text-slate-500 text-sm mb-6">${parseFloat(amountParam).toFixed(2)} CAD</p>
               )}
 
+              {biometricRequired && (
+                <div className={`flex items-center gap-2 mt-4 mb-2 p-3 rounded-lg text-sm ${biometricVerified ? 'bg-green-50 text-green-700' : 'bg-slate-50 text-slate-600'}`}>
+                  {biometricVerified ? (
+                    <>
+                      <ShieldCheck className="w-4 h-4 text-green-600" />
+                      <span>Identity verified</span>
+                    </>
+                  ) : (
+                    <>
+                      <Fingerprint className="w-4 h-4 text-slate-400" />
+                      <span>Biometric verification required to pay</span>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {biometricError && (
+                <p className="text-xs text-red-500 text-center mt-2">{biometricError}</p>
+              )}
+
               {paymentUrl ? (
-                <div className="space-y-3 mt-6">
+                <div className="space-y-3 mt-4">
                   <button
                     onClick={handlePayNow}
-                    className="w-full py-4 px-6 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 text-base"
+                    disabled={verifying}
+                    className="w-full py-4 px-6 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 text-base"
                   >
-                    Pay Now on {selectedBiller} Website
-                    <ExternalLink className="w-4 h-4" />
+                    {verifying ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Verifying...
+                      </>
+                    ) : (
+                      <>
+                        {biometricRequired && !biometricVerified && <Fingerprint className="w-4 h-4" />}
+                        Pay Now on {selectedBiller} Website
+                        <ExternalLink className="w-4 h-4" />
+                      </>
+                    )}
                   </button>
                   <p className="text-xs text-slate-400 text-center">
-                    Opens in a new tab
+                    {biometricRequired && !biometricVerified ? 'Tap to verify your identity and pay' : 'Opens in a new tab'}
                   </p>
                 </div>
               ) : (
-                <div className="space-y-3 mt-6">
+                <div className="space-y-3 mt-4">
                   <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
                     <div className="flex items-start gap-2">
                       <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
@@ -109,10 +158,20 @@ function PaymentContent() {
                   </div>
                   <button
                     onClick={handleFindPayment}
-                    className="w-full py-4 px-6 bg-slate-700 hover:bg-slate-800 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
+                    disabled={verifying}
+                    className="w-full py-4 px-6 bg-slate-700 hover:bg-slate-800 disabled:opacity-50 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
                   >
-                    <Search className="w-4 h-4" />
-                    Find Payment Page
+                    {verifying ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Verifying...
+                      </>
+                    ) : (
+                      <>
+                        <Search className="w-4 h-4" />
+                        Find Payment Page
+                      </>
+                    )}
                   </button>
                   <p className="text-xs text-slate-400 text-center">
                     Searches Google for &quot;{selectedBiller} pay bill online&quot;

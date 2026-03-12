@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pay Your Bill</title>
+
+<style>
+:root {
+  --bg: #f4f6f8;
+  --card: #ffffff;
+  --text: #111;
+  --muted: #666;
+  --primary: #2563eb;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --primary: #3b82f6;
+  }
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.container {
+  width: 100%;
+  max-width: 420px;
+  padding: 20px;
+}
+
+.card {
+  background: var(--card);
+  padding: 28px;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+  text-align: center;
+}
+
+h1 {
+  margin-top: 0;
+  font-size: 22px;
+}
+
+.biller-name {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 16px 0;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  margin-top: 12px;
+}
+
+.primary {
+  background: var(--primary);
+  color: white;
+}
+
+.secondary {
+  background: transparent;
+  border: 1px solid var(--primary);
+  color: var(--primary);
+}
+
+input, select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.back-link {
+  margin-top: 18px;
+  display: inline-block;
+  font-size: 14px;
+  color: var(--muted);
+  text-decoration: none;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+  <div class="card">
+    <h1>Pay Your Bill</h1>
+    <div class="biller-name" id="billerDisplay">Select a biller</div>
+
+    <button id="payButton" class="primary" style="display:none;"></button>
+
+    <button id="searchButton" class="secondary" style="display:none;">
+      Find Payment Page
+    </button>
+
+    <hr style="margin:20px 0; opacity:0.2;">
+
+    <select id="billerSelect">
+      <option value="">-- Select Biller --</option>
+    </select>
+
+    <input type="text" id="billerInput" placeholder="Or type biller name" />
+
+    <a href="#" class="back-link">← Back to Bills</a>
+  </div>
+</div>
+
+<script>
+const paymentUrls = {
+  "Rogers": "https://www.rogers.com/pay-bill",
+  "Bell": "https://www.bell.ca/pay",
+  "Telus": "https://www.telus.com/pay",
+  "Fido": "https://www.fido.ca/payment",
+  "Toronto Hydro": "https://www.torontohydro.com/pay",
+  "Enbridge": "https://www.enbridgegas.com/pay-bill",
+  "Hydro One": "https://www.hydroone.com/pay",
+  "Hydro Ottawa": "https://hydroottawa.com/pay",
+  "Alectra": "https://www.alectrautilities.com/pay",
+  "City of Toronto": "https://www.toronto.ca/property-tax",
+  "Canada Revenue Agency": "https://www.canada.ca/pay-cra",
+  "Manitoba Hydro": "https://www.hydro.mb.ca/pay",
+  "BC Hydro": "https://www.bchydro.com/pay",
+  "EPCOR": "https://www.epcor.com/pay",
+  "SaskPower": "https://www.saskpower.com/pay",
+  "New Brunswick Power": "https://www.nbpower.com/pay",
+  "Newfoundland Power": "https://www.newfoundlandpower.com/pay",
+  "Maritime Electric": "https://www.maritimeelectric.com/pay"
+};
+
+const billerDisplay = document.getElementById("billerDisplay");
+const payButton = document.getElementById("payButton");
+const searchButton = document.getElementById("searchButton");
+const billerSelect = document.getElementById("billerSelect");
+const billerInput = document.getElementById("billerInput");
+
+Object.keys(paymentUrls).forEach(biller => {
+  const option = document.createElement("option");
+  option.value = biller;
+  option.textContent = biller;
+  billerSelect.appendChild(option);
+});
+
+function updateBiller(biller) {
+  if (!biller) return;
+
+  billerDisplay.textContent = biller;
+
+  if (paymentUrls[biller]) {
+    payButton.style.display = "block";
+    searchButton.style.display = "none";
+    payButton.textContent = `Pay Now on ${biller} Website`;
+    payButton.onclick = () => {
+      window.open(paymentUrls[biller], "_blank");
+    };
+  } else {
+    payButton.style.display = "none";
+    searchButton.style.display = "block";
+    searchButton.onclick = () => {
+      const query = encodeURIComponent(`${biller} pay bill Canada`);
+      window.open(`https://www.google.com/search?q=${query}`, "_blank");
+    };
+  }
+}
+
+billerSelect.addEventListener("change", e => {
+  updateBiller(e.target.value);
+});
+
+billerInput.addEventListener("blur", e => {
+  updateBiller(e.target.value.trim());
+});
+
+const params = new URLSearchParams(window.location.search);
+const billerParam = params.get("biller");
+if (billerParam) {
+  updateBiller(billerParam);
+}
+</script>
+</body>
+</html>

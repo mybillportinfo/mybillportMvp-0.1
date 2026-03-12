@@ -250,6 +250,7 @@ export interface UserProfile {
   referralCount?: number;
   referralFreeMonths?: number;
   referralPaymentCount?: number;
+  biometricEnabled?: boolean;
 }
 
 // --- Auth functions ---

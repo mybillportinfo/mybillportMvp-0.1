@@ -50,3 +50,6 @@ integrations = ["javascript_anthropic:1.0.0", "javascript_database:1.0.0", "fire
 APP_URL = "https://mybillport.com"
 VITE_GOOGLE_CLIENT_ID = "484703321344-nmen1eghd7oli53p5kckulcvtdv2skaf.apps.googleusercontent.com"
 NEXT_PUBLIC_GOOGLE_CLIENT_ID = "484703321344-nmen1eghd7oli53p5kckulcvtdv2skaf.apps.googleusercontent.com"
+NEXT_PUBLIC_VAPID_PUBLIC_KEY = "BEbnKnlUj3rfk11csCVm2cnuybG5Gkt7BtWLroLFkbVfT9rIIn9-ODAxn3zE6kGtSr0n5qsxXQCas-TMUVxV4VM"
+VAPID_PRIVATE_KEY = "uRJoriKJRpn4LPQGy_703I7DMmVbpAFI5sF-bpCbYlE"
+VAPID_EMAIL = "mailto:mybillportinfo@gmail.com"
