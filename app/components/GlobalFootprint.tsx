@@ -1,13 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import {
   ComposableMap,
   Geographies,
   Geography,
 } from 'react-simple-maps';
 
-const geoUrl = 'https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json';
+const geoUrl = '/world-110m.json';
 
 type CountryStatus = 'live' | 'weeks' | 'months' | 'exploring';
 
@@ -36,26 +36,53 @@ const countries: CountryData[] = [
   { name: 'Vietnam', numericId: '704', status: 'exploring', timeline: 'Exploring' },
 ];
 
-const statusColors: Record<CountryStatus, { fill: string; stroke: string }> = {
-  live: { fill: '#10b981', stroke: '#34d399' },
-  weeks: { fill: '#f59e0b', stroke: '#fbbf24' },
-  months: { fill: '#3b82f6', stroke: '#60a5fa' },
-  exploring: { fill: '#6b7280', stroke: '#9ca3af' },
+const countryMap = new Map(countries.map(c => [c.numericId, c]));
+
+const statusColors: Record<CountryStatus, string> = {
+  live: '#10b981',
+  weeks: '#f59e0b',
+  months: '#3b82f6',
+  exploring: '#6b7280',
 };
 
+const defaultFill = '#2a3a52';
+const defaultStroke = '#3d4f66';
+
+const MapChart = memo(function MapChart() {
+  return (
+    <ComposableMap
+      projection="geoEqualEarth"
+      projectionConfig={{ scale: 155, center: [10, 5] }}
+      width={800}
+      height={400}
+      style={{ width: '100%', height: 'auto' }}
+    >
+      <Geographies geography={geoUrl}>
+        {({ geographies }) =>
+          geographies.map((geo) => {
+            const country = geo.id ? countryMap.get(geo.id) : undefined;
+            return (
+              <Geography
+                key={geo.rsmKey}
+                geography={geo}
+                fill={country ? statusColors[country.status] : defaultFill}
+                stroke={country ? statusColors[country.status] : defaultStroke}
+                strokeWidth={country ? 1.2 : 0.3}
+                style={{
+                  default: { outline: 'none' },
+                  hover: { outline: 'none', fill: country ? statusColors[country.status] : '#3d4f66' },
+                  pressed: { outline: 'none' },
+                } as any}
+              />
+            );
+          })
+        }
+      </Geographies>
+    </ComposableMap>
+  );
+});
+
 export function GlobalFootprint() {
-  const [tooltipContent, setTooltipContent] = useState<string | null>(null);
-  const [tooltipPosition, setTooltipPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
-
-  const handleMouseMove = (e: React.MouseEvent, country: CountryData) => {
-    setTooltipContent(`${country.name} — ${country.timeline}`);
-    setTooltipPosition({ x: e.clientX, y: e.clientY });
-  };
-
-  const handleMouseLeave = () => {
-    setTooltipContent(null);
-  };
-
   return (
     <section className="py-16 px-5">
       <div className="max-w-5xl mx-auto">
@@ -69,61 +96,8 @@ export function GlobalFootprint() {
           </p>
         </div>
 
-        <div className="relative bg-[#0d1a2d] border border-white/5 rounded-2xl p-4 md:p-6 overflow-hidden">
-          <ComposableMap
-            projection="geoEqualEarth"
-            projectionConfig={{ scale: 160, center: [10, 10] }}
-            width={800}
-            height={420}
-            className="w-full h-auto"
-          >
-            <Geographies geography={geoUrl}>
-              {({ geographies }) =>
-                geographies.map((geo) => {
-                  const country = countries.find((c) => c.numericId === geo.id);
-                  const fillColor = country
-                    ? statusColors[country.status].fill
-                    : '#1e293b';
-                  const strokeColor = country
-                    ? statusColors[country.status].stroke
-                    : '#334155';
-                  return (
-                    <Geography
-                      key={geo.rsmKey}
-                      geography={geo}
-                      fill={fillColor}
-                      stroke={strokeColor}
-                      strokeWidth={country ? 1 : 0.3}
-                      style={{
-                        default: { outline: 'none' },
-                        hover: {
-                          fill: country ? statusColors[country.status].stroke : '#334155',
-                          outline: 'none',
-                          cursor: country ? 'pointer' : 'default',
-                        },
-                        pressed: { outline: 'none' },
-                      } as any}
-                      onMouseMove={(e) => country && handleMouseMove(e, country)}
-                      onMouseLeave={handleMouseLeave}
-                    />
-                  );
-                })
-              }
-            </Geographies>
-          </ComposableMap>
-
-          {tooltipContent && (
-            <div
-              className="fixed bg-[#0d1a2d] border border-white/10 text-white text-sm px-3 py-1.5 rounded-lg pointer-events-none z-50 shadow-lg"
-              style={{
-                left: tooltipPosition.x + 10,
-                top: tooltipPosition.y - 30,
-                transform: 'translate(-50%, -100%)',
-              }}
-            >
-              {tooltipContent}
-            </div>
-          )}
+        <div className="bg-[#0f1d32] border border-white/5 rounded-2xl p-4 md:p-8 overflow-hidden">
+          <MapChart />
         </div>
 
         <div className="flex flex-wrap justify-center gap-4 md:gap-6 mt-6 text-sm">
