@@ -100,7 +100,7 @@ export function GlobalFootprint() {
                           cursor: country ? 'pointer' : 'default',
                         },
                         pressed: { outline: 'none' },
-                      }}
+                      } as any}
                       onMouseMove={(e) => country && handleMouseMove(e, country)}
                       onMouseLeave={handleMouseLeave}
                     />
