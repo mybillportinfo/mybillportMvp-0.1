@@ -3,25 +3,23 @@ import Link from 'next/link';
 import { ArrowRight, ExternalLink } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Pay Bills Online in Canada — One-Click Payment to 120+ Billers',
-  description: 'Pay your Canadian bills online with one click. MyBillPort connects you directly to Rogers, Bell, Telus, Hydro One, BC Hydro, and 120+ more billers. No middleman, no fees.',
+  title: 'Pay Bills Online — One-Click Payment to 120+ Billers',
+  description: 'Pay your bills online with one click. MyBillPort connects you directly to 120+ billers. No middleman, no fees.',
   alternates: {
     canonical: 'https://mybillport.com/pay-bills-online-canada',
   },
   openGraph: {
-    title: 'Pay Bills Online in Canada — MyBillPort',
-    description: 'One-click payment links to 120+ Canadian billers. No middleman, no fees.',
+    title: 'Pay Bills Online — MyBillPort',
+    description: 'One-click payment links to 120+ billers. No middleman, no fees.',
     url: 'https://mybillport.com/pay-bills-online-canada',
   },
 };
 
-const provinces = [
-  { name: 'Ontario', billers: ['Hydro One', 'Toronto Hydro', 'Enbridge Gas', 'Alectra Utilities'] },
-  { name: 'British Columbia', billers: ['BC Hydro', 'FortisBC', 'ICBC'] },
-  { name: 'Alberta', billers: ['ATCO', 'EPCOR', 'Direct Energy'] },
-  { name: 'Quebec', billers: ['Hydro-Québec', 'Énergir', 'Videotron'] },
-  { name: 'Saskatchewan', billers: ['SaskPower', 'SaskEnergy', 'SaskTel'] },
-  { name: 'Manitoba', billers: ['Manitoba Hydro', 'MPI'] },
+const regions = [
+  { name: 'Utilities', billers: ['Hydro One', 'BC Hydro', 'Hydro-Québec', 'Toronto Hydro', 'Enbridge', 'FortisBC', 'SaskPower', 'Manitoba Hydro'] },
+  { name: 'Telecom', billers: ['Rogers', 'Bell', 'Telus', 'Fido', 'Koodo', 'Freedom Mobile'] },
+  { name: 'Insurance', billers: ['TD Insurance', 'Intact Insurance', 'Sun Life', 'Manulife'] },
+  { name: 'Streaming & More', billers: ['Netflix', 'Disney+', 'Spotify', 'Apple', 'Amazon'] },
 ];
 
 export default function PayBillsOnlineCanadaPage() {
@@ -30,7 +28,7 @@ export default function PayBillsOnlineCanadaPage() {
       <div className="max-w-4xl mx-auto px-5 py-16 space-y-16">
         <section className="text-center space-y-6">
           <h1 className="text-4xl md:text-5xl font-extrabold leading-tight">
-            Pay Bills Online in Canada
+            Pay Bills Online
             <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-400">
               With One Click
@@ -38,7 +36,7 @@ export default function PayBillsOnlineCanadaPage() {
           </h1>
           <p className="text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
             Stop bookmarking 10 different biller websites. MyBillPort gives you one-click payment links
-            to every major Canadian biller — utilities, telecom, insurance, and more.
+            to every major biller — utilities, telecom, insurance, and more.
           </p>
           <Link href="/login" className="bg-teal-500 hover:bg-teal-400 text-white font-bold px-8 py-4 rounded-full transition-colors inline-flex items-center gap-2">
               Start paying bills smarter <ArrowRight className="w-5 h-5" />
@@ -67,9 +65,9 @@ export default function PayBillsOnlineCanadaPage() {
         </section>
 
         <section className="space-y-6">
-          <h2 className="text-2xl font-bold text-white">Billers by province</h2>
+          <h2 className="text-2xl font-bold text-white">Billers by category</h2>
           <div className="grid sm:grid-cols-2 gap-4">
-            {provinces.map((p) => (
+            {regions.map((p) => (
               <div key={p.name} className="bg-[#0d1a2d] border border-white/5 rounded-xl p-5 space-y-3">
                 <h3 className="font-semibold text-white">{p.name}</h3>
                 <ul className="space-y-1.5">
@@ -84,13 +82,13 @@ export default function PayBillsOnlineCanadaPage() {
             ))}
           </div>
           <p className="text-sm text-slate-400">
-            Plus national providers: Rogers, Bell, Telus, Fido, Koodo, Freedom Mobile, Shaw, Netflix, Disney+, Spotify, and 90+ more.
+            Plus many more providers across multiple regions. 120+ billers and growing.
           </p>
         </section>
 
         <section className="bg-gradient-to-br from-teal-900/30 to-cyan-900/10 border border-teal-500/15 rounded-2xl p-8 text-center space-y-4">
           <h2 className="text-2xl font-bold text-white">All your billers, one dashboard</h2>
-          <p className="text-slate-400">Free to start. No credit card required. Supports 120+ Canadian billers.</p>
+          <p className="text-slate-400">Free to start. No credit card required. 120+ billers supported.</p>
           <Link href="/login" className="bg-teal-500 hover:bg-teal-400 text-white font-bold px-8 py-4 rounded-full transition-colors inline-flex items-center gap-2">
               Get started free <ArrowRight className="w-5 h-5" />
           </Link>

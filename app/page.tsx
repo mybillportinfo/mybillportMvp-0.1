@@ -52,7 +52,7 @@ export default function LandingPage() {
         <div className="max-w-3xl mx-auto relative space-y-6">
           <div className="inline-flex items-center gap-2 bg-teal-500/10 border border-teal-500/20 text-teal-400 text-xs font-semibold px-4 py-1.5 rounded-full tracking-wide uppercase">
             <Globe className="w-3.5 h-3.5" />
-            Trusted by 2,500+ Canadians
+            Expanding worldwide
           </div>
           <h1 className="text-4xl md:text-6xl font-extrabold text-white leading-[1.1] tracking-tight">
             Never miss a bill again.
@@ -81,7 +81,7 @@ export default function LandingPage() {
 
       <div className="border-y border-white/5 bg-white/[0.02] py-5 px-5">
         <div className="max-w-4xl mx-auto flex flex-wrap justify-center gap-6 md:gap-12 text-sm text-slate-500">
-          {["120+ Canadian billers", "AI-powered bill scanning", "256-bit encryption", "Rogers · Bell · Telus · and more"].map((t) => (
+          {["120+ billers supported", "AI-powered bill scanning", "256-bit encryption", "Expanding globally"].map((t) => (
             <div key={t} className="flex items-center gap-2">
               <CheckCircle className="w-4 h-4 text-teal-500 flex-shrink-0" />
               <span>{t}</span>
@@ -129,7 +129,7 @@ export default function LandingPage() {
               {
                 icon: Zap,
                 title: "One-click payment",
-                body: "Direct links to your biller's official payment page. Find your bill, click Pay, done. Supports 120+ Canadian billers.",
+                body: "Direct links to your biller's official payment page. Find your bill, click Pay, done. Supports 120+ billers worldwide.",
               },
               {
                 icon: ShieldCheck,
@@ -183,7 +183,7 @@ export default function LandingPage() {
                 What bills do I have due this week?
               </div>
               <div className="bg-teal-500/10 rounded-xl px-4 py-3 text-sm text-slate-300 max-w-[85%] ml-auto">
-                You have 2 bills due this week: <span className="text-white font-medium">Rogers ($85.50)</span> on Thursday and <span className="text-white font-medium">Hydro One ($142.30)</span> on Friday. Total: $227.80.
+                You have 2 bills due this week: <span className="text-white font-medium">Internet ($85.50)</span> on Thursday and <span className="text-white font-medium">Electric ($142.30)</span> on Friday. Total: $227.80.
               </div>
             </div>
           </div>
@@ -238,7 +238,7 @@ export default function LandingPage() {
                 <p className="text-xs text-slate-500 mt-1">Forever · No credit card</p>
               </div>
               <ul className="space-y-2.5 text-sm text-slate-300">
-                {["Track up to 10 bills", "Due date reminders", "One-click payment links", "120+ billers supported", "PDF & photo bill upload"].map((i) => (
+                {["Track up to 10 bills", "Due date reminders", "One-click payment links", "120+ billers & growing", "PDF & photo bill upload"].map((i) => (
                   <li key={i} className="flex items-center gap-2.5">
                     <CheckCircle className="w-4 h-4 text-teal-400 flex-shrink-0" />
                     {i}
@@ -309,7 +309,7 @@ export default function LandingPage() {
             <span className="text-teal-400">Your stress can.</span>
           </h2>
           <p className="text-slate-400 max-w-md mx-auto text-base leading-relaxed">
-            Join 2,500+ Canadians who've taken back control of their bills. Free to start, takes two minutes to set up.
+            Take back control of your bills. Free to start, takes two minutes to set up.
           </p>
           {submitted ? (
             <div className="flex flex-col items-center gap-3">
@@ -350,7 +350,7 @@ export default function LandingPage() {
             <div className="col-span-2 md:col-span-1">
               <LogoFull height={28} />
               <p className="text-xs text-slate-500 mt-3 leading-relaxed">
-                Never miss a bill again. The simplest way for Canadians to manage all their bills in one place.
+                Never miss a bill again. The simplest way to manage all your bills in one place.
               </p>
             </div>
             <div>
@@ -379,7 +379,7 @@ export default function LandingPage() {
           </div>
           <div className="border-t border-white/5 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-xs text-slate-600">
-              © {new Date().getFullYear()} MyBillPort Inc. · All rights reserved · Made in Canada 🇨🇦
+              © {new Date().getFullYear()} MyBillPort Inc. · All rights reserved
             </p>
             <div className="flex items-center gap-4 text-xs text-slate-500">
               <span className="flex items-center gap-1.5">

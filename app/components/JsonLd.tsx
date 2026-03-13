@@ -5,7 +5,7 @@ export function OrganizationJsonLd() {
     name: 'MyBillPort',
     url: 'https://mybillport.com',
     logo: 'https://mybillport.com/icon-512.png',
-    description: 'MyBillPort helps Canadians track, manage, and pay all their bills in one place. Never miss a bill again.',
+    description: 'MyBillPort helps you track, manage, and pay all your bills in one place. Never miss a bill again.',
     foundingDate: '2024',
     sameAs: [],
     contactPoint: {
@@ -13,10 +13,6 @@ export function OrganizationJsonLd() {
       email: 'mybillportinfo@gmail.com',
       contactType: 'customer service',
       availableLanguage: ['English', 'French'],
-    },
-    address: {
-      '@type': 'PostalAddress',
-      addressCountry: 'CA',
     },
   };
 
@@ -34,7 +30,7 @@ export function WebsiteJsonLd() {
     '@type': 'WebSite',
     name: 'MyBillPort',
     url: 'https://mybillport.com',
-    description: 'Track, manage, and pay all your Canadian bills in one place. AI-powered bill scanning, due date reminders, and one-click payments.',
+    description: 'Track, manage, and pay all your bills in one place. AI-powered bill scanning, due date reminders, and one-click payments.',
     potentialAction: {
       '@type': 'SearchAction',
       target: 'https://mybillport.com/app?search={search_term_string}',
@@ -60,10 +56,10 @@ export function SoftwareApplicationJsonLd() {
     offers: {
       '@type': 'Offer',
       price: '0',
-      priceCurrency: 'CAD',
+      priceCurrency: 'USD',
       description: 'Free plan includes up to 10 bills with reminders',
     },
-    description: 'MyBillPort is a Canadian bill management app that helps you track due dates, get reminders, and pay bills with one click. Supports 120+ Canadian billers.',
+    description: 'MyBillPort is a bill management app that helps you track due dates, get reminders, and pay bills with one click. Supports 120+ billers worldwide.',
   };
 
   return (
@@ -85,8 +81,8 @@ export function FAQJsonLd() {
       answer: 'No. MyBillPort never connects to your bank or stores payment information. When you want to pay a bill, we redirect you to the official biller\'s website so you pay them directly.',
     },
     {
-      question: 'What Canadian billers are supported?',
-      answer: 'We support 120+ Canadian billers including Rogers, Bell, Telus, Fido, Koodo, Hydro One, BC Hydro, Enbridge, Toronto Hydro, SaskPower, and many more across all 10 provinces.',
+      question: 'What billers are supported?',
+      answer: 'We support 120+ billers and are expanding globally. Our platform covers major providers across telecom, utilities, insurance, streaming, and more — with new billers added regularly.',
     },
     {
       question: 'How does AI bill scanning work?',

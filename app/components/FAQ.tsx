@@ -13,8 +13,8 @@ const faqs = [
     answer: 'No. MyBillPort never connects to your bank or stores payment information. When you want to pay a bill, we redirect you to the official biller\'s website so you pay them directly.',
   },
   {
-    question: 'What Canadian billers are supported?',
-    answer: 'We support 120+ Canadian billers including Rogers, Bell, Telus, Fido, Koodo, Hydro One, BC Hydro, Enbridge, Toronto Hydro, SaskPower, and many more across all 10 provinces.',
+    question: 'What billers are supported?',
+    answer: 'We support 120+ billers and are expanding globally. Our platform covers major providers across telecom, utilities, insurance, streaming, and more — with new billers added regularly.',
   },
   {
     question: 'How does AI bill scanning work?',

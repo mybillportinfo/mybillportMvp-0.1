@@ -15,8 +15,8 @@ const badges = [
   },
   {
     icon: Globe,
-    title: '100% Canadian',
-    description: 'Built in Canada, for Canadians. Supporting 120+ Canadian billers.',
+    title: 'Global Platform',
+    description: 'Built for users worldwide. Supporting billers across multiple countries.',
   },
   {
     icon: Fingerprint,

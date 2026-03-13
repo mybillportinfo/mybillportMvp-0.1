@@ -5,21 +5,21 @@ import { Star } from 'lucide-react';
 const testimonials = [
   {
     name: 'Sarah M.',
-    location: 'Toronto, ON',
+    location: 'Toronto',
     quote: "I used to miss at least one bill every month. Since using MyBillPort, I haven't paid a single late fee in six months. The reminders are a lifesaver.",
     rating: 5,
     avatar: 'SM',
   },
   {
     name: 'Raj P.',
-    location: 'Vancouver, BC',
+    location: 'Vancouver',
     quote: "The AI bill scanning is incredible — I just snap a photo of my bill and everything fills in automatically. Saves me so much time.",
     rating: 5,
     avatar: 'RP',
   },
   {
     name: 'Marie-Claire D.',
-    location: 'Montreal, QC',
+    location: 'Montreal',
     quote: "MyBillPort caught a $40/month increase on my internet bill that I completely missed. The price alert paid for itself instantly.",
     rating: 5,
     avatar: 'MD',
@@ -33,7 +33,7 @@ export function Testimonials() {
         <div className="text-center mb-10">
           <p className="text-teal-400 text-sm font-semibold uppercase tracking-wider mb-2">What our users say</p>
           <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">
-            Trusted by Canadians across the country
+            Trusted by users around the world
           </h2>
           <p className="text-slate-400">
             Real people, real bill management results.

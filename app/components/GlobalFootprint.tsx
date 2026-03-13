@@ -65,7 +65,7 @@ export function GlobalFootprint() {
             Our global roadmap
           </h2>
           <p className="text-slate-400 max-w-lg mx-auto">
-            Starting in Canada, expanding worldwide. Bill management without borders.
+            Bill management without borders. Expanding worldwide.
           </p>
         </div>
 
@@ -127,19 +127,19 @@ export function GlobalFootprint() {
         <div className="flex flex-wrap justify-center gap-4 md:gap-6 mt-6 text-sm">
           <div className="flex items-center gap-2">
             <span className="w-3.5 h-3.5 rounded-full bg-emerald-500" />
-            <span className="text-slate-300">Live — Canada</span>
+            <span className="text-slate-300">Live</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="w-3.5 h-3.5 rounded border-2 border-amber-500 bg-amber-100" />
-            <span className="text-slate-300">Weeks — Australia, NZ</span>
+            <span className="text-slate-300">Coming in weeks</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="w-3.5 h-3.5 rounded border-2 border-blue-500 bg-[#1e3a5f]" />
-            <span className="text-slate-300">Months — UK, EU, India</span>
+            <span className="text-slate-300">Coming in months</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="w-3.5 h-3.5 rounded border border-gray-500 bg-transparent" />
-            <span className="text-slate-300">Exploring — Americas, Africa, SE Asia</span>
+            <span className="text-slate-300">Exploring</span>
           </div>
         </div>
       </div>

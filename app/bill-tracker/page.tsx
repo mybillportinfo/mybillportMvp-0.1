@@ -3,13 +3,13 @@ import Link from 'next/link';
 import { ArrowRight, CheckCircle } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Best Bill Tracker App for Canadians — Never Miss a Payment',
-  description: 'Track all your bills in one app. MyBillPort shows due dates, sends reminders, flags price increases, and connects to 120+ Canadian billers. Free to use.',
+  title: 'Best Bill Tracker App — Never Miss a Payment',
+  description: 'Track all your bills in one app. MyBillPort shows due dates, sends reminders, flags price increases, and connects to 120+ billers. Free to use.',
   alternates: {
     canonical: 'https://mybillport.com/bill-tracker',
   },
   openGraph: {
-    title: 'Best Bill Tracker App for Canadians — MyBillPort',
+    title: 'Best Bill Tracker App — MyBillPort',
     description: 'See all your bills, due dates, and payment status in one clean dashboard.',
     url: 'https://mybillport.com/bill-tracker',
   },
@@ -40,12 +40,12 @@ export default function BillTrackerPage() {
           <h2 className="text-2xl font-bold text-white">What makes MyBillPort different</h2>
           <div className="space-y-4">
             {[
-              { title: 'One dashboard for everything', desc: 'Hydro, phone, internet, insurance, subscriptions — all in one view with clear status badges: Unpaid, Partial, Paid, Overdue.' },
+              { title: 'One dashboard for everything', desc: 'Electric, phone, internet, insurance, subscriptions — all in one view with clear status badges: Unpaid, Partial, Paid, Overdue.' },
               { title: 'AI-powered bill import', desc: 'No tedious data entry. Take a photo of your bill and our AI reads the vendor, amount, due date, and account number.' },
               { title: 'Price increase detection', desc: 'MyBillPort tracks your recurring bills and flags when an amount is significantly higher than usual — before the charge hits.' },
               { title: 'Cash flow calendar', desc: 'See your bills and income on a monthly calendar. Know exactly when money goes out and when it comes in.' },
               { title: 'Push notifications', desc: 'Real native notifications on your phone — not just email. Get alerted 7 days, 2 days, and the day of each due date.' },
-              { title: 'One-click payment', desc: 'Click Pay and go directly to your biller\'s official website. We support 120+ Canadian billers including Rogers, Bell, and Telus.' },
+              { title: 'One-click payment', desc: 'Click Pay and go directly to your biller\'s official website. We support 120+ billers and growing.' },
             ].map((f) => (
               <div key={f.title} className="flex gap-3 items-start">
                 <CheckCircle className="w-5 h-5 text-teal-400 flex-shrink-0 mt-0.5" />
