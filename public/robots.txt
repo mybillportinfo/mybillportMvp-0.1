@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /app/
+Disallow: /dashboard/
+Disallow: /settings/
+Disallow: /pending-bills/
+
+Sitemap: https://mybillport.com/sitemap.xml
