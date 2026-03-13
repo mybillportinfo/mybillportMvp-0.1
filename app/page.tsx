@@ -12,6 +12,7 @@ import { TrustBadges } from "./components/TrustBadges";
 import { Testimonials } from "./components/Testimonials";
 import { SocialProof } from "./components/SocialProof";
 import { FAQ } from "./components/FAQ";
+import { GlobalFootprint } from "./components/GlobalFootprint";
 import { FAQJsonLd, SoftwareApplicationJsonLd } from "./components/JsonLd";
 
 export default function LandingPage() {
@@ -295,6 +296,7 @@ export default function LandingPage() {
 
       <TrustBadges />
       <Testimonials />
+      <GlobalFootprint />
 
       <div className="max-w-5xl mx-auto px-5" id="faq">
         <FAQ />
