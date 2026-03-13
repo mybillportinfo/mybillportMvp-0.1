@@ -7,40 +7,40 @@ import {
   Geography,
 } from 'react-simple-maps';
 
-const geoUrl = 'https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-50m.json';
+const geoUrl = 'https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json';
 
 type CountryStatus = 'live' | 'weeks' | 'months' | 'exploring';
 
 interface CountryData {
   name: string;
-  isoA3: string;
+  numericId: string;
   status: CountryStatus;
   timeline: string;
 }
 
 const countries: CountryData[] = [
-  { name: 'Canada', isoA3: 'CAN', status: 'live', timeline: 'Live now' },
-  { name: 'Australia', isoA3: 'AUS', status: 'weeks', timeline: 'Coming in weeks' },
-  { name: 'New Zealand', isoA3: 'NZL', status: 'weeks', timeline: 'Coming in weeks' },
-  { name: 'United Kingdom', isoA3: 'GBR', status: 'months', timeline: 'Coming in months' },
-  { name: 'France', isoA3: 'FRA', status: 'months', timeline: 'Coming in months' },
-  { name: 'Germany', isoA3: 'DEU', status: 'months', timeline: 'Coming in months' },
-  { name: 'India', isoA3: 'IND', status: 'months', timeline: 'Coming in months' },
-  { name: 'South Africa', isoA3: 'ZAF', status: 'exploring', timeline: 'Exploring' },
-  { name: 'Brazil', isoA3: 'BRA', status: 'exploring', timeline: 'Exploring' },
-  { name: 'Mexico', isoA3: 'MEX', status: 'exploring', timeline: 'Exploring' },
-  { name: 'Indonesia', isoA3: 'IDN', status: 'exploring', timeline: 'Exploring' },
-  { name: 'Malaysia', isoA3: 'MYS', status: 'exploring', timeline: 'Exploring' },
-  { name: 'Philippines', isoA3: 'PHL', status: 'exploring', timeline: 'Exploring' },
-  { name: 'Thailand', isoA3: 'THA', status: 'exploring', timeline: 'Exploring' },
-  { name: 'Vietnam', isoA3: 'VNM', status: 'exploring', timeline: 'Exploring' },
+  { name: 'Canada', numericId: '124', status: 'live', timeline: 'Live now' },
+  { name: 'Australia', numericId: '036', status: 'weeks', timeline: 'Coming in weeks' },
+  { name: 'New Zealand', numericId: '554', status: 'weeks', timeline: 'Coming in weeks' },
+  { name: 'United Kingdom', numericId: '826', status: 'months', timeline: 'Coming in months' },
+  { name: 'France', numericId: '250', status: 'months', timeline: 'Coming in months' },
+  { name: 'Germany', numericId: '276', status: 'months', timeline: 'Coming in months' },
+  { name: 'India', numericId: '356', status: 'months', timeline: 'Coming in months' },
+  { name: 'South Africa', numericId: '710', status: 'exploring', timeline: 'Exploring' },
+  { name: 'Brazil', numericId: '076', status: 'exploring', timeline: 'Exploring' },
+  { name: 'Mexico', numericId: '484', status: 'exploring', timeline: 'Exploring' },
+  { name: 'Indonesia', numericId: '360', status: 'exploring', timeline: 'Exploring' },
+  { name: 'Malaysia', numericId: '458', status: 'exploring', timeline: 'Exploring' },
+  { name: 'Philippines', numericId: '608', status: 'exploring', timeline: 'Exploring' },
+  { name: 'Thailand', numericId: '764', status: 'exploring', timeline: 'Exploring' },
+  { name: 'Vietnam', numericId: '704', status: 'exploring', timeline: 'Exploring' },
 ];
 
-const statusColors: Record<CountryStatus, { fill: string; stroke: string; dashed?: boolean }> = {
-  live: { fill: '#10b981', stroke: '#10b981' },
-  weeks: { fill: '#fef3c7', stroke: '#f59e0b', dashed: true },
-  months: { fill: '#1e3a5f', stroke: '#3b82f6', dashed: true },
-  exploring: { fill: 'transparent', stroke: '#4b5563', dashed: false },
+const statusColors: Record<CountryStatus, { fill: string; stroke: string }> = {
+  live: { fill: '#10b981', stroke: '#34d399' },
+  weeks: { fill: '#f59e0b', stroke: '#fbbf24' },
+  months: { fill: '#3b82f6', stroke: '#60a5fa' },
+  exploring: { fill: '#6b7280', stroke: '#9ca3af' },
 };
 
 export function GlobalFootprint() {
@@ -69,33 +69,35 @@ export function GlobalFootprint() {
           </p>
         </div>
 
-        <div className="relative bg-[#0d1a2d] border border-white/5 rounded-2xl p-4 md:p-6">
+        <div className="relative bg-[#0d1a2d] border border-white/5 rounded-2xl p-4 md:p-6 overflow-hidden">
           <ComposableMap
-            projection="geoMercator"
-            projectionConfig={{ scale: 140, center: [0, 20] }}
+            projection="geoEqualEarth"
+            projectionConfig={{ scale: 160, center: [10, 10] }}
+            width={800}
+            height={420}
             className="w-full h-auto"
-            style={{ maxHeight: '400px' }}
           >
             <Geographies geography={geoUrl}>
               {({ geographies }) =>
                 geographies.map((geo) => {
-                  const country = countries.find((c) => c.isoA3 === geo.properties.ISO_A3);
-                  const style = country
-                    ? statusColors[country.status]
-                    : { fill: '#111d30', stroke: '#1e293b' };
-                  const strokeDasharray = style.dashed ? '4,3' : undefined;
+                  const country = countries.find((c) => c.numericId === geo.id);
+                  const fillColor = country
+                    ? statusColors[country.status].fill
+                    : '#1e293b';
+                  const strokeColor = country
+                    ? statusColors[country.status].stroke
+                    : '#334155';
                   return (
                     <Geography
                       key={geo.rsmKey}
                       geography={geo}
-                      fill={style.fill}
-                      stroke={style.stroke}
-                      strokeWidth={0.5}
-                      strokeDasharray={strokeDasharray}
+                      fill={fillColor}
+                      stroke={strokeColor}
+                      strokeWidth={country ? 1 : 0.3}
                       style={{
                         default: { outline: 'none' },
                         hover: {
-                          fill: country ? style.fill : '#1a2740',
+                          fill: country ? statusColors[country.status].stroke : '#334155',
                           outline: 'none',
                           cursor: country ? 'pointer' : 'default',
                         },
@@ -130,15 +132,15 @@ export function GlobalFootprint() {
             <span className="text-slate-300">Live</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-3.5 h-3.5 rounded border-2 border-amber-500 bg-amber-100" />
+            <span className="w-3.5 h-3.5 rounded-full bg-amber-500" />
             <span className="text-slate-300">Coming in weeks</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-3.5 h-3.5 rounded border-2 border-blue-500 bg-[#1e3a5f]" />
+            <span className="w-3.5 h-3.5 rounded-full bg-blue-500" />
             <span className="text-slate-300">Coming in months</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-3.5 h-3.5 rounded border border-gray-500 bg-transparent" />
+            <span className="w-3.5 h-3.5 rounded-full bg-gray-500" />
             <span className="text-slate-300">Exploring</span>
           </div>
         </div>
