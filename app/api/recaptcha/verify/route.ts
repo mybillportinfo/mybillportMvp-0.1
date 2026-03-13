@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
 
-const SITE_KEY = '6Lfby0ksAAAAAPcrsjoe3qZjjD03IxkvRW8pZanp';
+const SITE_KEY = '6Lc1aXUsAAAAAKgfzMiEKGwgL8J5PbJgJ3qLJu0V';
 const PROJECT_ID = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'mybillport-8e05a';
 const MIN_SCORE = 0.5;
 
