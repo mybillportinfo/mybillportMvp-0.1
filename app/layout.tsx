@@ -70,7 +70,9 @@ export const metadata: Metadata = {
   alternates: {
     canonical: 'https://mybillport.com',
   },
-  verification: {},
+  verification: {
+    google: 'Uxc-bnximq6iIEU6ov3bet937rsZgYpH6Ltzcs8aEMo',
+  },
   category: 'finance',
 };
 
