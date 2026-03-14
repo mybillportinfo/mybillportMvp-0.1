@@ -14,7 +14,7 @@ import { tryBillerParsers } from '../../lib/parsers';
 export const runtime = "nodejs";
 export const dynamic = 'force-dynamic';
 
-const DEFAULT_MODEL = "claude-sonnet-4-20250514";
+const MODELS = ["claude-sonnet-4-20250514", "claude-3-5-sonnet-20241022"];
 
 const EXTRACTION_PROMPT = `You are an expert bill/invoice data extractor. Analyze this bill and extract the following information as accurately as possible.
 
@@ -147,120 +147,105 @@ export async function POST(request: NextRequest) {
     const anthropic = new Anthropic({ apiKey });
     let extractedJson: any;
     let extractionMethod = 'claude-vision';
+    let usedModel = '';
+
+    const messages: any[] = [];
 
     if (sanitizedFileType === 'image') {
       const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
       const mediaType = validTypes.includes(mimeType) ? mimeType : 'image/jpeg';
-
-      const response = await anthropic.messages.create({
-        model: DEFAULT_MODEL,
-        max_tokens: 8192,
-        temperature: 0,
-        messages: [{
-          role: 'user',
-          content: [
-            { type: 'text', text: EXTRACTION_PROMPT },
-            {
-              type: 'image',
-              source: {
-                type: 'base64',
-                media_type: mediaType as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp',
-                data: fileData,
-              },
+      messages.push({
+        role: 'user',
+        content: [
+          { type: 'text', text: EXTRACTION_PROMPT },
+          {
+            type: 'image',
+            source: {
+              type: 'base64',
+              media_type: mediaType as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp',
+              data: fileData,
             },
-          ],
-        }],
+          },
+        ],
       });
-
-      const text = response.content[0].type === 'text' ? response.content[0].text : '';
-      extractedJson = parseJsonResponse(text);
-
-      if (extractedJson) {
-        try {
-          const rawText = [
-            extractedJson.vendor,
-            extractedJson.accountNumber,
-            String(extractedJson.amount),
-            extractedJson.dueDate,
-            extractedJson.billingPeriod,
-          ].filter(Boolean).join(' ');
-          const parserResult = tryBillerParsers(rawText);
-          if (parserResult && parserResult.confidence > calculateOverall(extractedJson)) {
-            extractedJson = {
-              ...extractedJson,
-              vendor: parserResult.vendor,
-              amount: parserResult.amount ?? extractedJson.amount,
-              dueDate: parserResult.dueDate ?? extractedJson.dueDate,
-              billingPeriod: parserResult.billingPeriod ?? extractedJson.billingPeriod,
-              accountNumber: parserResult.accountNumber ?? extractedJson.accountNumber,
-              currency: parserResult.currency,
-              category: parserResult.category,
-              confidenceVendor: Math.max(extractedJson.confidenceVendor ?? 0.5, parserResult.confidence),
-            };
-            extractionMethod = 'claude-vision+parser';
-          }
-        } catch (parserErr) {
-          console.warn('[extract-bill] parser overlay failed, continuing with Claude result:', parserErr);
-        }
-      }
     } else if (sanitizedFileType === 'pdf') {
-      const response = await anthropic.messages.create({
-        model: DEFAULT_MODEL,
-        max_tokens: 8192,
-        temperature: 0,
-        messages: [{
-          role: 'user',
-          content: [
-            { type: 'text', text: EXTRACTION_PROMPT },
-            {
-              type: 'document',
-              source: {
-                type: 'base64',
-                media_type: 'application/pdf',
-                data: fileData,
-              },
-            } as any,
-          ],
-        }],
+      messages.push({
+        role: 'user',
+        content: [
+          { type: 'text', text: EXTRACTION_PROMPT },
+          {
+            type: 'document',
+            source: {
+              type: 'base64',
+              media_type: 'application/pdf',
+              data: fileData,
+            },
+          } as any,
+        ],
       });
-
-      const text = response.content[0].type === 'text' ? response.content[0].text : '';
-      extractedJson = parseJsonResponse(text);
-
-      if (extractedJson) {
-        try {
-          const rawText = [
-            extractedJson.vendor,
-            extractedJson.accountNumber,
-            String(extractedJson.amount),
-            extractedJson.dueDate,
-            extractedJson.billingPeriod,
-          ].filter(Boolean).join(' ');
-          const parserResult = tryBillerParsers(rawText);
-          if (parserResult && parserResult.confidence > calculateOverall(extractedJson)) {
-            extractedJson = {
-              ...extractedJson,
-              vendor: parserResult.vendor,
-              amount: parserResult.amount ?? extractedJson.amount,
-              dueDate: parserResult.dueDate ?? extractedJson.dueDate,
-              billingPeriod: parserResult.billingPeriod ?? extractedJson.billingPeriod,
-              accountNumber: parserResult.accountNumber ?? extractedJson.accountNumber,
-              currency: parserResult.currency,
-              category: parserResult.category,
-              confidenceVendor: Math.max(extractedJson.confidenceVendor ?? 0.5, parserResult.confidence),
-            };
-            extractionMethod = 'claude-vision+parser';
-          }
-        } catch (parserErr) {
-          console.warn('[extract-bill] parser overlay failed, continuing with Claude result:', parserErr);
-        }
-      }
     } else {
       return NextResponse.json({ success: false, error: 'Unsupported file type' }, { status: 400 });
     }
 
+    let lastError: any = null;
+    for (const model of MODELS) {
+      try {
+        console.log(`[extract-bill] trying model=${model}`);
+        const response = await anthropic.messages.create({
+          model,
+          max_tokens: 8192,
+          temperature: 0,
+          messages,
+        });
+        const text = response.content[0].type === 'text' ? response.content[0].text : '';
+        extractedJson = parseJsonResponse(text);
+        usedModel = model;
+        lastError = null;
+        break;
+      } catch (err: any) {
+        console.error(`[extract-bill] model=${model} failed:`, err?.status, err?.message?.substring(0, 200));
+        lastError = err;
+        if (err?.message?.includes('Could not process image') || err?.message?.includes('Could not process')) {
+          throw err;
+        }
+      }
+    }
+
+    if (lastError && !extractedJson) {
+      throw lastError;
+    }
+
+    if (extractedJson) {
+      try {
+        const rawText = [
+          extractedJson.vendor,
+          extractedJson.accountNumber,
+          String(extractedJson.amount),
+          extractedJson.dueDate,
+          extractedJson.billingPeriod,
+        ].filter(Boolean).join(' ');
+        const parserResult = tryBillerParsers(rawText);
+        if (parserResult && parserResult.confidence > calculateOverall(extractedJson)) {
+          extractedJson = {
+            ...extractedJson,
+            vendor: parserResult.vendor,
+            amount: parserResult.amount ?? extractedJson.amount,
+            dueDate: parserResult.dueDate ?? extractedJson.dueDate,
+            billingPeriod: parserResult.billingPeriod ?? extractedJson.billingPeriod,
+            accountNumber: parserResult.accountNumber ?? extractedJson.accountNumber,
+            currency: parserResult.currency,
+            category: parserResult.category,
+            confidenceVendor: Math.max(extractedJson.confidenceVendor ?? 0.5, parserResult.confidence),
+          };
+          extractionMethod = 'claude-vision+parser';
+        }
+      } catch (parserErr) {
+        console.warn('[extract-bill] parser overlay failed, continuing with Claude result:', parserErr);
+      }
+    }
+
     const processingMs = Date.now() - startTime;
-    console.log(`[extract-bill] uid=${verifiedUserId.substring(0, 8)}... fileType=${sanitizedFileType} method=${extractionMethod} ms=${processingMs}`);
+    console.log(`[extract-bill] uid=${verifiedUserId.substring(0, 8)}... fileType=${sanitizedFileType} model=${usedModel} method=${extractionMethod} ms=${processingMs}`);
 
     if (!extractedJson) {
       return NextResponse.json({ success: false, error: 'Failed to parse bill data. Please try again or enter manually.' }, { status: 422 });
@@ -311,36 +296,45 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error: any) {
-    console.error('[extract-bill] error:', {
-      status: error?.status,
-      message: error?.message?.substring(0, 300),
+    const errorMsg = error?.message || '';
+    const errorStatus = error?.status;
+    console.error('[extract-bill] FULL ERROR:', JSON.stringify({
+      status: errorStatus,
+      message: errorMsg.substring(0, 500),
       type: error?.error?.type,
       name: error?.name,
       code: error?.code,
-    });
-    const errorMsg = error?.message || '';
-    if (errorMsg.includes('Could not process image') || errorMsg.includes('Could not process') || error?.status === 400) {
+      errorBody: error?.error ? JSON.stringify(error.error).substring(0, 300) : undefined,
+    }));
+
+    if (errorMsg.includes('Could not process image') || errorMsg.includes('Could not process')) {
       return NextResponse.json(
         { success: false, error: 'Could not read the image. Please ensure the photo is clear, well-lit, and shows the bill details.' },
         { status: 400 }
       );
     }
-    if (error?.status === 429) {
+    if (errorStatus === 429) {
       return NextResponse.json(
         { success: false, error: 'AI service is temporarily busy. Please wait a moment and try again.' },
         { status: 429 }
       );
     }
-    if (error?.status === 401 || errorMsg.includes('authentication') || errorMsg.includes('api_key')) {
+    if (errorStatus === 401 || errorMsg.includes('authentication') || errorMsg.includes('api_key') || errorMsg.includes('invalid x-api-key')) {
       return NextResponse.json(
-        { success: false, error: 'AI service authentication error. Please contact support.' },
+        { success: false, error: 'AI service authentication failed. The API key may be invalid or expired.' },
         { status: 500 }
       );
     }
-    if (errorMsg.includes('model') || errorMsg.includes('not_found')) {
+    if (errorMsg.includes('not_found') || errorMsg.includes('does not exist') || errorMsg.includes('model:')) {
       return NextResponse.json(
-        { success: false, error: 'AI model unavailable. Please try again shortly.' },
+        { success: false, error: 'AI model not available. Please try again shortly.' },
         { status: 500 }
+      );
+    }
+    if (errorStatus === 400) {
+      return NextResponse.json(
+        { success: false, error: `AI service error: ${errorMsg.substring(0, 150)}` },
+        { status: 400 }
       );
     }
     return NextResponse.json(
