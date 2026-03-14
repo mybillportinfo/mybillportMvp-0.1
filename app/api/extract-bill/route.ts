@@ -14,7 +14,7 @@ import { tryBillerParsers } from '../../lib/parsers';
 export const runtime = "nodejs";
 export const dynamic = 'force-dynamic';
 
-const DEFAULT_MODEL = "claude-3-5-sonnet-20241022";
+const DEFAULT_MODEL = "claude-sonnet-4-20250514";
 
 const EXTRACTION_PROMPT = `You are an expert bill/invoice data extractor. Analyze this bill and extract the following information as accurately as possible.
 
@@ -183,27 +183,31 @@ export async function POST(request: NextRequest) {
       extractedJson = parseJsonResponse(text);
 
       if (extractedJson) {
-        const rawText = [
-          extractedJson.vendor,
-          extractedJson.accountNumber,
-          String(extractedJson.amount),
-          extractedJson.dueDate,
-          extractedJson.billingPeriod,
-        ].filter(Boolean).join(' ');
-        const parserResult = tryBillerParsers(rawText);
-        if (parserResult && parserResult.confidence > calculateOverall(extractedJson)) {
-          extractedJson = {
-            ...extractedJson,
-            vendor: parserResult.vendor,
-            amount: parserResult.amount ?? extractedJson.amount,
-            dueDate: parserResult.dueDate ?? extractedJson.dueDate,
-            billingPeriod: parserResult.billingPeriod ?? extractedJson.billingPeriod,
-            accountNumber: parserResult.accountNumber ?? extractedJson.accountNumber,
-            currency: parserResult.currency,
-            category: parserResult.category,
-            confidenceVendor: Math.max(extractedJson.confidenceVendor ?? 0.5, parserResult.confidence),
-          };
-          extractionMethod = 'claude-vision+parser';
+        try {
+          const rawText = [
+            extractedJson.vendor,
+            extractedJson.accountNumber,
+            String(extractedJson.amount),
+            extractedJson.dueDate,
+            extractedJson.billingPeriod,
+          ].filter(Boolean).join(' ');
+          const parserResult = tryBillerParsers(rawText);
+          if (parserResult && parserResult.confidence > calculateOverall(extractedJson)) {
+            extractedJson = {
+              ...extractedJson,
+              vendor: parserResult.vendor,
+              amount: parserResult.amount ?? extractedJson.amount,
+              dueDate: parserResult.dueDate ?? extractedJson.dueDate,
+              billingPeriod: parserResult.billingPeriod ?? extractedJson.billingPeriod,
+              accountNumber: parserResult.accountNumber ?? extractedJson.accountNumber,
+              currency: parserResult.currency,
+              category: parserResult.category,
+              confidenceVendor: Math.max(extractedJson.confidenceVendor ?? 0.5, parserResult.confidence),
+            };
+            extractionMethod = 'claude-vision+parser';
+          }
+        } catch (parserErr) {
+          console.warn('[extract-bill] parser overlay failed, continuing with Claude result:', parserErr);
         }
       }
     } else if (sanitizedFileType === 'pdf') {
@@ -231,27 +235,31 @@ export async function POST(request: NextRequest) {
       extractedJson = parseJsonResponse(text);
 
       if (extractedJson) {
-        const rawText = [
-          extractedJson.vendor,
-          extractedJson.accountNumber,
-          String(extractedJson.amount),
-          extractedJson.dueDate,
-          extractedJson.billingPeriod,
-        ].filter(Boolean).join(' ');
-        const parserResult = tryBillerParsers(rawText);
-        if (parserResult && parserResult.confidence > calculateOverall(extractedJson)) {
-          extractedJson = {
-            ...extractedJson,
-            vendor: parserResult.vendor,
-            amount: parserResult.amount ?? extractedJson.amount,
-            dueDate: parserResult.dueDate ?? extractedJson.dueDate,
-            billingPeriod: parserResult.billingPeriod ?? extractedJson.billingPeriod,
-            accountNumber: parserResult.accountNumber ?? extractedJson.accountNumber,
-            currency: parserResult.currency,
-            category: parserResult.category,
-            confidenceVendor: Math.max(extractedJson.confidenceVendor ?? 0.5, parserResult.confidence),
-          };
-          extractionMethod = 'claude-vision+parser';
+        try {
+          const rawText = [
+            extractedJson.vendor,
+            extractedJson.accountNumber,
+            String(extractedJson.amount),
+            extractedJson.dueDate,
+            extractedJson.billingPeriod,
+          ].filter(Boolean).join(' ');
+          const parserResult = tryBillerParsers(rawText);
+          if (parserResult && parserResult.confidence > calculateOverall(extractedJson)) {
+            extractedJson = {
+              ...extractedJson,
+              vendor: parserResult.vendor,
+              amount: parserResult.amount ?? extractedJson.amount,
+              dueDate: parserResult.dueDate ?? extractedJson.dueDate,
+              billingPeriod: parserResult.billingPeriod ?? extractedJson.billingPeriod,
+              accountNumber: parserResult.accountNumber ?? extractedJson.accountNumber,
+              currency: parserResult.currency,
+              category: parserResult.category,
+              confidenceVendor: Math.max(extractedJson.confidenceVendor ?? 0.5, parserResult.confidence),
+            };
+            extractionMethod = 'claude-vision+parser';
+          }
+        } catch (parserErr) {
+          console.warn('[extract-bill] parser overlay failed, continuing with Claude result:', parserErr);
         }
       }
     } else {
@@ -310,7 +318,13 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error: any) {
-    console.error('[extract-bill] error:', error?.status, error?.message?.substring(0, 200));
+    console.error('[extract-bill] error:', {
+      status: error?.status,
+      message: error?.message?.substring(0, 300),
+      type: error?.error?.type,
+      name: error?.name,
+      code: error?.code,
+    });
     const errorMsg = error?.message || '';
     if (errorMsg.includes('Could not process image') || errorMsg.includes('Could not process') || error?.status === 400) {
       return NextResponse.json(
@@ -322,6 +336,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { success: false, error: 'AI service is temporarily busy. Please wait a moment and try again.' },
         { status: 429 }
+      );
+    }
+    if (error?.status === 401 || errorMsg.includes('authentication') || errorMsg.includes('api_key')) {
+      return NextResponse.json(
+        { success: false, error: 'AI service authentication error. Please contact support.' },
+        { status: 500 }
+      );
+    }
+    if (errorMsg.includes('model') || errorMsg.includes('not_found')) {
+      return NextResponse.json(
+        { success: false, error: 'AI model unavailable. Please try again shortly.' },
+        { status: 500 }
       );
     }
     return NextResponse.json(
