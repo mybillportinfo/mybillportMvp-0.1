@@ -19,10 +19,11 @@ interface CountryData {
 }
 
 const countries: CountryData[] = [
+  { name: 'United States', numericId: '840', status: 'live', timeline: 'Live now' },
   { name: 'Canada', numericId: '124', status: 'live', timeline: 'Live now' },
-  { name: 'Australia', numericId: '036', status: 'weeks', timeline: 'Coming in weeks' },
+  { name: 'United Kingdom', numericId: '826', status: 'live', timeline: 'Live now' },
+  { name: 'Australia', numericId: '036', status: 'live', timeline: 'Live now' },
   { name: 'New Zealand', numericId: '554', status: 'weeks', timeline: 'Coming in weeks' },
-  { name: 'United Kingdom', numericId: '826', status: 'months', timeline: 'Coming in months' },
   { name: 'France', numericId: '250', status: 'months', timeline: 'Coming in months' },
   { name: 'Germany', numericId: '276', status: 'months', timeline: 'Coming in months' },
   { name: 'India', numericId: '356', status: 'months', timeline: 'Coming in months' },

@@ -1,6 +1,3 @@
-'use client';
-
-import { useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight, DollarSign, Mail, CheckCircle,
@@ -14,19 +11,9 @@ import { SocialProof } from "./components/SocialProof";
 import { FAQ } from "./components/FAQ";
 import { GlobalFootprint } from "./components/GlobalFootprint";
 import { FAQJsonLd, SoftwareApplicationJsonLd } from "./components/JsonLd";
+import { WaitlistForm } from "./components/WaitlistForm";
 
 export default function LandingPage() {
-  const [email, setEmail] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-
-  const handleWaitlist = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (email) {
-      setSubmitted(true);
-      setEmail("");
-    }
-  };
-
   return (
     <div className="min-h-screen bg-[#060d1a] text-white" style={{ fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, sans-serif" }}>
       <FAQJsonLd />
@@ -52,7 +39,7 @@ export default function LandingPage() {
         <div className="max-w-3xl mx-auto relative space-y-6">
           <div className="inline-flex items-center gap-2 bg-teal-500/10 border border-teal-500/20 text-teal-400 text-xs font-semibold px-4 py-1.5 rounded-full tracking-wide uppercase">
             <Globe className="w-3.5 h-3.5" />
-            Expanding worldwide
+            Available worldwide
           </div>
           <h1 className="text-4xl md:text-6xl font-extrabold text-white leading-[1.1] tracking-tight">
             Never miss a bill again.
@@ -81,7 +68,7 @@ export default function LandingPage() {
 
       <div className="border-y border-white/5 bg-white/[0.02] py-5 px-5">
         <div className="max-w-4xl mx-auto flex flex-wrap justify-center gap-6 md:gap-12 text-sm text-slate-500">
-          {["120+ billers supported", "AI-powered bill scanning", "256-bit encryption", "Expanding globally"].map((t) => (
+          {["120+ billers supported", "AI-powered bill scanning", "256-bit encryption", "Available worldwide"].map((t) => (
             <div key={t} className="flex items-center gap-2">
               <CheckCircle className="w-4 h-4 text-teal-500 flex-shrink-0" />
               <span>{t}</span>
@@ -114,7 +101,7 @@ export default function LandingPage() {
               {
                 icon: Eye,
                 title: "See everything at a glance",
-                body: "All your bills — hydro, internet, phone, insurance — on one clean dashboard. No more logging into five different portals.",
+                body: "All your bills — electricity, internet, phone, insurance — on one clean dashboard. No more logging into five different portals.",
               },
               {
                 icon: Bell,
@@ -311,36 +298,7 @@ export default function LandingPage() {
           <p className="text-slate-400 max-w-md mx-auto text-base leading-relaxed">
             Take back control of your bills. Free to start, takes two minutes to set up.
           </p>
-          {submitted ? (
-            <div className="flex flex-col items-center gap-3">
-              <div className="w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center">
-                <CheckCircle className="w-6 h-6 text-white" />
-              </div>
-              <p className="text-teal-400 font-medium">You're on the list — we'll be in touch.</p>
-            </div>
-          ) : (
-            <div className="space-y-5">
-              <Link href="/login" className="bg-teal-500 hover:bg-teal-400 text-white font-bold px-10 py-4 rounded-full transition-colors inline-flex items-center gap-2 text-base shadow-lg shadow-teal-900/50">
-                  Start managing your bills free <ArrowRight className="w-5 h-5" />
-              </Link>
-              <div>
-                <p className="text-xs text-slate-500 mb-3">Or get notified when new features drop</p>
-                <form onSubmit={handleWaitlist} className="flex flex-col sm:flex-row gap-2 justify-center max-w-sm mx-auto">
-                  <input
-                    type="email"
-                    placeholder="your@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="flex-1 bg-white/5 border border-white/10 text-white placeholder:text-slate-600 rounded-full px-5 py-3 text-sm focus:outline-none focus:border-teal-500/50"
-                  />
-                  <button type="submit" className="bg-white/10 hover:bg-white/15 text-white rounded-full px-5 py-3 text-sm font-medium flex items-center gap-1.5 justify-center transition-colors">
-                    <Mail className="w-4 h-4" /> Notify me
-                  </button>
-                </form>
-              </div>
-            </div>
-          )}
+          <WaitlistForm />
         </section>
       </div>
 

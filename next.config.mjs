@@ -74,6 +74,20 @@ const nextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      {
+        source: '/bill-management-canada',
+        destination: '/bill-management',
+        permanent: true,
+      },
+      {
+        source: '/pay-bills-online-canada',
+        destination: '/pay-bills-online',
+        permanent: true,
+      },
+    ];
+  },
   poweredByHeader: false,
 };
 

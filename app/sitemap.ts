@@ -36,7 +36,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.3,
     },
     {
-      url: `${baseUrl}/bill-management-canada`,
+      url: `${baseUrl}/bill-management`,
       lastModified: now,
       changeFrequency: 'monthly',
       priority: 0.9,
@@ -48,7 +48,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     {
-      url: `${baseUrl}/pay-bills-online-canada`,
+      url: `${baseUrl}/pay-bills-online`,
       lastModified: now,
       changeFrequency: 'monthly',
       priority: 0.9,
