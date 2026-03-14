@@ -1,0 +1,100 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /bills/{billId} {
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null
+                     && request.resource.data.userId == request.auth.uid
+                     && request.resource.data.totalAmount is number
+                     && request.resource.data.totalAmount > 0
+                     && request.resource.data.totalAmount < 1000000
+                     && request.resource.data.companyName is string
+                     && request.resource.data.companyName.size() > 0
+                     && request.resource.data.companyName.size() < 200;
+      allow update: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
+
+      match /payments/{paymentId} {
+        allow read: if request.auth != null
+                     && get(/databases/$(database)/documents/bills/$(billId)).data.userId == request.auth.uid;
+        allow create: if request.auth != null
+                      && get(/databases/$(database)/documents/bills/$(billId)).data.userId == request.auth.uid
+                      && request.resource.data.userId == request.auth.uid;
+      }
+    }
+
+    match /notifications/{notifId} {
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow update: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow delete: if false;
+    }
+
+    match /payments/{paymentId} {
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    match /userPreferences/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    match /userProfiles/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    match /feedback/{feedbackId} {
+      allow create: if request.auth != null
+                     && request.resource.data.userId == request.auth.uid
+                     && request.resource.data.message is string
+                     && request.resource.data.message.size() > 0
+                     && request.resource.data.message.size() < 5000;
+      allow read: if false;
+      allow update, delete: if false;
+    }
+
+    // Per-day income entries — users can only access their own
+    match /income/{incomeId} {
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null
+                     && request.resource.data.userId == request.auth.uid
+                     && request.resource.data.amount is number
+                     && request.resource.data.amount > 0
+                     && request.resource.data.date is string;
+      allow update: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+
+    // Email aliases — user can read own alias; creation/update via client (auto-create on load)
+    match /emailAliases/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow create, update: if request.auth != null && request.auth.uid == userId;
+      allow delete: if false;
+    }
+
+    // Pending bills from email forwarding — per-user CRUD on own items
+    match /pendingBills/{userId}/items/{itemId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow create: if false;
+      allow update: if request.auth != null && request.auth.uid == userId;
+      allow delete: if false;
+    }
+
+    // Push subscriptions — server Admin SDK only, zero client access
+    match /pushSubscriptions/{userId} {
+      allow read, write: if false;
+    }
+
+    // Rate limit counters — server Admin SDK only
+    match /rateLimits/{key} {
+      allow read, write: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
