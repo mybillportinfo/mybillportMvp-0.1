@@ -23,7 +23,7 @@ export default function BillTrackerPage() {
           <h1 className="text-4xl md:text-5xl font-extrabold leading-tight">
             The Bill Tracker That
             <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-400">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF8A5C] to-[#C4E538]">
               Actually Works
             </span>
           </h1>
@@ -31,7 +31,7 @@ export default function BillTrackerPage() {
             Spreadsheets are tedious. Calendar reminders miss context. Bank apps only show what you've already paid.
             MyBillPort gives you a complete picture of every bill — past, present, and upcoming.
           </p>
-          <Link href="/login" className="bg-teal-500 hover:bg-teal-400 text-white font-bold px-8 py-4 rounded-full transition-colors inline-flex items-center gap-2">
+          <Link href="/login" className="bg-[#FF8A5C] hover:bg-[#FF8A5C] text-white font-bold px-8 py-4 rounded-full transition-colors inline-flex items-center gap-2">
               Try it free <ArrowRight className="w-5 h-5" />
           </Link>
         </section>
@@ -48,7 +48,7 @@ export default function BillTrackerPage() {
               { title: 'One-click payment', desc: 'Click Pay and go directly to your biller\'s official website. We support 120+ billers and growing.' },
             ].map((f) => (
               <div key={f.title} className="flex gap-3 items-start">
-                <CheckCircle className="w-5 h-5 text-teal-400 flex-shrink-0 mt-0.5" />
+                <CheckCircle className="w-5 h-5 text-[#FF8A5C] flex-shrink-0 mt-0.5" />
                 <div>
                   <h3 className="font-semibold text-white">{f.title}</h3>
                   <p className="text-sm text-slate-400 mt-1">{f.desc}</p>
@@ -65,7 +65,7 @@ export default function BillTrackerPage() {
               <thead>
                 <tr className="border-b border-white/10">
                   <th className="text-left py-3 text-slate-400 font-medium">Feature</th>
-                  <th className="text-center py-3 text-teal-400 font-semibold">MyBillPort</th>
+                  <th className="text-center py-3 text-[#FF8A5C] font-semibold">MyBillPort</th>
                   <th className="text-center py-3 text-slate-400 font-medium">Spreadsheets</th>
                   <th className="text-center py-3 text-slate-400 font-medium">Bank Apps</th>
                 </tr>
@@ -92,10 +92,10 @@ export default function BillTrackerPage() {
           </div>
         </section>
 
-        <section className="bg-gradient-to-br from-teal-900/30 to-cyan-900/10 border border-teal-500/15 rounded-2xl p-8 text-center space-y-4">
+        <section className="bg-gradient-to-br from-[#FF8A5C]/15 to-[#2AC3B5]/10 border border-[#FF8A5C]/15 rounded-2xl p-8 text-center space-y-4">
           <h2 className="text-2xl font-bold text-white">Start tracking your bills today</h2>
           <p className="text-slate-400">Free to start. No credit card. Under 2 minutes to set up.</p>
-          <Link href="/login" className="bg-teal-500 hover:bg-teal-400 text-white font-bold px-8 py-4 rounded-full transition-colors inline-flex items-center gap-2">
+          <Link href="/login" className="bg-[#FF8A5C] hover:bg-[#FF8A5C] text-white font-bold px-8 py-4 rounded-full transition-colors inline-flex items-center gap-2">
               Get started free <ArrowRight className="w-5 h-5" />
           </Link>
         </section>

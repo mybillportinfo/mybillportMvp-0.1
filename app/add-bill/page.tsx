@@ -360,7 +360,7 @@ export default function AddBillPage() {
   if (authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-teal-500 animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#FF8A5C] animate-spin" />
       </div>
     );
   }
@@ -389,15 +389,15 @@ export default function AddBillPage() {
         </button>
             <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-teal-500 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(20,184,166,0.3)]">
+            <div className="w-10 h-10 bg-[#FF8A5C] rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(255,138,92,0.3)]">
               <div className="relative">
                 <Receipt className="text-white w-6 h-6" />
-                <div className="absolute -bottom-1 -right-1 bg-slate-900 rounded-full p-0.5 border border-teal-500/30">
-                  <DollarSign className="text-teal-400 w-3 h-3" />
+                <div className="absolute -bottom-1 -right-1 bg-slate-900 rounded-full p-0.5 border border-[#FF8A5C]/30">
+                  <DollarSign className="text-[#FF8A5C] w-3 h-3" />
                 </div>
               </div>
             </div>
-            <span className="text-white font-bold text-lg tracking-tight">My<span className="text-teal-500">BillPort</span></span>
+            <span className="text-white font-bold text-lg tracking-tight">My<span className="text-[#FF8A5C]">BillPort</span></span>
           </div>
         </div>
         <p className="text-slate-400">
@@ -420,13 +420,13 @@ export default function AddBillPage() {
         {/* Extracting State */}
         {isExtracting && (
           <div className="bg-white rounded-2xl p-8 text-center space-y-4">
-            <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto">
-              <Sparkles className="w-8 h-8 text-teal-600 animate-pulse" />
+            <div className="w-16 h-16 bg-[#FF8A5C]/15 rounded-full flex items-center justify-center mx-auto">
+              <Sparkles className="w-8 h-8 text-[#FF8A5C] animate-pulse" />
             </div>
             <h2 className="text-xl font-semibold text-slate-800">Analyzing Your Bill...</h2>
             <p className="text-slate-500 text-sm">Our AI is reading and extracting bill details. This may take a few seconds.</p>
             <div className="flex justify-center">
-              <Loader2 className="w-6 h-6 text-teal-500 animate-spin" />
+              <Loader2 className="w-6 h-6 text-[#FF8A5C] animate-spin" />
             </div>
           </div>
         )}
@@ -445,7 +445,7 @@ export default function AddBillPage() {
               <button onClick={resetToMethodSelect} className="flex-1 py-3 px-4 rounded-lg border border-slate-200 text-slate-600 font-medium hover:bg-slate-50 transition-colors">
                 Try Again
               </button>
-              <button onClick={() => { setExtractionError(null); setMethod('search'); }} className="flex-1 py-3 px-4 rounded-lg bg-teal-600 text-white font-semibold hover:bg-teal-700 transition-colors">
+              <button onClick={() => { setExtractionError(null); setMethod('search'); }} className="flex-1 py-3 px-4 rounded-lg bg-[#FF8A5C] text-white font-semibold hover:bg-[#e5753d] transition-colors">
                 Enter Manually
               </button>
             </div>
@@ -459,8 +459,8 @@ export default function AddBillPage() {
               onClick={() => setMethod('search')}
               className="w-full bg-white rounded-xl p-5 flex items-center gap-4 hover:bg-slate-50 transition-colors text-left"
             >
-              <div className="w-12 h-12 bg-teal-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                <Search className="w-6 h-6 text-teal-600" />
+              <div className="w-12 h-12 bg-[#FF8A5C]/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                <Search className="w-6 h-6 text-[#FF8A5C]" />
               </div>
               <div className="flex-1">
                 <p className="font-semibold text-slate-800">Add Bill Manually</p>
@@ -471,8 +471,8 @@ export default function AddBillPage() {
             {/* AI Scan & Upload */}
             <div className="bg-white rounded-xl p-5 space-y-3">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-teal-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Sparkles className="w-6 h-6 text-teal-600" />
+                <div className="w-12 h-12 bg-[#FF8A5C]/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Sparkles className="w-6 h-6 text-[#FF8A5C]" />
                 </div>
                 <div className="flex-1">
                   <p className="font-semibold text-slate-800">Scan or Upload Bill</p>
@@ -482,23 +482,23 @@ export default function AddBillPage() {
               <div className="grid grid-cols-3 gap-2">
                 <button
                   onClick={() => cameraInputRef.current?.click()}
-                  className="flex flex-col items-center gap-1.5 py-3 bg-slate-50 hover:bg-teal-50 border border-slate-200 hover:border-teal-300 rounded-xl transition-colors"
+                  className="flex flex-col items-center gap-1.5 py-3 bg-slate-50 hover:bg-[#FF8A5C]/10 border border-slate-200 hover:border-[#FF8A5C]/40 rounded-xl transition-colors"
                 >
-                  <Camera className="w-5 h-5 text-teal-600" />
+                  <Camera className="w-5 h-5 text-[#FF8A5C]" />
                   <span className="text-xs font-medium text-slate-700">Camera</span>
                 </button>
                 <button
                   onClick={() => photoInputRef.current?.click()}
-                  className="flex flex-col items-center gap-1.5 py-3 bg-slate-50 hover:bg-teal-50 border border-slate-200 hover:border-teal-300 rounded-xl transition-colors"
+                  className="flex flex-col items-center gap-1.5 py-3 bg-slate-50 hover:bg-[#FF8A5C]/10 border border-slate-200 hover:border-[#FF8A5C]/40 rounded-xl transition-colors"
                 >
-                  <ImageIcon className="w-5 h-5 text-teal-600" />
+                  <ImageIcon className="w-5 h-5 text-[#FF8A5C]" />
                   <span className="text-xs font-medium text-slate-700">Photo</span>
                 </button>
                 <button
                   onClick={() => pdfInputRef.current?.click()}
-                  className="flex flex-col items-center gap-1.5 py-3 bg-slate-50 hover:bg-teal-50 border border-slate-200 hover:border-teal-300 rounded-xl transition-colors"
+                  className="flex flex-col items-center gap-1.5 py-3 bg-slate-50 hover:bg-[#FF8A5C]/10 border border-slate-200 hover:border-[#FF8A5C]/40 rounded-xl transition-colors"
                 >
-                  <FileText className="w-5 h-5 text-teal-600" />
+                  <FileText className="w-5 h-5 text-[#FF8A5C]" />
                   <span className="text-xs font-medium text-slate-700">PDF</span>
                 </button>
               </div>
@@ -521,13 +521,13 @@ export default function AddBillPage() {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5">
                     <span className="flex-1 text-sm text-slate-700 font-mono truncate">bills+{emailAlias}@mybillport.com</span>
-                    <button onClick={handleCopyAlias} className="text-teal-600 hover:text-teal-700 transition-colors flex-shrink-0">
+                    <button onClick={handleCopyAlias} className="text-[#FF8A5C] hover:text-[#e5753d] transition-colors flex-shrink-0">
                       {aliasCopied ? <CheckCheck className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                     </button>
                   </div>
                   <p className="text-xs text-slate-400">
                     Forward bill emails to this address. They will appear in your{' '}
-                    <Link href="/pending-bills" className="text-teal-600 underline hover:no-underline">Pending Bills</Link>{' '}
+                    <Link href="/pending-bills" className="text-[#FF8A5C] underline hover:no-underline">Pending Bills</Link>{' '}
                     inbox for review.
                   </p>
                 </div>
@@ -543,7 +543,7 @@ export default function AddBillPage() {
               )}
               <Link
                 href="/pending-bills"
-                className="flex items-center justify-center gap-1.5 text-sm text-teal-600 font-medium hover:underline"
+                className="flex items-center justify-center gap-1.5 text-sm text-[#FF8A5C] font-medium hover:underline"
               >
                 <Inbox className="w-4 h-4" />
                 View Pending Bills Inbox
@@ -557,8 +557,8 @@ export default function AddBillPage() {
           <div className="space-y-4">
             <div className="bg-white rounded-2xl overflow-hidden">
               <div className="p-5 border-b border-slate-100 flex items-center gap-3">
-                <div className="w-10 h-10 bg-teal-500/15 rounded-xl flex items-center justify-center">
-                  <Sparkles className="w-5 h-5 text-teal-600" />
+                <div className="w-10 h-10 bg-[#FF8A5C]/15 rounded-xl flex items-center justify-center">
+                  <Sparkles className="w-5 h-5 text-[#FF8A5C]" />
                 </div>
                 <div className="flex-1">
                   <h2 className="text-lg font-semibold text-slate-800">Smart Bill Detected</h2>
@@ -600,7 +600,7 @@ export default function AddBillPage() {
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Category *</label>
                   <div className="relative">
-                    <select value={category} onChange={(e) => handleCategoryChange(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800 appearance-none bg-white">
+                    <select value={category} onChange={(e) => handleCategoryChange(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A5C] text-slate-800 appearance-none bg-white">
                       <option value="">Select a category</option>
                       {CATEGORIES.map(cat => (<option key={cat.value} value={cat.value}>{cat.icon} {cat.label}</option>))}
                     </select>
@@ -613,7 +613,7 @@ export default function AddBillPage() {
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Type</label>
                     <div className="relative">
-                      <select value={subcategory} onChange={(e) => handleSubcategoryChange(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800 appearance-none bg-white">
+                      <select value={subcategory} onChange={(e) => handleSubcategoryChange(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A5C] text-slate-800 appearance-none bg-white">
                         <option value="">Select type (optional)</option>
                         {selectedCategory.subcategories.map(sub => (<option key={sub.value} value={sub.value}>{sub.label}</option>))}
                       </select>
@@ -635,17 +635,17 @@ export default function AddBillPage() {
                   {hasProviders ? (
                     <ProviderAutocomplete providers={providerList} value={companyName} onChange={setCompanyName} placeholder="Search or type provider name" />
                   ) : (
-                    <input type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="e.g. Rogers, Netflix, Hydro One" className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800" />
+                    <input type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="e.g. Rogers, Netflix, Hydro One" className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A5C] text-slate-800" />
                   )}
                   {extractedData.matchedProviderName && extractedData.matchedProviderName !== companyName && (
-                    <p className="text-xs text-teal-600 mt-1">Matched: {extractedData.matchedProviderName}</p>
+                    <p className="text-xs text-[#FF8A5C] mt-1">Matched: {extractedData.matchedProviderName}</p>
                   )}
                 </div>
 
                 {/* Account Number */}
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Account Number</label>
-                  <input type="text" value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} placeholder="Enter your account number" required className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800" />
+                  <input type="text" value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} placeholder="Enter your account number" required className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A5C] text-slate-800" />
                 </div>
 
                 {/* Dynamic metadata fields */}
@@ -654,14 +654,14 @@ export default function AddBillPage() {
                     <label className="block text-sm font-medium text-slate-700 mb-1">{field.label} {field.required && '*'}</label>
                     {field.type === 'select' && field.options ? (
                       <div className="relative">
-                        <select value={metadataValues[field.key] || ''} onChange={(e) => handleMetadataChange(field.key, e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800 appearance-none bg-white">
+                        <select value={metadataValues[field.key] || ''} onChange={(e) => handleMetadataChange(field.key, e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A5C] text-slate-800 appearance-none bg-white">
                           <option value="">Select...</option>
                           {field.options.map(opt => (<option key={opt} value={opt}>{opt}</option>))}
                         </select>
                         <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                       </div>
                     ) : (
-                      <input type={field.type === 'number' ? 'number' : 'text'} value={metadataValues[field.key] || ''} onChange={(e) => handleMetadataChange(field.key, e.target.value)} placeholder={field.placeholder || ''} step={field.type === 'number' ? '0.01' : undefined} className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800" />
+                      <input type={field.type === 'number' ? 'number' : 'text'} value={metadataValues[field.key] || ''} onChange={(e) => handleMetadataChange(field.key, e.target.value)} placeholder={field.placeholder || ''} step={field.type === 'number' ? '0.01' : undefined} className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A5C] text-slate-800" />
                     )}
                   </div>
                 ))}
@@ -676,7 +676,7 @@ export default function AddBillPage() {
                       </span>
                     )}
                   </div>
-                  <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800" />
+                  <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A5C] text-slate-800" />
                 </div>
 
                 {/* Amount */}
@@ -689,14 +689,14 @@ export default function AddBillPage() {
                       </span>
                     )}
                   </div>
-                  <input type="number" value={totalAmount} onChange={(e) => setTotalAmount(e.target.value)} onKeyDown={(e) => { if (['-', 'e', 'E', '+'].includes(e.key)) e.preventDefault(); }} placeholder="0.00" step="0.01" min="0.01" className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800" />
+                  <input type="number" value={totalAmount} onChange={(e) => setTotalAmount(e.target.value)} onKeyDown={(e) => { if (['-', 'e', 'E', '+'].includes(e.key)) e.preventDefault(); }} placeholder="0.00" step="0.01" min="0.01" className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A5C] text-slate-800" />
                 </div>
 
                 {/* Billing Cycle */}
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Billing Cycle</label>
                   <div className="relative">
-                    <select value={billingCycle} onChange={(e) => setBillingCycle(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800 appearance-none bg-white">
+                    <select value={billingCycle} onChange={(e) => setBillingCycle(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A5C] text-slate-800 appearance-none bg-white">
                       {BILLING_CYCLES.map(cycle => (<option key={cycle.value} value={cycle.value}>{cycle.label}</option>))}
                     </select>
                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
@@ -718,7 +718,7 @@ export default function AddBillPage() {
 
         {/* Success State */}
         {success && !recurringModal && (
-          <div className="bg-teal-500/10 border border-teal-500/30 text-teal-400 px-4 py-6 rounded-xl text-center">
+          <div className="bg-[#FF8A5C]/10 border border-[#FF8A5C]/30 text-[#FF8A5C] px-4 py-6 rounded-xl text-center">
             <p className="text-lg font-semibold">Bill added successfully!</p>
             <p className="text-sm mt-1">Redirecting to dashboard...</p>
           </div>
@@ -746,7 +746,7 @@ export default function AddBillPage() {
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Category *</label>
               <div className="relative">
-                <select value={category} onChange={(e) => handleCategoryChange(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800 appearance-none bg-white">
+                <select value={category} onChange={(e) => handleCategoryChange(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A5C] text-slate-800 appearance-none bg-white">
                   <option value="">Select a category</option>
                   {CATEGORIES.map(cat => (<option key={cat.value} value={cat.value}>{cat.icon} {cat.label}</option>))}
                 </select>
@@ -758,7 +758,7 @@ export default function AddBillPage() {
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Type</label>
                 <div className="relative">
-                  <select value={subcategory} onChange={(e) => handleSubcategoryChange(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800 appearance-none bg-white">
+                  <select value={subcategory} onChange={(e) => handleSubcategoryChange(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A5C] text-slate-800 appearance-none bg-white">
                     <option value="">Select type (optional)</option>
                     {selectedCategory.subcategories.map(sub => (<option key={sub.value} value={sub.value}>{sub.label}</option>))}
                   </select>
@@ -772,13 +772,13 @@ export default function AddBillPage() {
               {hasProviders ? (
                 <ProviderAutocomplete providers={providerList} value={companyName} onChange={setCompanyName} placeholder="Search or type provider name" />
               ) : (
-                <input type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="e.g. Rogers, Netflix, Hydro One" className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800" />
+                <input type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="e.g. Rogers, Netflix, Hydro One" className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A5C] text-slate-800" />
               )}
             </div>
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Account Number</label>
-              <input type="text" value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} placeholder="Enter your account number" required className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800" />
+              <input type="text" value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} placeholder="Enter your account number" required className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A5C] text-slate-800" />
             </div>
 
             {dynamicFields.map(field => (
@@ -786,32 +786,32 @@ export default function AddBillPage() {
                 <label className="block text-sm font-medium text-slate-700 mb-1">{field.label} {field.required && '*'}</label>
                 {field.type === 'select' && field.options ? (
                   <div className="relative">
-                    <select value={metadataValues[field.key] || ''} onChange={(e) => handleMetadataChange(field.key, e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800 appearance-none bg-white">
+                    <select value={metadataValues[field.key] || ''} onChange={(e) => handleMetadataChange(field.key, e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A5C] text-slate-800 appearance-none bg-white">
                       <option value="">Select...</option>
                       {field.options.map(opt => (<option key={opt} value={opt}>{opt}</option>))}
                     </select>
                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                   </div>
                 ) : (
-                  <input type={field.type === 'number' ? 'number' : 'text'} value={metadataValues[field.key] || ''} onChange={(e) => handleMetadataChange(field.key, e.target.value)} placeholder={field.placeholder || ''} step={field.type === 'number' ? '0.01' : undefined} className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800" />
+                  <input type={field.type === 'number' ? 'number' : 'text'} value={metadataValues[field.key] || ''} onChange={(e) => handleMetadataChange(field.key, e.target.value)} placeholder={field.placeholder || ''} step={field.type === 'number' ? '0.01' : undefined} className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A5C] text-slate-800" />
                 )}
               </div>
             ))}
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Due Date *</label>
-              <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800" />
+              <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A5C] text-slate-800" />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Amount (CAD) *</label>
-              <input type="number" value={totalAmount} onChange={(e) => setTotalAmount(e.target.value)} onKeyDown={(e) => { if (['-', 'e', 'E', '+'].includes(e.key)) e.preventDefault(); }} placeholder="0.00" step="0.01" min="0.01" className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800" />
+              <input type="number" value={totalAmount} onChange={(e) => setTotalAmount(e.target.value)} onKeyDown={(e) => { if (['-', 'e', 'E', '+'].includes(e.key)) e.preventDefault(); }} placeholder="0.00" step="0.01" min="0.01" className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A5C] text-slate-800" />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Billing Cycle</label>
               <div className="relative">
-                <select value={billingCycle} onChange={(e) => setBillingCycle(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800 appearance-none bg-white">
+                <select value={billingCycle} onChange={(e) => setBillingCycle(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A5C] text-slate-800 appearance-none bg-white">
                   {BILLING_CYCLES.map(cycle => (<option key={cycle.value} value={cycle.value}>{cycle.label}</option>))}
                 </select>
                 <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
