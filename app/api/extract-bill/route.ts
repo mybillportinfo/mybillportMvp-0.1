@@ -9,13 +9,14 @@ import {
 } from '../../lib/extractionGuards';
 import { verifyFirebaseToken, verifyAppCheckToken, isValidMimeType, sanitizeString } from '../../lib/authVerify';
 import { checkServerRateLimit } from '../../lib/serverRateLimit';
+import { tryBillerParsers } from '../../lib/parsers';
 
 export const runtime = "nodejs";
 export const dynamic = 'force-dynamic';
 
 const DEFAULT_MODEL = "claude-3-5-sonnet-20241022";
 
-const EXTRACTION_PROMPT = `You are an expert bill/invoice data extractor for Canadian bills. Analyze this bill and extract the following information as accurately as possible.
+const EXTRACTION_PROMPT = `You are an expert bill/invoice data extractor. Analyze this bill and extract the following information as accurately as possible.
 
 Return ONLY a valid JSON object with these fields:
 {
@@ -24,7 +25,7 @@ Return ONLY a valid JSON object with these fields:
   "dueDate": "YYYY-MM-DD format or null if not found",
   "billingPeriod": "e.g. Jan 1 - Jan 31, 2026 or null",
   "accountNumber": "account/customer number or null",
-  "currency": "CAD or USD",
+  "currency": "3-letter currency code (e.g. CAD, USD, GBP, EUR, AUD, INR)",
   "category": "one of: utilities, telecom, government, insurance, banking, transportation, education, subscriptions, property, miscellaneous, or null",
   "confidenceVendor": <0.0 to 1.0>,
   "confidenceAmount": <0.0 to 1.0>,
@@ -35,7 +36,7 @@ Rules:
 - For amount: prefer "Total Due", "Amount Due", "Balance Due", "Total Amount" over subtotals. Choose the final payable amount.
 - For dates: prefer "Due Date", "Payment Due" over invoice date or billing date.
 - For vendor: use the official company name, not abbreviations.
-- Canadian bills may use DD/MM/YYYY format. Normalize to YYYY-MM-DD.
+- Bills may use DD/MM/YYYY, MM/DD/YYYY, or other regional formats. Normalize to YYYY-MM-DD.
 - If multiple amounts exist, pick the one closest to "Total Due" or "Amount Due".
 - Confidence scores reflect how certain you are about each extracted value.
 - If amount not confidently found, set confidenceAmount below 0.5.
@@ -152,6 +153,7 @@ export async function POST(request: NextRequest) {
     const startTime = Date.now();
     const anthropic = new Anthropic({ apiKey });
     let extractedJson: any;
+    let extractionMethod = 'claude-vision';
 
     if (sanitizedFileType === 'image') {
       const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
@@ -179,6 +181,31 @@ export async function POST(request: NextRequest) {
 
       const text = response.content[0].type === 'text' ? response.content[0].text : '';
       extractedJson = parseJsonResponse(text);
+
+      if (extractedJson) {
+        const rawText = [
+          extractedJson.vendor,
+          extractedJson.accountNumber,
+          String(extractedJson.amount),
+          extractedJson.dueDate,
+          extractedJson.billingPeriod,
+        ].filter(Boolean).join(' ');
+        const parserResult = tryBillerParsers(rawText);
+        if (parserResult && parserResult.confidence > calculateOverall(extractedJson)) {
+          extractedJson = {
+            ...extractedJson,
+            vendor: parserResult.vendor,
+            amount: parserResult.amount ?? extractedJson.amount,
+            dueDate: parserResult.dueDate ?? extractedJson.dueDate,
+            billingPeriod: parserResult.billingPeriod ?? extractedJson.billingPeriod,
+            accountNumber: parserResult.accountNumber ?? extractedJson.accountNumber,
+            currency: parserResult.currency,
+            category: parserResult.category,
+            confidenceVendor: Math.max(extractedJson.confidenceVendor ?? 0.5, parserResult.confidence),
+          };
+          extractionMethod = 'claude-vision+parser';
+        }
+      }
     } else if (sanitizedFileType === 'pdf') {
       const response = await anthropic.messages.create({
         model: DEFAULT_MODEL,
@@ -202,18 +229,44 @@ export async function POST(request: NextRequest) {
 
       const text = response.content[0].type === 'text' ? response.content[0].text : '';
       extractedJson = parseJsonResponse(text);
+
+      if (extractedJson) {
+        const rawText = [
+          extractedJson.vendor,
+          extractedJson.accountNumber,
+          String(extractedJson.amount),
+          extractedJson.dueDate,
+          extractedJson.billingPeriod,
+        ].filter(Boolean).join(' ');
+        const parserResult = tryBillerParsers(rawText);
+        if (parserResult && parserResult.confidence > calculateOverall(extractedJson)) {
+          extractedJson = {
+            ...extractedJson,
+            vendor: parserResult.vendor,
+            amount: parserResult.amount ?? extractedJson.amount,
+            dueDate: parserResult.dueDate ?? extractedJson.dueDate,
+            billingPeriod: parserResult.billingPeriod ?? extractedJson.billingPeriod,
+            accountNumber: parserResult.accountNumber ?? extractedJson.accountNumber,
+            currency: parserResult.currency,
+            category: parserResult.category,
+            confidenceVendor: Math.max(extractedJson.confidenceVendor ?? 0.5, parserResult.confidence),
+          };
+          extractionMethod = 'claude-vision+parser';
+        }
+      }
     } else {
       return NextResponse.json({ success: false, error: 'Unsupported file type' }, { status: 400 });
     }
 
     const processingMs = Date.now() - startTime;
-    console.log(`[extract-bill] uid=${verifiedUserId.substring(0, 8)}... fileType=${sanitizedFileType} ms=${processingMs}`);
+    console.log(`[extract-bill] uid=${verifiedUserId.substring(0, 8)}... fileType=${sanitizedFileType} method=${extractionMethod} ms=${processingMs}`);
 
     if (!extractedJson) {
       return NextResponse.json({ success: false, error: 'Failed to parse bill data. Please try again or enter manually.' }, { status: 422 });
     }
 
     const providerMatch = fuzzyMatchProvider(extractedJson.vendor || '');
+    const overallConfidence = calculateOverall(extractedJson);
 
     const rawResult = {
       vendor: sanitizeString(extractedJson.vendor, 200),
@@ -225,7 +278,7 @@ export async function POST(request: NextRequest) {
       category: providerMatch?.category || extractedJson.category || null,
       subcategory: providerMatch?.types?.[0] || null,
       confidence: {
-        overall: calculateOverall(extractedJson),
+        overall: overallConfidence,
         vendor: extractedJson.confidenceVendor ?? 0.5,
         amount: extractedJson.confidenceAmount ?? 0.5,
         dueDate: extractedJson.confidenceDueDate ?? 0.5,
@@ -233,6 +286,10 @@ export async function POST(request: NextRequest) {
       matchedProviderId: providerMatch?.providerId || undefined,
       matchedProviderName: providerMatch?.providerName || undefined,
       isCustomProvider: !providerMatch,
+      extractionMethod,
+      confidenceLevel: overallConfidence >= 0.9 ? 'high' as const
+        : overallConfidence >= 0.7 ? 'medium' as const
+        : 'low' as const,
     };
 
     const validation = validateAndSanitizeExtraction(rawResult as any);

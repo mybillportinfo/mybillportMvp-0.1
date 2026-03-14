@@ -55,7 +55,7 @@ async function getMonthlySpending(userId: string) {
   const now = new Date();
   const month = now.getMonth();
   const year = now.getFullYear();
-  const monthName = now.toLocaleString('en-CA', { month: 'long', year: 'numeric' });
+  const monthName = now.toLocaleString('en-US', { month: 'long', year: 'numeric' });
 
   let total = 0;
   const breakdown: Record<string, number> = {};
@@ -177,14 +177,14 @@ const TOOLS: Anthropic.Tool[] = [
   },
 ];
 
-const SYSTEM_PROMPT = `You are MyBillPort AI — a friendly, data-driven financial assistant for Canadian users managing their bills.
+const SYSTEM_PROMPT = `You are MyBillPort AI — a friendly, data-driven financial assistant that helps users manage their bills worldwide.
 
 Your role:
 - Answer questions about the user's bills clearly and concisely
 - Proactively flag issues: overdue bills, unusual increases, high spending categories
-- Suggest practical money-saving tips specific to Canada (telecom, utilities, insurance)
+- Suggest practical money-saving tips relevant to the user's bills and providers
 - Keep responses brief (2-5 sentences max unless listing data)
-- Always use Canadian dollars ($CAD)
+- Use the currency shown on the user's bills (don't assume a single currency)
 - Be warm and encouraging, never judgmental about spending
 
 When asked about bills or spending, always use your tools to fetch real data first — never make up numbers.
@@ -230,7 +230,7 @@ export async function POST(req: NextRequest) {
 
   try {
     let response = await anthropic.messages.create({
-      model: 'claude-opus-4-5',
+      model: 'claude-sonnet-4-20250514',
       max_tokens: 1024,
       system: SYSTEM_PROMPT,
       tools: TOOLS,
@@ -257,7 +257,7 @@ export async function POST(req: NextRequest) {
       messages.push({ role: 'user', content: toolResults });
 
       response = await anthropic.messages.create({
-        model: 'claude-opus-4-5',
+        model: 'claude-sonnet-4-20250514',
         max_tokens: 1024,
         system: SYSTEM_PROMPT,
         tools: TOOLS,

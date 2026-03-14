@@ -1,7 +1,7 @@
-# BillPort - Bill Management App (Canada)
+# BillPort - Global Bill Management App
 
 ## Overview
-BillPort is a Canadian web application designed to help users manage their bills effectively. It allows users to add and track bills on a dashboard, and facilitates payment by redirecting them to the biller's official payment website. The project aims to provide a streamlined, user-friendly experience for bill management with a premium fintech-inspired UI.
+BillPort is a global web application designed to help users manage their bills effectively. It allows users to add and track bills on a dashboard, and facilitates payment by redirecting them to the biller's official payment website. The project aims to provide a streamlined, user-friendly experience for bill management with a premium fintech-inspired UI.
 
 Key capabilities include:
 - Bill tracking and status management.
@@ -36,7 +36,7 @@ Preferred communication style: Simple, everyday language.
 - **Language**: TypeScript
 - **Database**: Firebase Firestore (NoSQL, per-user data isolation)
 - **Authentication**: Firebase Auth (email/password, Google OAuth)
-- **AI Integration**: Claude Vision (claude-sonnet-4-5) for bill data extraction.
+- **AI Integration**: Claude Vision (claude-3-5-sonnet) for bill data extraction; Claude Sonnet 4 for AI assistant.
 - **System Design Choices**:
     - **Payment Flow**: Redirects users directly to the biller's official website for payments; no in-app payment processing.
     - **Recurring Bill Intelligence**: Automatically detects recurring bills based on payment patterns and flags amount deviations.
@@ -61,7 +61,10 @@ Preferred communication style: Simple, everyday language.
 - **Email Forwarding Auto-Fetch**: Per-user forwarding address (bills+{uid_short}@mybillport.com). SendGrid Inbound Parse webhook at /api/email-forward. Pending bills stored in pendingBills/{uid}/items. Review queue at /pending-bills. Email alias auto-created in emailAliases collection.
 - **Bill Negotiation Assistant**: Claude-powered negotiation script generator. Button on each bill card (chat icon). API route /api/negotiate. Opens modal with copyable script.
 - **Switch & Save Recommendations**: Canadian provider offer database in app/lib/providerOffers.ts. Dashboard shows dismissible savings cards when current bill is >10% more expensive than alternatives. 14+ offers across telecom, internet, streaming, insurance, utilities.
-- **MyBillPort AI Agent**: Claude-powered conversational bill assistant. Floating chat widget (Sparkles button, bottom-right) on the dashboard. API route /api/ai-assistant with Claude tool use. Tools: get_bills, get_bills_due, get_monthly_spending, detect_bill_increase, get_subscriptions. Full conversation history preserved per session. Quick prompt buttons for common questions.
+- **MyBillPort AI Agent**: Claude-powered conversational bill assistant. Floating chat widget (Sparkles button, bottom-right) on the dashboard. API route /api/ai-assistant with Claude Sonnet 4 tool use. Tools: get_bills, get_bills_due, get_monthly_spending, detect_bill_increase, get_subscriptions. Full conversation history preserved per session. Quick prompt buttons for common questions.
+- **Bills Query API**: Structured query endpoint at /api/bills/query. Supports filters: startDate, endDate, biller, status (upcoming, paid, overdue, unpaid, partial). Firebase Auth protected.
+- **Biller-Specific Parsers**: Regex-based parsers in app/lib/parsers/ for major billers (Enbridge, Rogers, Bell, Toronto Hydro, TELUS). Used as enhancement layer after Claude Vision extraction to boost accuracy and confidence.
+- **Enhanced OCR Pipeline**: Multi-step extraction: Claude Vision → biller parser overlay → fuzzy provider match → confidence scoring. Confidence-based routing: high (≥0.9) auto-accept, medium (0.7-0.9) pending review, low (<0.7) manual entry prompt.
 
 ### Firestore Collections
 - `bills`: Main bill data.
