@@ -41,10 +41,10 @@ export function TrustBadges() {
           {badges.map((badge) => (
             <div
               key={badge.title}
-              className="bg-[#111d33] border border-white/5 rounded-xl p-5 text-center space-y-3 hover:border-[#2AC3B5]/20 transition-colors"
+              className="bg-[#263244] border border-white/5 rounded-xl p-5 text-center space-y-3 hover:border-[#6BCB77]/20 transition-colors"
             >
-              <div className="w-12 h-12 mx-auto bg-[#2AC3B5]/10 rounded-xl flex items-center justify-center">
-                <badge.icon className="w-6 h-6 text-[#2AC3B5]" />
+              <div className="w-12 h-12 mx-auto bg-[#6BCB77]/10 rounded-xl flex items-center justify-center">
+                <badge.icon className="w-6 h-6 text-[#6BCB77]" />
               </div>
               <h3 className="text-sm font-semibold text-white">{badge.title}</h3>
               <p className="text-xs text-slate-400 leading-relaxed">{badge.description}</p>
