@@ -187,7 +187,7 @@ export function calculateSavingsScore(bills: Bill[]): SavingsScore {
   let label: SavingsScore['label'];
   let color: string;
   if (score >= 80) { label = 'Optimized'; color = 'text-green-500'; }
-  else if (score >= 65) { label = 'Good'; color = 'text-[#FF8A5C]'; }
+  else if (score >= 65) { label = 'Good'; color = 'text-[#4D6A9F]'; }
   else if (score >= 45) { label = 'Moderate'; color = 'text-yellow-500'; }
   else { label = 'Needs Attention'; color = 'text-red-500'; }
 
