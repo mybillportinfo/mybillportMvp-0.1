@@ -11,12 +11,12 @@ const stats = [
 
 export function SocialProof() {
   return (
-    <section className="py-14 px-5 border-y border-white/5 bg-[#0e1a2e]">
+    <section className="py-14 px-5 border-y border-white/5 bg-[#152032]">
       <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
         {stats.map((s) => (
           <div key={s.label} className="space-y-2">
-            <div className="w-10 h-10 mx-auto bg-[#FF8A5C]/10 rounded-xl flex items-center justify-center">
-              <s.icon className="w-5 h-5 text-[#FF8A5C]" />
+            <div className="w-10 h-10 mx-auto bg-[#4D6A9F]/10 rounded-xl flex items-center justify-center">
+              <s.icon className="w-5 h-5 text-[#4D6A9F]" />
             </div>
             <p className="text-2xl md:text-3xl font-extrabold text-white">{s.value}</p>
             <p className="text-xs text-slate-400">{s.label}</p>
