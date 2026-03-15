@@ -126,12 +126,12 @@ export default function AIChatWidget() {
           <div className="flex items-center justify-between px-4 py-3 border-b border-slate-700"
             style={{ background: 'linear-gradient(135deg, #134e4a 0%, #0f172a 100%)' }}>
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-[#e5753d] flex items-center justify-center">
-                <Bot className="w-4 h-4 text-[#FF8A5C]" />
+              <div className="w-8 h-8 rounded-full bg-[#3d5a8f] flex items-center justify-center">
+                <Bot className="w-4 h-4 text-[#4D6A9F]" />
               </div>
               <div>
                 <p className="text-sm font-semibold text-white">MyBillPort AI</p>
-                <p className="text-xs text-[#FF8A5C]">Bill assistant</p>
+                <p className="text-xs text-[#4D6A9F]">Bill assistant</p>
               </div>
             </div>
             <div className="flex items-center gap-1">
@@ -148,8 +148,8 @@ export default function AIChatWidget() {
             {messages.map((msg, i) => (
               <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 {msg.role === 'assistant' && (
-                  <div className="w-6 h-6 rounded-full bg-[#e5753d] flex items-center justify-center mr-2 flex-shrink-0 mt-1">
-                    <Bot className="w-3 h-3 text-[#FF8A5C]" />
+                  <div className="w-6 h-6 rounded-full bg-[#3d5a8f] flex items-center justify-center mr-2 flex-shrink-0 mt-1">
+                    <Bot className="w-3 h-3 text-[#4D6A9F]" />
                   </div>
                 )}
                 <div
@@ -170,14 +170,14 @@ export default function AIChatWidget() {
 
             {loading && (
               <div className="flex justify-start">
-                <div className="w-6 h-6 rounded-full bg-[#e5753d] flex items-center justify-center mr-2 flex-shrink-0 mt-1">
-                  <Bot className="w-3 h-3 text-[#FF8A5C]" />
+                <div className="w-6 h-6 rounded-full bg-[#3d5a8f] flex items-center justify-center mr-2 flex-shrink-0 mt-1">
+                  <Bot className="w-3 h-3 text-[#4D6A9F]" />
                 </div>
                 <div className="bg-slate-800 border border-slate-700 rounded-2xl rounded-tl-sm px-4 py-2.5">
                   <div className="flex gap-1.5 items-center">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#FF8A5C] animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#FF8A5C] animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#FF8A5C] animate-bounce" style={{ animationDelay: '300ms' }} />
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#4D6A9F] animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#4D6A9F] animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#4D6A9F] animate-bounce" style={{ animationDelay: '300ms' }} />
                   </div>
                 </div>
               </div>
@@ -197,7 +197,7 @@ export default function AIChatWidget() {
                     <button
                       key={p}
                       onClick={() => send(p)}
-                      className="text-xs px-2 py-2 rounded-xl border border-[#FF8A5C]/30 text-[#FF8A5C] bg-[#FF8A5C]/10 hover:bg-[#FF8A5C]/10 hover:border-[#FF8A5C] transition-colors text-left leading-tight"
+                      className="text-xs px-2 py-2 rounded-xl border border-[#4D6A9F]/30 text-[#4D6A9F] bg-[#4D6A9F]/10 hover:bg-[#4D6A9F]/10 hover:border-[#4D6A9F] transition-colors text-left leading-tight"
                     >
                       {p}
                     </button>
@@ -220,7 +220,7 @@ export default function AIChatWidget() {
                 onChange={e => setInput(e.target.value)}
                 placeholder="Ask about your bills..."
                 disabled={loading}
-                className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#FF8A5C] disabled:opacity-50 transition-colors"
+                className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#4D6A9F] disabled:opacity-50 transition-colors"
               />
               <button
                 type="submit"
