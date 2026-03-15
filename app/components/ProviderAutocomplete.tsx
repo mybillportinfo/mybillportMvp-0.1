@@ -89,7 +89,7 @@ export default function ProviderAutocomplete({
           onChange={(e) => handleInputChange(e.target.value)}
           onFocus={handleFocus}
           placeholder={placeholder}
-          className="w-full pl-10 pr-16 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A5C] text-slate-800"
+          className="w-full pl-10 pr-16 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4D6A9F] text-slate-800"
           autoComplete="off"
         />
         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
@@ -120,8 +120,8 @@ export default function ProviderAutocomplete({
                 key={provider}
                 type="button"
                 onClick={() => handleSelect(provider)}
-                className={`w-full text-left px-4 py-2.5 text-sm hover:bg-[#FF8A5C]/10 hover:text-[#e5753d] transition-colors ${
-                  value === provider ? 'bg-[#FF8A5C]/10 text-[#e5753d] font-medium' : 'text-slate-700'
+                className={`w-full text-left px-4 py-2.5 text-sm hover:bg-[#4D6A9F]/10 hover:text-[#3d5a8f] transition-colors ${
+                  value === provider ? 'bg-[#4D6A9F]/10 text-[#3d5a8f] font-medium' : 'text-slate-700'
                 }`}
               >
                 {provider}
