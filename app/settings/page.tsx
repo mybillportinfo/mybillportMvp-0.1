@@ -340,8 +340,8 @@ export default function SettingsPage() {
 
   if (loading || !user) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-[#4D6A9F] animate-spin" />
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(160deg, #1E2A3A 0%, #263244 100%)' }}>
+        <Loader2 className="w-8 h-8 text-[#6BCB77] animate-spin" />
       </div>
     );
   }
@@ -349,192 +349,181 @@ export default function SettingsPage() {
   const photoURL = profile?.photoURL || user.photoURL;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 pb-24">
-      <div className="px-5 pt-12 pb-6">
-        <Link href="/app" className="flex items-center text-slate-400 hover:text-white mb-4 transition-colors">
+    <div className="min-h-screen pb-24" style={{ background: 'linear-gradient(160deg, #1E2A3A 0%, #263244 100%)' }}>
+      {/* Branded header */}
+      <div className="relative overflow-hidden px-5 pt-12 pb-7">
+        <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 80% 50%, rgba(77,106,159,0.15) 0%, transparent 60%)' }} />
+        <Link href="/app" className="flex items-center text-slate-400 hover:text-white mb-5 transition-colors relative">
           <ArrowLeft className="w-5 h-5 mr-2" />
           Back to Dashboard
         </Link>
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 bg-[#4D6A9F] rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(77,106,159,0.3)]">
-            <div className="relative">
-              <Receipt className="text-white w-6 h-6" />
-              <div className="absolute -bottom-1 -right-1 bg-slate-900 rounded-full p-0.5 border border-[#4D6A9F]/30">
-                <DollarSign className="text-[#4D6A9F] w-3 h-3" />
-              </div>
+        <div className="flex items-center gap-3 relative">
+          <div className="w-11 h-11 rounded-xl flex items-center justify-center shadow-lg" style={{ background: 'linear-gradient(135deg, #4D6A9F, #3d5a8f)' }}>
+            <Settings className="text-white w-6 h-6" />
+          </div>
+          <div>
+            <span className="text-white font-bold text-xl tracking-tight">Settings</span>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#4D6A9F]" />
+              <p className="text-xs text-slate-400">Preferences & account</p>
             </div>
           </div>
-          <span className="text-white font-bold text-lg tracking-tight">My<span className="text-[#4D6A9F]">BillPort</span></span>
         </div>
-        <p className="text-slate-400">Manage your preferences</p>
       </div>
 
-      <div className="px-4 space-y-4">
+      <div className="px-4 space-y-3">
+        {/* Profile card */}
         <button
           onClick={() => { setActiveModal('profile'); setProfileError(null); setProfileSaved(false); setShowDeleteConfirm(false); }}
-          className="w-full bg-white rounded-xl overflow-hidden hover:bg-slate-50 transition-colors"
+          className="w-full rounded-2xl overflow-hidden transition-all hover:scale-[1.01] active:scale-[0.99]"
+          style={{ background: 'linear-gradient(135deg, #263244, #2d3d55)', border: '1px solid rgba(107,203,119,0.25)' }}
         >
           <div className="p-4 flex items-center gap-4">
             {photoURL ? (
-              <img src={photoURL} alt="Profile" className="w-14 h-14 rounded-full object-cover border-2 border-[#4D6A9F]/30" />
+              <img src={photoURL} alt="Profile" className="w-14 h-14 rounded-full object-cover" style={{ border: '2.5px solid #6BCB77' }} />
             ) : (
-              <div className="w-14 h-14 bg-[#4D6A9F]/15 rounded-full flex items-center justify-center">
-                <User className="w-7 h-7 text-[#4D6A9F]" />
+              <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #6BCB77, #4DA85A)' }}>
+                <User className="w-7 h-7 text-white" />
               </div>
             )}
             <div className="flex-1 text-left">
-              <p className="font-semibold text-slate-800">
-                {username || user.displayName || 'MyBillPort User'}
-              </p>
-              <p className="text-sm text-slate-500">{user.email}</p>
+              <p className="font-semibold text-white">{username || user.displayName || 'MyBillPort User'}</p>
+              <p className="text-sm text-slate-400">{user.email}</p>
             </div>
-            <ChevronRight className="w-5 h-5 text-slate-400" />
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(107,203,119,0.15)' }}>
+              <ChevronRight className="w-4 h-4 text-[#6BCB77]" />
+            </div>
           </div>
         </button>
 
         {/* Plan & Billing */}
-        <div className="bg-white rounded-xl p-4 space-y-3">
+        <div className="rounded-2xl p-4 space-y-3" style={{ background: 'linear-gradient(135deg, rgba(255,179,71,0.1), rgba(77,106,159,0.08))', border: '1px solid rgba(255,179,71,0.25)' }}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${isPremium ? 'bg-amber-100' : 'bg-slate-100'}`}>
-                <CreditCard className={`w-5 h-5 ${isPremium ? 'text-amber-600' : 'text-slate-500'}`} />
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: isPremium ? 'linear-gradient(135deg, #FFB347, #f09020)' : 'rgba(255,179,71,0.2)' }}>
+                <CreditCard className="w-5 h-5 text-white" />
               </div>
               <div>
-                <p className="font-semibold text-slate-800">{isPremium ? 'Premium Plan' : 'Free Plan'}</p>
-                <p className="text-xs text-slate-500">
+                <p className="font-semibold text-white">{isPremium ? 'Premium Plan' : 'Free Plan'}</p>
+                <p className="text-xs text-slate-400">
                   {isPremium
                     ? subscription.currentPeriodEnd
                       ? `Renews ${new Date(subscription.currentPeriodEnd * 1000).toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' })}`
                       : 'Active subscription'
-                    : 'Up to 5 bills'}
+                    : 'Up to 5 bills · Upgrade for unlimited'}
                 </p>
               </div>
             </div>
-            <span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${isPremium ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'}`}>
-              {isPremium ? '✦ Premium' : 'Free'}
+            <span className="px-2.5 py-1 text-xs font-bold rounded-full" style={{ background: isPremium ? '#FFB347' : 'rgba(255,179,71,0.2)', color: isPremium ? '#1E2A3A' : '#FFB347' }}>
+              {isPremium ? '✦ Pro' : 'Free'}
             </span>
           </div>
-          {!isPremium && (
-            <button
-              disabled
-              className="w-full py-2.5 bg-gradient-to-r from-[#4D6A9F] to-[#3d5a8f] text-white text-sm font-semibold rounded-lg opacity-60 flex items-center justify-center gap-2 cursor-not-allowed"
-            >
-              <Sparkles className="w-4 h-4" />
-              Payments coming soon
-            </button>
-          )}
-          {isPremium && (
-            <button
-              disabled
-              className="w-full py-2.5 bg-slate-100 text-slate-700 text-sm font-medium rounded-lg opacity-60 flex items-center justify-center gap-2 cursor-not-allowed"
-            >
-              <CreditCard className="w-4 h-4" />
-              Payments coming soon
-            </button>
-          )}
+          <button disabled className="w-full py-2.5 text-sm font-semibold rounded-xl opacity-60 flex items-center justify-center gap-2 cursor-not-allowed" style={{ background: 'rgba(255,179,71,0.15)', color: '#FFB347', border: '1px solid rgba(255,179,71,0.3)' }}>
+            <Sparkles className="w-4 h-4" />
+            Payments coming soon
+          </button>
         </div>
 
         {/* Email Forwarding */}
-        <div className="bg-white rounded-xl p-4 space-y-3">
+        <div className="rounded-2xl p-4 space-y-3" style={{ background: 'rgba(77,106,159,0.12)', border: '1px solid rgba(77,106,159,0.3)' }}>
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-[#4D6A9F]/10 rounded-lg flex items-center justify-center">
-              <Forward className="w-5 h-5 text-[#4D6A9F]" />
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #4D6A9F, #3d5a8f)' }}>
+              <Forward className="w-5 h-5 text-white" />
             </div>
             <div className="flex-1">
-              <p className="font-semibold text-slate-800">Bill Forwarding Email</p>
-              <p className="text-xs text-slate-500">Forward bills here for automatic detection</p>
+              <p className="font-semibold text-white">Bill Forwarding Email</p>
+              <p className="text-xs text-slate-400">Forward bills for auto-detection</p>
             </div>
-            <Link href="/pending-bills" className="text-xs text-[#4D6A9F] font-medium hover:underline flex items-center gap-1">
+            <Link href="/pending-bills" className="text-xs text-[#6BCB77] font-semibold hover:underline flex items-center gap-1">
               <Inbox className="w-3.5 h-3.5" />
               Inbox
             </Link>
           </div>
           {emailAlias ? (
             <div className="space-y-2">
-              <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
-                <span className="flex-1 text-sm text-slate-700 font-mono truncate">bills+{emailAlias}@mybillport.com</span>
-                <button onClick={handleCopyAlias} className="text-[#4D6A9F] hover:text-[#3d5a8f] transition-colors flex-shrink-0">
+              <div className="flex items-center gap-2 rounded-xl px-3 py-2.5" style={{ background: 'rgba(30,42,58,0.6)', border: '1px solid rgba(77,106,159,0.4)' }}>
+                <span className="flex-1 text-sm text-slate-300 font-mono truncate">bills+{emailAlias}@mybillport.com</span>
+                <button onClick={handleCopyAlias} className="text-[#6BCB77] transition-colors flex-shrink-0">
                   {aliasCopied ? <CheckCheck className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                 </button>
               </div>
-              <p className="text-xs text-slate-400">
-                Forward bill emails to this address or set up auto-forwarding in Gmail / Outlook. Bills will appear in your inbox for review.
-              </p>
+              <p className="text-xs text-slate-500">Forward bills here from Gmail / Outlook — they appear in your inbox for review.</p>
             </div>
           ) : (
-            <div className="h-8 flex items-center">
-              <Loader2 className="w-4 h-4 text-[#4D6A9F] animate-spin" />
-            </div>
+            <div className="h-8 flex items-center"><Loader2 className="w-4 h-4 text-[#4D6A9F] animate-spin" /></div>
           )}
         </div>
 
-        <div className="bg-white rounded-xl overflow-hidden divide-y divide-slate-100">
-          <button
-            onClick={() => setActiveModal('referral')}
-            className="w-full p-4 flex items-center gap-4 hover:bg-slate-50 transition-colors"
-          >
-            <Gift className="w-5 h-5 text-[#4D6A9F]" />
+        {/* Main settings rows */}
+        <div className="rounded-2xl overflow-hidden divide-y" style={{ background: '#263244', borderColor: 'rgba(71,85,105,0.3)', border: '1px solid rgba(71,85,105,0.25)' }}>
+          <button onClick={() => setActiveModal('referral')} className="w-full p-4 flex items-center gap-4 hover:bg-white/5 transition-colors">
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #FFB347, #f09020)' }}>
+              <Gift className="w-4.5 h-4.5 w-5 h-5 text-white" />
+            </div>
             <div className="flex-1 text-left">
-              <span className="text-slate-800">Refer a Friend</span>
+              <span className="text-white font-medium">Refer a Friend</span>
               {(ctxProfile?.referralCount ?? 0) > 0 && (
-                <span className="ml-2 text-xs bg-[#4D6A9F]/15 text-[#3d5a8f] px-2 py-0.5 rounded-full font-medium">
+                <span className="ml-2 text-xs px-2 py-0.5 rounded-full font-semibold" style={{ background: 'rgba(255,179,71,0.2)', color: '#FFB347' }}>
                   {ctxProfile?.referralCount} referred
                 </span>
               )}
             </div>
-            <ChevronRight className="w-5 h-5 text-slate-400" />
+            <ChevronRight className="w-4 h-4 text-slate-500" />
           </button>
-          <button
-            onClick={() => setActiveModal('notifications')}
-            className="w-full p-4 flex items-center gap-4 hover:bg-slate-50 transition-colors"
-          >
-            <Bell className="w-5 h-5 text-slate-500" />
-            <span className="flex-1 text-left text-slate-800">Notifications</span>
-            <ChevronRight className="w-5 h-5 text-slate-400" />
+          <button onClick={() => setActiveModal('notifications')} className="w-full p-4 flex items-center gap-4 hover:bg-white/5 transition-colors">
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #6BCB77, #4DA85A)' }}>
+              <Bell className="w-5 h-5 text-white" />
+            </div>
+            <span className="flex-1 text-left text-white font-medium">Notifications</span>
+            <ChevronRight className="w-4 h-4 text-slate-500" />
           </button>
-          <button
-            onClick={() => setActiveModal('privacy')}
-            className="w-full p-4 flex items-center gap-4 hover:bg-slate-50 transition-colors"
-          >
-            <Shield className="w-5 h-5 text-slate-500" />
-            <span className="flex-1 text-left text-slate-800">Privacy</span>
-            <ChevronRight className="w-5 h-5 text-slate-400" />
+          <button onClick={() => setActiveModal('privacy')} className="w-full p-4 flex items-center gap-4 hover:bg-white/5 transition-colors">
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #4D6A9F, #3d5a8f)' }}>
+              <Shield className="w-5 h-5 text-white" />
+            </div>
+            <span className="flex-1 text-left text-white font-medium">Privacy</span>
+            <ChevronRight className="w-4 h-4 text-slate-500" />
           </button>
-          <button
-            onClick={() => setActiveModal('security')}
-            className="w-full p-4 flex items-center gap-4 hover:bg-slate-50 transition-colors"
-          >
-            <Lock className="w-5 h-5 text-slate-500" />
-            <span className="flex-1 text-left text-slate-800">Security</span>
-            <ChevronRight className="w-5 h-5 text-slate-400" />
+          <button onClick={() => setActiveModal('security')} className="w-full p-4 flex items-center gap-4 hover:bg-white/5 transition-colors">
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: 'rgba(255,179,71,0.2)', border: '1px solid rgba(255,179,71,0.3)' }}>
+              <Lock className="w-5 h-5 text-[#FFB347]" />
+            </div>
+            <span className="flex-1 text-left text-white font-medium">Security</span>
+            <ChevronRight className="w-4 h-4 text-slate-500" />
           </button>
         </div>
 
-        <div className="bg-white rounded-xl overflow-hidden divide-y divide-slate-100">
-          <Link href="/feedback" className="block p-4 flex items-center gap-4 hover:bg-slate-50 transition-colors">
-            <MessageSquare className="w-5 h-5 text-[#4D6A9F]" />
-            <span className="flex-1 text-slate-800">Send Feedback</span>
-            <ChevronRight className="w-5 h-5 text-slate-400" />
+        {/* Support links */}
+        <div className="rounded-2xl overflow-hidden divide-y" style={{ background: '#263244', border: '1px solid rgba(71,85,105,0.25)' }}>
+          <Link href="/feedback" className="flex p-4 items-center gap-4 hover:bg-white/5 transition-colors">
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: 'rgba(107,203,119,0.15)' }}>
+              <MessageSquare className="w-5 h-5 text-[#6BCB77]" />
+            </div>
+            <span className="flex-1 text-white font-medium">Send Feedback</span>
+            <ChevronRight className="w-4 h-4 text-slate-500" />
           </Link>
-          <Link href="/privacy" className="block p-4 hover:bg-slate-50 transition-colors">
-            <span className="text-slate-800">Privacy Policy</span>
+          <Link href="/privacy" className="flex p-4 items-center hover:bg-white/5 transition-colors">
+            <span className="flex-1 text-slate-400 text-sm">Privacy Policy</span>
+            <ChevronRight className="w-4 h-4 text-slate-600" />
           </Link>
-          <Link href="/terms" className="block p-4 hover:bg-slate-50 transition-colors">
-            <span className="text-slate-800">Terms of Service</span>
+          <Link href="/terms" className="flex p-4 items-center hover:bg-white/5 transition-colors">
+            <span className="flex-1 text-slate-400 text-sm">Terms of Service</span>
+            <ChevronRight className="w-4 h-4 text-slate-600" />
           </Link>
         </div>
 
         <button
           onClick={handleLogout}
-          className="w-full bg-white rounded-xl p-4 flex items-center gap-4 hover:bg-red-50 transition-colors"
+          className="w-full rounded-2xl p-4 flex items-center gap-4 transition-colors hover:bg-red-500/10"
+          style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}
         >
-          <LogOut className="w-5 h-5 text-red-500" />
-          <span className="text-red-500 font-medium">Sign Out</span>
+          <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-red-500/15">
+            <LogOut className="w-5 h-5 text-red-400" />
+          </div>
+          <span className="text-red-400 font-semibold">Sign Out</span>
         </button>
 
-        <p className="text-center text-slate-600 text-xs pt-2">
-          MyBillPort v1.0 Production
-        </p>
+        <p className="text-center text-slate-600 text-xs pt-1 pb-2">MyBillPort v1.0 Production</p>
       </div>
 
       <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur border-t border-slate-700 py-3 px-4">
