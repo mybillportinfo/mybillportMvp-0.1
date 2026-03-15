@@ -96,17 +96,17 @@ function SignupForm() {
 
         <div className="bg-slate-800/50 rounded-2xl p-8 border border-slate-700">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 bg-[#FF8A5C] rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(255,138,92,0.4)]">
+            <div className="w-12 h-12 bg-[#4D6A9F] rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(77,106,159,0.4)]">
               <div className="relative">
                 <Receipt className="text-white w-7 h-7" />
-                <div className="absolute -bottom-1 -right-1 bg-slate-900 rounded-full p-0.5 border border-[#FF8A5C]/30">
-                  <DollarSign className="text-[#FF8A5C] w-4 h-4" />
+                <div className="absolute -bottom-1 -right-1 bg-slate-900 rounded-full p-0.5 border border-[#4D6A9F]/30">
+                  <DollarSign className="text-[#4D6A9F] w-4 h-4" />
                 </div>
               </div>
             </div>
             <div>
               <h1 className="text-2xl font-bold text-white tracking-tight">Create Account</h1>
-              <p className="text-slate-400 text-sm">Join My<span className="text-[#FF8A5C]">BillPort</span> today</p>
+              <p className="text-slate-400 text-sm">Join My<span className="text-[#4D6A9F]">BillPort</span> today</p>
             </div>
           </div>
 
@@ -139,7 +139,7 @@ function SignupForm() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
-                  className="w-full pl-10 pr-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FF8A5C]"
+                  className="w-full pl-10 pr-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4D6A9F]"
                   required
                 />
               </div>
@@ -154,7 +154,7 @@ function SignupForm() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Create a password"
-                  className="w-full pl-10 pr-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FF8A5C]"
+                  className="w-full pl-10 pr-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4D6A9F]"
                   required
                 />
               </div>
@@ -169,7 +169,7 @@ function SignupForm() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Confirm your password"
-                  className="w-full pl-10 pr-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FF8A5C]"
+                  className="w-full pl-10 pr-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4D6A9F]"
                   required
                 />
               </div>
@@ -187,11 +187,11 @@ function SignupForm() {
                   onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
                   placeholder="e.g. ABCD1234"
                   maxLength={12}
-                  className="w-full pl-10 pr-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FF8A5C] uppercase tracking-widest"
+                  className="w-full pl-10 pr-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4D6A9F] uppercase tracking-widest"
                 />
               </div>
               {referralCode && (
-                <p className="text-xs text-[#FF8A5C] mt-1">Your friend gets 1 free month when you subscribe to Premium.</p>
+                <p className="text-xs text-[#4D6A9F] mt-1">Your friend gets 1 free month when you subscribe to Premium.</p>
               )}
             </div>
 
@@ -234,13 +234,13 @@ function SignupForm() {
 
           <p className="text-center text-slate-400 mt-6 text-sm">
             Already have an account?{' '}
-            <Link href="/login" className="text-[#FF8A5C] hover:underline">
+            <Link href="/login" className="text-[#4D6A9F] hover:underline">
               Sign in
             </Link>
           </p>
 
           <div className="mt-5 pt-5 border-t border-slate-700/60 flex items-center justify-center gap-1.5 text-xs text-slate-500">
-            <ShieldCheck className="w-3.5 h-3.5 text-[#FF8A5C] flex-shrink-0" />
+            <ShieldCheck className="w-3.5 h-3.5 text-[#4D6A9F] flex-shrink-0" />
             <span>
               Protected by reCAPTCHA &mdash;{' '}
               <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-slate-400">Privacy</a>
@@ -258,7 +258,7 @@ export default function SignupPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#FF8A5C]" />
+        <Loader2 className="w-8 h-8 animate-spin text-[#4D6A9F]" />
       </div>
     }>
       <SignupForm />
