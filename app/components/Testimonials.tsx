@@ -31,7 +31,7 @@ export function Testimonials() {
     <section className="py-16 px-5">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-10">
-          <p className="text-[#2AC3B5] text-sm font-semibold uppercase tracking-wider mb-2">What our users say</p>
+          <p className="text-[#6BCB77] text-sm font-semibold uppercase tracking-wider mb-2">What our users say</p>
           <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">
             Trusted by users around the world
           </h2>
@@ -43,18 +43,18 @@ export function Testimonials() {
           {testimonials.map((t) => (
             <div
               key={t.name}
-              className="bg-[#111d33] border border-white/5 rounded-2xl p-6 space-y-4 hover:border-[#FF8A5C]/15 transition-colors"
+              className="bg-[#263244] border border-white/5 rounded-2xl p-6 space-y-4 hover:border-[#4D6A9F]/15 transition-colors"
             >
               <div className="flex gap-1">
                 {Array.from({ length: t.rating }).map((_, i) => (
-                  <Star key={i} className="w-4 h-4 fill-[#FF8A5C] text-[#FF8A5C]" />
+                  <Star key={i} className="w-4 h-4 fill-[#4D6A9F] text-[#4D6A9F]" />
                 ))}
               </div>
               <p className="text-sm text-slate-300 leading-relaxed italic">
                 &ldquo;{t.quote}&rdquo;
               </p>
               <div className="flex items-center gap-3 pt-2">
-                <div className="w-10 h-10 rounded-full bg-[#FF8A5C]/20 flex items-center justify-center text-[#FF8A5C] text-sm font-bold">
+                <div className="w-10 h-10 rounded-full bg-[#4D6A9F]/20 flex items-center justify-center text-[#4D6A9F] text-sm font-bold">
                   {t.avatar}
                 </div>
                 <div>
