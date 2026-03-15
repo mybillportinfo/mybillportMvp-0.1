@@ -3,46 +3,45 @@
 @tailwind utilities;
 
 :root {
-  --background: hsl(215, 30%, 12%);
+  --background: hsl(213, 28%, 17%);
   --foreground: hsl(210, 20%, 98%);
-  --muted: hsl(215, 22%, 20%);
-  --muted-foreground: hsl(215, 15%, 60%);
-  --popover: hsl(215, 30%, 12%);
+  --muted: hsl(213, 24%, 22%);
+  --muted-foreground: hsl(215, 12%, 58%);
+  --popover: hsl(213, 28%, 17%);
   --popover-foreground: hsl(210, 20%, 98%);
   --card: hsl(0, 0%, 99%);
-  --card-foreground: hsl(215, 30%, 18%);
-  --border: hsl(215, 18%, 26%);
-  --input: hsl(215, 22%, 20%);
-  
-  --primary: hsl(16, 100%, 68%);
+  --card-foreground: hsl(213, 28%, 17%);
+  --border: hsl(213, 20%, 26%);
+  --input: hsl(213, 24%, 22%);
+
+  --primary: hsl(128, 46%, 60%);
   --primary-foreground: hsl(0, 0%, 100%);
-  
-  --secondary: hsl(172, 56%, 47%);
+
+  --secondary: hsl(216, 34%, 46%);
   --secondary-foreground: hsl(0, 0%, 100%);
-  
-  --accent: hsl(16, 100%, 68%);
+
+  --accent: hsl(216, 34%, 46%);
   --accent-foreground: hsl(0, 0%, 100%);
-  
+
   --destructive: hsl(0, 65%, 55%);
   --destructive-foreground: hsl(0, 0%, 100%);
-  --ring: hsl(16, 100%, 68%);
+  --ring: hsl(128, 46%, 60%);
   --radius: 0.625rem;
-  
-  --success: hsl(72, 77%, 56%);
-  --success-light: hsl(72, 77%, 90%);
-  --warning: hsl(38, 75%, 50%);
-  --warning-light: hsl(38, 75%, 92%);
+
+  --success: hsl(36, 100%, 64%);
+  --success-light: hsl(36, 100%, 90%);
+  --warning: hsl(36, 80%, 54%);
+  --warning-light: hsl(36, 80%, 92%);
   --danger: hsl(0, 65%, 55%);
   --danger-light: hsl(0, 65%, 94%);
-  
-  --navy: hsl(215, 35%, 16%);
-  --navy-deep: hsl(215, 40%, 11%);
-  --slate: hsl(215, 18%, 33%);
-  --slate-light: hsl(215, 18%, 43%);
-  --teal: hsl(172, 56%, 47%);
-  --orange: hsl(16, 100%, 68%);
-  --lime: hsl(72, 77%, 56%);
-  --gold: hsl(42, 55%, 55%);
+
+  --navy: hsl(213, 30%, 18%);
+  --navy-deep: hsl(213, 32%, 13%);
+  --slate: hsl(213, 20%, 32%);
+  --slate-light: hsl(213, 16%, 44%);
+  --mint: hsl(128, 46%, 60%);
+  --navy-btn: hsl(216, 34%, 46%);
+  --peach: hsl(36, 100%, 64%);
 }
 
 * {
@@ -66,7 +65,7 @@ body {
   background-color: white;
   border-radius: 0.75rem;
   border: 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
 }
 
 .card-dark {
@@ -74,20 +73,20 @@ body {
   border-width: 1px;
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  background: rgba(30, 41, 59, 0.6);
+  background: rgba(30, 42, 58, 0.6);
   border-color: rgba(71, 85, 105, 0.4);
 }
 
 .status-upcoming {
-  background: hsl(72, 77%, 90%);
-  color: hsl(72, 77%, 30%);
-  border: 1px solid hsl(72, 70%, 75%);
+  background: hsl(36, 100%, 90%);
+  color: hsl(36, 80%, 30%);
+  border: 1px solid hsl(36, 80%, 75%);
 }
 
 .status-due-soon {
-  background: hsl(16, 100%, 93%);
-  color: hsl(16, 80%, 40%);
-  border: 1px solid hsl(16, 80%, 80%);
+  background: hsl(128, 46%, 90%);
+  color: hsl(128, 46%, 28%);
+  border: 1px solid hsl(128, 46%, 76%);
 }
 
 .status-overdue {
@@ -97,43 +96,43 @@ body {
 }
 
 .btn-primary {
-  background: var(--orange);
+  background: var(--navy-btn);
   color: white;
   font-weight: 600;
   border-radius: 0.5rem;
   transition: all 0.2s;
 }
 .btn-primary:hover {
-  background: hsl(16, 100%, 62%);
+  background: hsl(216, 34%, 38%);
 }
 
 .btn-secondary {
-  background: var(--teal);
+  background: var(--mint);
   color: white;
   font-weight: 500;
   border-radius: 0.5rem;
   transition: all 0.2s;
 }
 .btn-secondary:hover {
-  background: hsl(172, 56%, 41%);
+  background: hsl(128, 46%, 50%);
 }
 
 .btn-accent {
-  background: var(--lime);
-  color: hsl(215, 35%, 16%);
+  background: var(--peach);
+  color: hsl(213, 28%, 17%);
   font-weight: 600;
   border-radius: 0.5rem;
   transition: all 0.2s;
 }
 .btn-accent:hover {
-  background: hsl(72, 77%, 50%);
+  background: hsl(36, 100%, 56%);
 }
 
 .summary-card {
   border-radius: 0.75rem;
   padding: 1.25rem;
   border-width: 1px;
-  background: rgba(30, 41, 59, 0.5);
+  background: rgba(30, 42, 58, 0.5);
   border-color: rgba(71, 85, 105, 0.35);
 }
 
@@ -143,14 +142,14 @@ body {
   align-items: center;
   gap: 0.25rem;
   transition: color 0.15s;
-  color: hsl(215, 15%, 55%);
+  color: hsl(215, 10%, 55%);
 }
 .nav-item:hover {
-  color: hsl(215, 15%, 75%);
+  color: hsl(215, 10%, 75%);
 }
 
 .nav-item-active {
-  color: var(--orange);
+  color: var(--mint);
 }
 
 .glass-effect {
@@ -161,7 +160,7 @@ body {
 }
 
 .gradient-accent {
-  background: linear-gradient(135deg, var(--orange) 0%, var(--lime) 100%);
+  background: linear-gradient(135deg, var(--mint) 0%, var(--navy-btn) 100%);
 }
 
 .gradient-navy {
@@ -169,7 +168,7 @@ body {
 }
 
 .text-gradient {
-  background: linear-gradient(135deg, var(--orange) 0%, var(--lime) 100%);
+  background: linear-gradient(135deg, var(--mint) 0%, var(--navy-btn) 50%, var(--peach) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -186,52 +185,29 @@ body {
   line-height: 1.6;
 }
 
-.phone-input-dark .PhoneInput {
-  background: transparent;
-}
+.phone-input-dark .PhoneInput { background: transparent; }
 .phone-input-dark .PhoneInputInput {
-  background: transparent !important;
-  color: white !important;
-  border: none !important;
-  outline: none !important;
-  font-size: 1rem;
+  background: transparent !important; color: white !important;
+  border: none !important; outline: none !important; font-size: 1rem;
 }
-.phone-input-dark .PhoneInputInput::placeholder {
-  color: rgb(148 163 184) !important;
-}
-.phone-input-dark .PhoneInputCountry {
-  margin-right: 8px;
-}
+.phone-input-dark .PhoneInputInput::placeholder { color: rgb(148 163 184) !important; }
+.phone-input-dark .PhoneInputCountry { margin-right: 8px; }
 .phone-input-dark .PhoneInputCountrySelect {
-  background: rgb(51 65 85) !important;
-  color: white !important;
-  border: none;
+  background: rgb(51 65 85) !important; color: white !important; border: none;
 }
 .phone-input-dark .PhoneInputCountryIcon--border {
-  box-shadow: none !important;
-  background: transparent !important;
+  box-shadow: none !important; background: transparent !important;
 }
 
-.phone-input-light .PhoneInput {
-  background: transparent;
-}
+.phone-input-light .PhoneInput { background: transparent; }
 .phone-input-light .PhoneInputInput {
-  background: transparent !important;
-  color: rgb(30 41 59) !important;
-  border: none !important;
-  outline: none !important;
-  font-size: 1rem;
+  background: transparent !important; color: rgb(30 41 59) !important;
+  border: none !important; outline: none !important; font-size: 1rem;
 }
-.phone-input-light .PhoneInputInput::placeholder {
-  color: rgb(148 163 184) !important;
-}
-.phone-input-light .PhoneInputCountry {
-  margin-right: 8px;
-}
+.phone-input-light .PhoneInputInput::placeholder { color: rgb(148 163 184) !important; }
+.phone-input-light .PhoneInputCountry { margin-right: 8px; }
 .phone-input-light .PhoneInputCountrySelect {
-  background: white !important;
-  color: rgb(30 41 59) !important;
-  border: none;
+  background: white !important; color: rgb(30 41 59) !important; border: none;
 }
 
 :focus-visible {
@@ -239,6 +215,4 @@ body {
   outline-offset: 2px;
 }
 
-.grecaptcha-badge {
-  visibility: hidden !important;
-}
+.grecaptcha-badge { visibility: hidden !important; }
