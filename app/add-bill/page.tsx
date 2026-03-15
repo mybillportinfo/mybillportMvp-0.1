@@ -359,8 +359,8 @@ export default function AddBillPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-[#4D6A9F] animate-spin" />
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(160deg, #1E2A3A 0%, #263244 100%)' }}>
+        <Loader2 className="w-8 h-8 text-[#6BCB77] animate-spin" />
       </div>
     );
   }
@@ -378,33 +378,33 @@ export default function AddBillPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 pb-24">
-      <div className="px-5 pt-12 pb-6">
+    <div className="min-h-screen pb-24" style={{ background: 'linear-gradient(160deg, #1E2A3A 0%, #263244 100%)' }}>
+      {/* Branded header */}
+      <div className="relative overflow-hidden px-5 pt-12 pb-7">
+        <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 10% 50%, rgba(107,203,119,0.12) 0%, transparent 60%)' }} />
         <button
           onClick={() => method === 'select' ? router.push('/app') : resetToMethodSelect()}
-          className="flex items-center text-slate-400 hover:text-white mb-4 transition-colors"
+          className="flex items-center text-slate-400 hover:text-white mb-5 transition-colors relative"
         >
           <ArrowLeft className="w-5 h-5 mr-2" />
           {method === 'select' ? 'Back to Dashboard' : 'Back to Add Bill'}
         </button>
-            <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#4D6A9F] rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(77,106,159,0.3)]">
-              <div className="relative">
-                <Receipt className="text-white w-6 h-6" />
-                <div className="absolute -bottom-1 -right-1 bg-slate-900 rounded-full p-0.5 border border-[#4D6A9F]/30">
-                  <DollarSign className="text-[#4D6A9F] w-3 h-3" />
-                </div>
-              </div>
+        <div className="flex items-center gap-3 mb-3 relative">
+          <div className="w-11 h-11 rounded-xl flex items-center justify-center shadow-lg" style={{ background: 'linear-gradient(135deg, #6BCB77, #4DA85A)' }}>
+            <Plus className="text-white w-6 h-6" />
+          </div>
+          <div>
+            <span className="text-white font-bold text-xl tracking-tight">
+              {method === 'select' ? 'Add a Bill' : method === 'review' ? 'Review Bill' : 'Enter Details'}
+            </span>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#6BCB77]" />
+              <p className="text-xs text-slate-400">
+                {method === 'select' ? 'Choose how to import' : method === 'review' ? 'AI extracted — please verify' : 'Fill in your bill details'}
+              </p>
             </div>
-            <span className="text-white font-bold text-lg tracking-tight">My<span className="text-[#4D6A9F]">BillPort</span></span>
           </div>
         </div>
-        <p className="text-slate-400">
-          {method === 'select' ? 'Choose how to add your bill' :
-           method === 'review' ? 'Review extracted bill details' :
-           'Track a new recurring bill'}
-        </p>
       </div>
 
       <div className="px-4">
@@ -455,68 +455,81 @@ export default function AddBillPage() {
         {/* Method Selection */}
         {method === 'select' && !isExtracting && !extractionError && !success && !isAtLimit && (
           <div className="space-y-3">
+            {/* Manual Entry */}
             <button
               onClick={() => setMethod('search')}
-              className="w-full bg-white rounded-xl p-5 flex items-center gap-4 hover:bg-slate-50 transition-colors text-left"
+              className="w-full rounded-2xl p-5 flex items-center gap-4 transition-all text-left border hover:scale-[1.01] active:scale-[0.99]"
+              style={{ background: 'linear-gradient(135deg, #263244, #2d3d55)', borderColor: 'rgba(77,106,159,0.4)' }}
             >
-              <div className="w-12 h-12 bg-[#4D6A9F]/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                <Search className="w-6 h-6 text-[#4D6A9F]" />
+              <div className="w-13 h-13 w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md" style={{ background: 'linear-gradient(135deg, #4D6A9F, #3d5a8f)' }}>
+                <Search className="w-6 h-6 text-white" />
               </div>
               <div className="flex-1">
-                <p className="font-semibold text-slate-800">Add Bill Manually</p>
-                <p className="text-sm text-slate-500">Enter account info</p>
+                <p className="font-semibold text-white">Add Manually</p>
+                <p className="text-sm text-slate-400">Type in your bill details</p>
               </div>
+              <ArrowLeft className="w-5 h-5 text-slate-500 rotate-180" />
             </button>
 
-            {/* AI Scan & Upload */}
-            <div className="bg-white rounded-xl p-5 space-y-3">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-[#4D6A9F]/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Sparkles className="w-6 h-6 text-[#4D6A9F]" />
+            {/* AI Scan Card */}
+            <div className="rounded-2xl overflow-hidden border" style={{ borderColor: 'rgba(107,203,119,0.35)' }}>
+              <div className="p-5" style={{ background: 'linear-gradient(135deg, rgba(107,203,119,0.12), rgba(77,106,159,0.08))' }}>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md" style={{ background: 'linear-gradient(135deg, #6BCB77, #4DA85A)' }}>
+                    <Sparkles className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold text-white">Scan or Upload Bill</p>
+                      <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: '#FFB347', color: '#1E2A3A' }}>AI</span>
+                    </div>
+                    <p className="text-sm text-slate-400">Reads amount, date & provider automatically</p>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <p className="font-semibold text-slate-800">Scan or Upload Bill</p>
-                  <p className="text-sm text-slate-500">AI reads your bill automatically</p>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    onClick={() => cameraInputRef.current?.click()}
+                    className="flex flex-col items-center gap-2 py-3.5 rounded-xl border transition-all hover:scale-[1.03]"
+                    style={{ background: 'rgba(107,203,119,0.12)', borderColor: 'rgba(107,203,119,0.3)' }}
+                  >
+                    <Camera className="w-5 h-5 text-[#6BCB77]" />
+                    <span className="text-xs font-semibold text-white">Camera</span>
+                  </button>
+                  <button
+                    onClick={() => photoInputRef.current?.click()}
+                    className="flex flex-col items-center gap-2 py-3.5 rounded-xl border transition-all hover:scale-[1.03]"
+                    style={{ background: 'rgba(107,203,119,0.12)', borderColor: 'rgba(107,203,119,0.3)' }}
+                  >
+                    <ImageIcon className="w-5 h-5 text-[#6BCB77]" />
+                    <span className="text-xs font-semibold text-white">Photo</span>
+                  </button>
+                  <button
+                    onClick={() => pdfInputRef.current?.click()}
+                    className="flex flex-col items-center gap-2 py-3.5 rounded-xl border transition-all hover:scale-[1.03]"
+                    style={{ background: 'rgba(107,203,119,0.12)', borderColor: 'rgba(107,203,119,0.3)' }}
+                  >
+                    <FileText className="w-5 h-5 text-[#6BCB77]" />
+                    <span className="text-xs font-semibold text-white">PDF</span>
+                  </button>
                 </div>
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                <button
-                  onClick={() => cameraInputRef.current?.click()}
-                  className="flex flex-col items-center gap-1.5 py-3 bg-slate-50 hover:bg-[#4D6A9F]/10 border border-slate-200 hover:border-[#4D6A9F]/40 rounded-xl transition-colors"
-                >
-                  <Camera className="w-5 h-5 text-[#4D6A9F]" />
-                  <span className="text-xs font-medium text-slate-700">Camera</span>
-                </button>
-                <button
-                  onClick={() => photoInputRef.current?.click()}
-                  className="flex flex-col items-center gap-1.5 py-3 bg-slate-50 hover:bg-[#4D6A9F]/10 border border-slate-200 hover:border-[#4D6A9F]/40 rounded-xl transition-colors"
-                >
-                  <ImageIcon className="w-5 h-5 text-[#4D6A9F]" />
-                  <span className="text-xs font-medium text-slate-700">Photo</span>
-                </button>
-                <button
-                  onClick={() => pdfInputRef.current?.click()}
-                  className="flex flex-col items-center gap-1.5 py-3 bg-slate-50 hover:bg-[#4D6A9F]/10 border border-slate-200 hover:border-[#4D6A9F]/40 rounded-xl transition-colors"
-                >
-                  <FileText className="w-5 h-5 text-[#4D6A9F]" />
-                  <span className="text-xs font-medium text-slate-700">PDF</span>
-                </button>
               </div>
               <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => handleInputChange(e, 'camera')} />
               <input ref={photoInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => handleInputChange(e, 'photo')} />
               <input ref={pdfInputRef} type="file" accept="application/pdf" className="hidden" onChange={(e) => handleInputChange(e, 'pdf')} />
             </div>
 
-            <div className="bg-white rounded-xl p-5 space-y-3">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Mail className="w-6 h-6 text-blue-600" />
+            {/* Email Forwarding Card */}
+            <div className="rounded-2xl overflow-hidden border" style={{ borderColor: 'rgba(255,179,71,0.3)' }}>
+              <div className="p-5" style={{ background: 'linear-gradient(135deg, rgba(255,179,71,0.1), rgba(77,106,159,0.06))' }}>
+                <div className="flex items-center gap-4 mb-3">
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md" style={{ background: 'linear-gradient(135deg, #FFB347, #f09020)' }}>
+                    <Mail className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-white">Forward Bill Emails</p>
+                    <p className="text-sm text-slate-400">Auto-import bills from your inbox</p>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <p className="font-semibold text-slate-800">Forward Bill Emails</p>
-                  <p className="text-sm text-slate-500">Auto-import bills from your email</p>
-                </div>
-              </div>
               {emailAlias ? (
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5">
@@ -549,6 +562,7 @@ export default function AddBillPage() {
                 View Pending Bills Inbox
               </Link>
             </div>
+          </div>
           </div>
         )}
 
