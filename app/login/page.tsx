@@ -96,17 +96,17 @@ export default function Login() {
 
         <div className="bg-slate-800/50 rounded-2xl p-8 border border-slate-700">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 bg-[#FF8A5C] rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(255,138,92,0.4)]">
+            <div className="w-12 h-12 bg-[#4D6A9F] rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(77,106,159,0.4)]">
               <div className="relative">
                 <Receipt className="text-white w-7 h-7" />
-                <div className="absolute -bottom-1 -right-1 bg-slate-900 rounded-full p-0.5 border border-[#FF8A5C]/30">
-                  <DollarSign className="text-[#FF8A5C] w-4 h-4" />
+                <div className="absolute -bottom-1 -right-1 bg-slate-900 rounded-full p-0.5 border border-[#4D6A9F]/30">
+                  <DollarSign className="text-[#4D6A9F] w-4 h-4" />
                 </div>
               </div>
             </div>
             <div>
               <h1 className="text-2xl font-bold text-white tracking-tight">Welcome Back</h1>
-              <p className="text-slate-400 text-sm">Sign in to My<span className="text-[#FF8A5C]">BillPort</span></p>
+              <p className="text-slate-400 text-sm">Sign in to My<span className="text-[#4D6A9F]">BillPort</span></p>
             </div>
           </div>
 
@@ -139,7 +139,7 @@ export default function Login() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
-                  className="w-full pl-10 pr-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FF8A5C]"
+                  className="w-full pl-10 pr-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4D6A9F]"
                   required
                 />
               </div>
@@ -148,7 +148,7 @@ export default function Login() {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="block text-sm font-medium text-slate-300">Password</label>
-                <Link href="/forgot-password" className="text-sm text-[#FF8A5C] hover:underline">
+                <Link href="/forgot-password" className="text-sm text-[#4D6A9F] hover:underline">
                   Forgot password?
                 </Link>
               </div>
@@ -159,7 +159,7 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
-                  className="w-full pl-10 pr-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FF8A5C]"
+                  className="w-full pl-10 pr-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4D6A9F]"
                   required
                 />
               </div>
@@ -191,13 +191,13 @@ export default function Login() {
 
           <p className="text-center text-slate-400 mt-6 text-sm">
             Don&apos;t have an account?{' '}
-            <Link href="/signup" className="text-[#FF8A5C] hover:underline">
+            <Link href="/signup" className="text-[#4D6A9F] hover:underline">
               Sign up
             </Link>
           </p>
 
           <div className="mt-5 pt-5 border-t border-slate-700/60 flex items-center justify-center gap-1.5 text-xs text-slate-500">
-            <ShieldCheck className="w-3.5 h-3.5 text-[#FF8A5C] flex-shrink-0" />
+            <ShieldCheck className="w-3.5 h-3.5 text-[#4D6A9F] flex-shrink-0" />
             <span>
               Protected by reCAPTCHA &mdash;{' '}
               <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-slate-400">Privacy</a>
