@@ -55,7 +55,7 @@ function AuthCallbackInner() {
           <div className="text-red-400 text-lg">{error}</div>
         ) : (
           <>
-            <Loader2 className="w-10 h-10 text-[#FF8A5C] animate-spin mx-auto mb-4" />
+            <Loader2 className="w-10 h-10 text-[#4D6A9F] animate-spin mx-auto mb-4" />
             <p className="text-white text-lg">Signing you in...</p>
           </>
         )}
@@ -70,7 +70,7 @@ export default function AuthCallback() {
       fallback={
         <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 flex items-center justify-center px-4">
           <div className="text-center">
-            <Loader2 className="w-10 h-10 text-[#FF8A5C] animate-spin mx-auto mb-4" />
+            <Loader2 className="w-10 h-10 text-[#4D6A9F] animate-spin mx-auto mb-4" />
             <p className="text-white text-lg">Signing you in...</p>
           </div>
         </div>
