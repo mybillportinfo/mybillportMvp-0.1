@@ -112,7 +112,7 @@ export default function PendingBillsPage() {
   if (authLoading || (!user && !authLoading)) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-[#FF8A5C] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#4D6A9F] animate-spin" />
       </div>
     );
   }
@@ -125,7 +125,7 @@ export default function PendingBillsPage() {
           Back to Dashboard
         </button>
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-[#FF8A5C] rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(255,138,92,0.3)]">
+          <div className="w-10 h-10 bg-[#4D6A9F] rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(77,106,159,0.3)]">
             <Inbox className="w-5 h-5 text-white" />
           </div>
           <div>
@@ -145,7 +145,7 @@ export default function PendingBillsPage() {
 
         {loading ? (
           <div className="flex items-center justify-center py-16">
-            <Loader2 className="w-8 h-8 text-[#FF8A5C] animate-spin" />
+            <Loader2 className="w-8 h-8 text-[#4D6A9F] animate-spin" />
           </div>
         ) : bills.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center px-6">
@@ -156,7 +156,7 @@ export default function PendingBillsPage() {
             <p className="text-slate-400 text-sm mb-4">
               Bills detected from your forwarding email will appear here for review.
             </p>
-            <Link href="/settings" className="inline-block text-[#FF8A5C] text-sm underline hover:no-underline">
+            <Link href="/settings" className="inline-block text-[#4D6A9F] text-sm underline hover:no-underline">
               Set up email forwarding in Settings
             </Link>
           </div>
@@ -203,7 +203,7 @@ export default function PendingBillsPage() {
                   <button
                     onClick={() => handleApprove(bill)}
                     disabled={processingId === bill.id}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-[#FF8A5C] text-white text-sm font-semibold rounded-lg hover:bg-[#e5753d] transition-colors disabled:opacity-50"
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-[#4D6A9F] text-white text-sm font-semibold rounded-lg hover:bg-[#3d5a8f] transition-colors disabled:opacity-50"
                   >
                     {processingId === bill.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
                     Add to Bills
