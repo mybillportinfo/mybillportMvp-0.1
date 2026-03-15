@@ -19,17 +19,17 @@ export function WaitlistForm() {
   if (submitted) {
     return (
       <div className="flex flex-col items-center gap-3">
-        <div className="w-12 h-12 bg-[#C4E538] rounded-full flex items-center justify-center">
-          <CheckCircle className="w-6 h-6 text-[#2D4059]" />
+        <div className="w-12 h-12 bg-[#FFB347] rounded-full flex items-center justify-center">
+          <CheckCircle className="w-6 h-6 text-[#1E2A3A]" />
         </div>
-        <p className="text-[#C4E538] font-medium">You're on the list — we'll be in touch.</p>
+        <p className="text-[#FFB347] font-medium">You're on the list — we'll be in touch.</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-5">
-      <Link href="/login" className="bg-[#FF8A5C] hover:bg-[#e5753d] text-white font-bold px-10 py-4 rounded-full transition-colors inline-flex items-center gap-2 text-base shadow-lg shadow-[#FF8A5C]/25">
+      <Link href="/login" className="bg-[#4D6A9F] hover:bg-[#3d5a8f] text-white font-bold px-10 py-4 rounded-full transition-colors inline-flex items-center gap-2 text-base shadow-lg shadow-[#4D6A9F]/25">
         Start managing your bills free <ArrowRight className="w-5 h-5" />
       </Link>
       <div>
@@ -41,7 +41,7 @@ export function WaitlistForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="flex-1 bg-white/5 border border-white/10 text-white placeholder:text-slate-600 rounded-full px-5 py-3 text-sm focus:outline-none focus:border-[#FF8A5C]/50"
+            className="flex-1 bg-white/5 border border-white/10 text-white placeholder:text-slate-600 rounded-full px-5 py-3 text-sm focus:outline-none focus:border-[#4D6A9F]/50"
           />
           <button type="submit" className="bg-white/10 hover:bg-white/15 text-white rounded-full px-5 py-3 text-sm font-medium flex items-center gap-1.5 justify-center transition-colors">
             <Mail className="w-4 h-4" /> Notify me
