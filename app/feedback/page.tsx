@@ -57,7 +57,7 @@ export default function FeedbackPage() {
   if (authLoading || (!user && !authLoading)) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-[#FF8A5C] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#4D6A9F] animate-spin" />
       </div>
     );
   }
@@ -70,8 +70,8 @@ export default function FeedbackPage() {
           Back to Settings
         </Link>
         <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 bg-[#FF8A5C]/20 rounded-xl flex items-center justify-center">
-            <MessageSquare className="w-5 h-5 text-[#FF8A5C]" />
+          <div className="w-10 h-10 bg-[#4D6A9F]/20 rounded-xl flex items-center justify-center">
+            <MessageSquare className="w-5 h-5 text-[#4D6A9F]" />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-white">Send Feedback</h1>
@@ -99,7 +99,7 @@ export default function FeedbackPage() {
               </button>
               <Link
                 href="/app"
-                className="flex-1 py-3 px-4 rounded-lg bg-[#FF8A5C] text-white font-semibold hover:bg-[#e5753d] transition-colors text-center"
+                className="flex-1 py-3 px-4 rounded-lg bg-[#4D6A9F] text-white font-semibold hover:bg-[#3d5a8f] transition-colors text-center"
               >
                 Back to Dashboard
               </Link>
@@ -121,7 +121,7 @@ export default function FeedbackPage() {
                   placeholder="Describe your feedback, issue, or suggestion in detail..."
                   rows={5}
                   maxLength={2000}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A5C] text-slate-800 text-sm resize-none"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4D6A9F] text-slate-800 text-sm resize-none"
                 />
                 <p className="text-xs text-slate-400 mt-1 text-right">{message.length}/2000</p>
               </div>
@@ -129,7 +129,7 @@ export default function FeedbackPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-3.5 px-4 rounded-lg bg-[#FF8A5C] text-white font-semibold hover:bg-[#e5753d] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full py-3.5 px-4 rounded-lg bg-[#4D6A9F] text-white font-semibold hover:bg-[#3d5a8f] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {isSubmitting ? (
                   <>
