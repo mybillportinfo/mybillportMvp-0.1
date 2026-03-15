@@ -342,7 +342,7 @@ export default function CalendarPage() {
   if (authLoading || !user) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <Loader2 className="w-6 h-6 animate-spin text-[#FF8A5C]" />
+        <Loader2 className="w-6 h-6 animate-spin text-[#4D6A9F]" />
       </div>
     );
   }
@@ -354,12 +354,12 @@ export default function CalendarPage() {
       <div className="bg-slate-900/90 backdrop-blur border-b border-slate-800 sticky top-0 z-10">
         <div className="max-w-md mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <CalendarDays className="w-5 h-5 text-[#FF8A5C]" />
+            <CalendarDays className="w-5 h-5 text-[#4D6A9F]" />
             <h1 className="text-lg font-bold text-white">Cash Flow Calendar</h1>
           </div>
           <button
             onClick={() => setShowIncomeSetup(true)}
-            className="flex items-center gap-1.5 text-xs bg-[#FF8A5C]/20 text-[#FF8A5C] px-3 py-1.5 rounded-full border border-[#FF8A5C]/30 hover:bg-[#FF8A5C]/30 transition-colors"
+            className="flex items-center gap-1.5 text-xs bg-[#4D6A9F]/20 text-[#4D6A9F] px-3 py-1.5 rounded-full border border-[#4D6A9F]/30 hover:bg-[#4D6A9F]/30 transition-colors"
           >
             <Wallet className="w-3.5 h-3.5" />
             {paydaySchedule ? 'Edit Schedule' : 'Set Schedule'}
@@ -390,7 +390,7 @@ export default function CalendarPage() {
         {/* Calendar grid */}
         {loading ? (
           <div className="flex justify-center py-10">
-            <Loader2 className="w-6 h-6 animate-spin text-[#FF8A5C]" />
+            <Loader2 className="w-6 h-6 animate-spin text-[#4D6A9F]" />
           </div>
         ) : (
           <div className="grid grid-cols-7 gap-0.5">
@@ -416,13 +416,13 @@ export default function CalendarPage() {
                     relative flex flex-col items-center pt-1.5 pb-2 rounded-xl min-h-[54px]
                     transition-all duration-100
                     ${getDayStyle(day)}
-                    ${isToday(day) ? 'ring-2 ring-[#FF8A5C]' : ''}
+                    ${isToday(day) ? 'ring-2 ring-[#4D6A9F]' : ''}
                     ${isSelected ? 'ring-2 ring-white/40 scale-95' : ''}
                     cursor-pointer active:scale-90
                   `}
                 >
                   <span className={`text-sm font-semibold ${
-                    isToday(day)  ? 'text-[#FF8A5C]'    :
+                    isToday(day)  ? 'text-[#4D6A9F]'    :
                     hasBills      ? 'text-slate-200'    :
                     isPayday || hasIncome ? 'text-emerald-300' : 'text-slate-400'
                   }`}>
@@ -456,7 +456,7 @@ export default function CalendarPage() {
             <div className="w-2 h-2 rounded-full bg-red-400" />Bill due
           </div>
           <div className="flex items-center gap-1.5 text-xs text-slate-500">
-            <div className="w-3 h-3 rounded border-2 border-[#FF8A5C]" />Today
+            <div className="w-3 h-3 rounded border-2 border-[#4D6A9F]" />Today
           </div>
         </div>
 
@@ -505,7 +505,7 @@ export default function CalendarPage() {
             {!paydaySchedule && incomes.length === 0 && (
               <button
                 onClick={() => setShowIncomeSetup(true)}
-                className="w-full text-xs text-[#FF8A5C] border border-[#FF8A5C]/30 rounded-lg py-2 hover:bg-[#FF8A5C]/10 transition-colors mt-1"
+                className="w-full text-xs text-[#4D6A9F] border border-[#4D6A9F]/30 rounded-lg py-2 hover:bg-[#4D6A9F]/10 transition-colors mt-1"
               >
                 + Set recurring income or tap any day to add one-time income
               </button>
@@ -536,7 +536,7 @@ export default function CalendarPage() {
                   <button
                     onClick={() => handleMarkAsPaid(bill)}
                     disabled={markingPaid.has(bill.id!)}
-                    className="text-xs bg-[#FF8A5C] hover:bg-[#FF8A5C] text-white px-3 py-1.5 rounded-lg disabled:opacity-50 transition-colors"
+                    className="text-xs bg-[#4D6A9F] hover:bg-[#4D6A9F] text-white px-3 py-1.5 rounded-lg disabled:opacity-50 transition-colors"
                   >
                     {markingPaid.has(bill.id!) ? '…' : 'Mark Paid'}
                   </button>
@@ -582,20 +582,20 @@ export default function CalendarPage() {
 
                   if (isEditing) {
                     return (
-                      <div key={entry.id} className="bg-[#FF8A5C]/10 border border-[#FF8A5C]/30 rounded-xl p-3 space-y-2">
+                      <div key={entry.id} className="bg-[#4D6A9F]/10 border border-[#4D6A9F]/30 rounded-xl p-3 space-y-2">
                         <div className="flex gap-2">
                           <input
                             type="number" min="0.01" step="0.01"
                             value={editForm.amount}
                             onChange={e => setEditForm(f => ({ ...f, amount: e.target.value }))}
-                            className="flex-1 bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A5C]"
+                            className="flex-1 bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4D6A9F]"
                             placeholder="Amount ($)"
                             autoFocus
                           />
                           <select
                             value={editForm.frequency}
                             onChange={e => setEditForm(f => ({ ...f, frequency: e.target.value as IncomeEntry['frequency'] }))}
-                            className="bg-slate-700 border border-slate-600 text-white rounded-lg px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#FF8A5C]"
+                            className="bg-slate-700 border border-slate-600 text-white rounded-lg px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#4D6A9F]"
                           >
                             <option value="once">Once</option>
                             <option value="weekly">Weekly</option>
@@ -608,14 +608,14 @@ export default function CalendarPage() {
                           type="text"
                           value={editForm.description}
                           onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))}
-                          className="w-full bg-slate-700 border border-slate-600 text-white placeholder-slate-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A5C]"
+                          className="w-full bg-slate-700 border border-slate-600 text-white placeholder-slate-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4D6A9F]"
                           placeholder="Description (optional)"
                         />
                         <div className="flex gap-2">
                           <button
                             onClick={() => handleUpdateIncome(entry)}
                             disabled={savingEdit || !editForm.amount}
-                            className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold bg-[#FF8A5C]/20 text-[#FF8A5C] border border-[#FF8A5C]/40 rounded-lg py-2 hover:bg-[#FF8A5C]/30 disabled:opacity-50 transition-colors"
+                            className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold bg-[#4D6A9F]/20 text-[#4D6A9F] border border-[#4D6A9F]/40 rounded-lg py-2 hover:bg-[#4D6A9F]/30 disabled:opacity-50 transition-colors"
                           >
                             {savingEdit ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
                             {savingEdit ? 'Saving…' : 'Save'}
@@ -647,7 +647,7 @@ export default function CalendarPage() {
                       <div className="flex items-center gap-1 ml-2 shrink-0">
                         <button
                           onClick={() => startEditIncome(entry)}
-                          className="p-1.5 text-slate-500 hover:text-[#FF8A5C] transition-colors"
+                          className="p-1.5 text-slate-500 hover:text-[#4D6A9F] transition-colors"
                           title="Edit"
                         >
                           <Pencil className="w-3.5 h-3.5" />
@@ -733,14 +733,14 @@ export default function CalendarPage() {
             {!showAddIncome ? (
               <button
                 onClick={() => setShowAddIncome(true)}
-                className="w-full flex items-center justify-center gap-2 text-sm text-[#FF8A5C] border border-[#FF8A5C]/30 rounded-xl py-2.5 hover:bg-[#FF8A5C]/10 transition-colors"
+                className="w-full flex items-center justify-center gap-2 text-sm text-[#4D6A9F] border border-[#4D6A9F]/30 rounded-xl py-2.5 hover:bg-[#4D6A9F]/10 transition-colors"
               >
                 <PlusCircle className="w-4 h-4" />
                 Add Income for this day
               </button>
             ) : (
-              <div className="border border-[#FF8A5C]/30 rounded-xl p-4 space-y-3 bg-[#FF8A5C]/5">
-                <p className="text-sm font-semibold text-[#FF8A5C]">Add Income</p>
+              <div className="border border-[#4D6A9F]/30 rounded-xl p-4 space-y-3 bg-[#4D6A9F]/5">
+                <p className="text-sm font-semibold text-[#4D6A9F]">Add Income</p>
                 <div className="flex gap-2">
                   <div className="flex-1">
                     <input
@@ -750,14 +750,14 @@ export default function CalendarPage() {
                       value={addIncomeForm.amount}
                       onChange={e => setAddIncomeForm(f => ({ ...f, amount: e.target.value }))}
                       placeholder="Amount ($)"
-                      className="w-full bg-slate-700 border border-slate-600 text-white placeholder-slate-400 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A5C]"
+                      className="w-full bg-slate-700 border border-slate-600 text-white placeholder-slate-400 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4D6A9F]"
                       autoFocus
                     />
                   </div>
                   <select
                     value={addIncomeForm.frequency}
                     onChange={e => setAddIncomeForm(f => ({ ...f, frequency: e.target.value as IncomeEntry['frequency'] }))}
-                    className="bg-slate-700 border border-slate-600 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A5C]"
+                    className="bg-slate-700 border border-slate-600 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4D6A9F]"
                   >
                     <option value="once">Once</option>
                     <option value="weekly">Weekly</option>
@@ -771,7 +771,7 @@ export default function CalendarPage() {
                   value={addIncomeForm.description}
                   onChange={e => setAddIncomeForm(f => ({ ...f, description: e.target.value }))}
                   placeholder="Description (optional — e.g. Freelance, Tips)"
-                  className="w-full bg-slate-700 border border-slate-600 text-white placeholder-slate-400 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8A5C]"
+                  className="w-full bg-slate-700 border border-slate-600 text-white placeholder-slate-400 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4D6A9F]"
                 />
                 <div className="flex gap-2">
                   <button
@@ -815,7 +815,7 @@ export default function CalendarPage() {
                 <select
                   value={incomeForm.type}
                   onChange={e => setIncomeForm(f => ({ ...f, type: e.target.value }))}
-                  className="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#FF8A5C]"
+                  className="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#4D6A9F]"
                 >
                   <option value="weekly">Weekly</option>
                   <option value="biweekly">Bi-weekly (every 2 weeks)</option>
@@ -830,7 +830,7 @@ export default function CalendarPage() {
                   value={incomeForm.amount}
                   onChange={e => setIncomeForm(f => ({ ...f, amount: e.target.value }))}
                   placeholder="e.g. 2500.00"
-                  className="w-full bg-slate-700 border border-slate-600 text-white placeholder-slate-400 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#FF8A5C]"
+                  className="w-full bg-slate-700 border border-slate-600 text-white placeholder-slate-400 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#4D6A9F]"
                 />
               </div>
               <div>
@@ -839,7 +839,7 @@ export default function CalendarPage() {
                   type="date"
                   value={incomeForm.nextPayday}
                   onChange={e => setIncomeForm(f => ({ ...f, nextPayday: e.target.value }))}
-                  className="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#FF8A5C]"
+                  className="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#4D6A9F]"
                 />
               </div>
               <button
