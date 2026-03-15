@@ -85,7 +85,7 @@ function PaymentContent() {
           </Link>
           <h1 className="text-xl font-bold text-white">Pay Your Bill</h1>
           {amountParam && (
-            <p className="text-[#FF8A5C] text-sm mt-1 font-medium">Amount: ${parseFloat(amountParam).toFixed(2)} CAD</p>
+            <p className="text-[#4D6A9F] text-sm mt-1 font-medium">Amount: ${parseFloat(amountParam).toFixed(2)} CAD</p>
           )}
         </div>
 
@@ -127,7 +127,7 @@ function PaymentContent() {
                   <button
                     onClick={handlePayNow}
                     disabled={verifying}
-                    className="w-full py-4 px-6 bg-[#FF8A5C] hover:bg-[#e5753d] disabled:opacity-50 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 text-base"
+                    className="w-full py-4 px-6 bg-[#4D6A9F] hover:bg-[#3d5a8f] disabled:opacity-50 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 text-base"
                   >
                     {verifying ? (
                       <>
@@ -195,7 +195,7 @@ function PaymentContent() {
                       if (searchInput.trim().length > 0) setShowDropdown(true);
                     }}
                     placeholder="Search for a biller..."
-                    className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FF8A5C] focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4D6A9F] focus:border-transparent"
                   />
                 </div>
 
@@ -218,7 +218,7 @@ function PaymentContent() {
                     <p className="text-sm text-slate-500 mb-2">No matching biller found</p>
                     <button
                       onClick={() => handleSelectBiller(searchInput.trim())}
-                      className="text-sm text-[#FF8A5C] hover:text-[#e5753d] font-medium"
+                      className="text-sm text-[#4D6A9F] hover:text-[#3d5a8f] font-medium"
                     >
                       Use &quot;{searchInput.trim()}&quot; anyway
                     </button>
@@ -246,7 +246,7 @@ function PaymentContent() {
 
         <div className="px-6 py-4 bg-slate-50 border-t border-slate-100">
           <p className="text-xs text-slate-400 text-center">
-            Need help? Contact <a href="mailto:mybillportinfo@gmail.com" className="text-[#FF8A5C] hover:underline">mybillportinfo@gmail.com</a>
+            Need help? Contact <a href="mailto:mybillportinfo@gmail.com" className="text-[#4D6A9F] hover:underline">mybillportinfo@gmail.com</a>
           </p>
         </div>
       </div>
@@ -259,7 +259,7 @@ export default function PaymentPage() {
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 flex items-center justify-center px-4 py-8">
       <Suspense fallback={
         <div className="flex items-center justify-center">
-          <Loader2 className="w-8 h-8 text-[#FF8A5C] animate-spin" />
+          <Loader2 className="w-8 h-8 text-[#4D6A9F] animate-spin" />
         </div>
       }>
         <PaymentContent />
