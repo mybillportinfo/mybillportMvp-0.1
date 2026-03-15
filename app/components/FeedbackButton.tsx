@@ -98,7 +98,7 @@ export default function FeedbackButton() {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-24 right-5 z-40 w-14 h-14 bg-[#FF8A5C] hover:bg-[#e5753d] text-white rounded-full shadow-lg shadow-[#FF8A5C]/20 flex items-center justify-center transition-all hover:scale-105 active:scale-95"
+        className="fixed bottom-24 right-5 z-40 w-14 h-14 bg-[#4D6A9F] hover:bg-[#3d5a8f] text-white rounded-full shadow-lg shadow-[#4D6A9F]/20 flex items-center justify-center transition-all hover:scale-105 active:scale-95"
         aria-label="Send feedback"
       >
         <MessageSquare className="w-6 h-6" />
@@ -118,8 +118,8 @@ export default function FeedbackButton() {
           >
             <div className="flex items-center justify-between p-5 border-b border-slate-100">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-[#FF8A5C]/15 rounded-xl flex items-center justify-center">
-                  <MessageSquare className="w-5 h-5 text-[#FF8A5C]" />
+                <div className="w-9 h-9 bg-[#4D6A9F]/15 rounded-xl flex items-center justify-center">
+                  <MessageSquare className="w-5 h-5 text-[#4D6A9F]" />
                 </div>
                 <div>
                   <h2 className="text-lg font-semibold text-slate-800">Send Feedback</h2>
@@ -146,7 +146,7 @@ export default function FeedbackButton() {
                       onClick={() => setCategory(cat.value)}
                       className={`px-3 py-2.5 rounded-lg border text-sm font-medium transition-colors text-left ${
                         category === cat.value
-                          ? 'border-[#FF8A5C] bg-[#FF8A5C]/10 text-[#e5753d]'
+                          ? 'border-[#4D6A9F] bg-[#4D6A9F]/10 text-[#3d5a8f]'
                           : 'border-slate-200 text-slate-600 hover:bg-slate-50'
                       }`}
                     >
@@ -166,7 +166,7 @@ export default function FeedbackButton() {
                   placeholder="Describe your feedback, issue, or suggestion..."
                   rows={4}
                   maxLength={2000}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A5C] text-slate-800 text-sm resize-none"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4D6A9F] text-slate-800 text-sm resize-none"
                 />
                 <p className="text-xs text-slate-400 mt-1 text-right">{message.length}/2000</p>
               </div>
@@ -182,7 +182,7 @@ export default function FeedbackButton() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-1 py-3 px-4 rounded-lg bg-[#FF8A5C] text-white font-semibold hover:bg-[#e5753d] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 py-3 px-4 rounded-lg bg-[#4D6A9F] text-white font-semibold hover:bg-[#3d5a8f] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
                     <>
