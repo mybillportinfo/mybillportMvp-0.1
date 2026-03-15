@@ -60,11 +60,11 @@ export default function ForgotPassword() {
           </div>
 
           {success ? (
-            <div className="bg-[#FF8A5C]/10 border border-[#FF8A5C]/30 text-[#FF8A5C] px-4 py-4 rounded-lg text-sm flex items-start gap-3">
+            <div className="bg-[#4D6A9F]/10 border border-[#4D6A9F]/30 text-[#4D6A9F] px-4 py-4 rounded-lg text-sm flex items-start gap-3">
               <CheckCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
               <div>
                 <p className="font-medium mb-1">Reset email sent!</p>
-                <p className="text-[#FF8A5C]/80">Check your inbox at <span className="font-medium">{email}</span> for a password reset link. Don&apos;t forget to check your spam folder.</p>
+                <p className="text-[#4D6A9F]/80">Check your inbox at <span className="font-medium">{email}</span> for a password reset link. Don&apos;t forget to check your spam folder.</p>
               </div>
             </div>
           ) : (
@@ -85,7 +85,7 @@ export default function ForgotPassword() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="you@example.com"
-                      className="w-full pl-10 pr-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FF8A5C]"
+                      className="w-full pl-10 pr-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4D6A9F]"
                       required
                     />
                   </div>
@@ -111,7 +111,7 @@ export default function ForgotPassword() {
 
           <p className="text-center text-slate-400 mt-6 text-sm">
             Remember your password?{' '}
-            <Link href="/login" className="text-[#FF8A5C] hover:underline">
+            <Link href="/login" className="text-[#4D6A9F] hover:underline">
               Sign in
             </Link>
           </p>
