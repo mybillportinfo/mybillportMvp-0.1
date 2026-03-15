@@ -52,7 +52,7 @@ export function FAQ() {
             return (
               <div
                 key={i}
-                className="bg-[#111d33] border border-white/5 rounded-xl overflow-hidden"
+                className="bg-[#263244] border border-white/5 rounded-xl overflow-hidden"
               >
                 <button
                   id={headingId}
@@ -63,7 +63,7 @@ export function FAQ() {
                 >
                   <span className="text-sm font-medium text-white pr-4">{faq.question}</span>
                   <ChevronDown
-                    className={`w-4 h-4 text-[#FF8A5C] flex-shrink-0 transition-transform ${
+                    className={`w-4 h-4 text-[#4D6A9F] flex-shrink-0 transition-transform ${
                       isOpen ? 'rotate-180' : ''
                     }`}
                   />
