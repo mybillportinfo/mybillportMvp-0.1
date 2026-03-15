@@ -40,9 +40,9 @@ const countries: CountryData[] = [
 const countryMap = new Map(countries.map(c => [c.numericId, c]));
 
 const statusColors: Record<CountryStatus, string> = {
-  live: '#FF8A5C',
-  weeks: '#C4E538',
-  months: '#2AC3B5',
+  live: '#4D6A9F',
+  weeks: '#FFB347',
+  months: '#6BCB77',
   exploring: '#6b7280',
 };
 
@@ -88,7 +88,7 @@ export function GlobalFootprint() {
     <section className="py-16 px-5">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-8">
-          <p className="text-[#FF8A5C] text-sm font-semibold uppercase tracking-wider mb-2">Global expansion</p>
+          <p className="text-[#4D6A9F] text-sm font-semibold uppercase tracking-wider mb-2">Global expansion</p>
           <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">
             Our global roadmap
           </h2>
@@ -97,21 +97,21 @@ export function GlobalFootprint() {
           </p>
         </div>
 
-        <div className="bg-[#111d33] border border-white/5 rounded-2xl p-4 md:p-8 overflow-hidden">
+        <div className="bg-[#263244] border border-white/5 rounded-2xl p-4 md:p-8 overflow-hidden">
           <MapChart />
         </div>
 
         <div className="flex flex-wrap justify-center gap-4 md:gap-6 mt-6 text-sm">
           <div className="flex items-center gap-2">
-            <span className="w-3.5 h-3.5 rounded-full bg-[#FF8A5C]" />
+            <span className="w-3.5 h-3.5 rounded-full bg-[#4D6A9F]" />
             <span className="text-slate-300">Live</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-3.5 h-3.5 rounded-full bg-[#C4E538]" />
+            <span className="w-3.5 h-3.5 rounded-full bg-[#FFB347]" />
             <span className="text-slate-300">Coming in weeks</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-3.5 h-3.5 rounded-full bg-[#2AC3B5]" />
+            <span className="w-3.5 h-3.5 rounded-full bg-[#6BCB77]" />
             <span className="text-slate-300">Coming in months</span>
           </div>
           <div className="flex items-center gap-2">
