@@ -28,17 +28,17 @@ const billerCategories = [
 
 export default function BillManagementPage() {
   return (
-    <div className="min-h-screen bg-[#0b1426] text-white">
+    <div className="min-h-screen bg-[#1E2A3A] text-white">
       <div className="max-w-4xl mx-auto px-5 py-16 space-y-16">
         <section className="text-center space-y-6">
-          <div className="inline-flex items-center gap-2 bg-[#FF8A5C]/10 border border-[#FF8A5C]/20 text-[#FF8A5C] text-xs font-semibold px-4 py-1.5 rounded-full tracking-wide uppercase">
+          <div className="inline-flex items-center gap-2 bg-[#4D6A9F]/10 border border-[#4D6A9F]/20 text-[#4D6A9F] text-xs font-semibold px-4 py-1.5 rounded-full tracking-wide uppercase">
             <Globe className="w-3.5 h-3.5" />
             Available worldwide
           </div>
           <h1 className="text-4xl md:text-5xl font-extrabold leading-tight">
             Bill Management
             <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF8A5C] to-[#C4E538]">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#4D6A9F] to-[#FFB347]">
               Made Simple
             </span>
           </h1>
@@ -46,7 +46,7 @@ export default function BillManagementPage() {
             Most people juggle 8-12 recurring bills every month — utilities, telecom, insurance, subscriptions.
             MyBillPort brings them all into one clean dashboard so you never miss a payment again.
           </p>
-          <Link href="/login" className="bg-[#FF8A5C] hover:bg-[#e5753d] text-white font-bold px-8 py-4 rounded-full transition-colors inline-flex items-center gap-2">
+          <Link href="/login" className="bg-[#4D6A9F] hover:bg-[#3d5a8f] text-white font-bold px-8 py-4 rounded-full transition-colors inline-flex items-center gap-2">
               Start for free <ArrowRight className="w-5 h-5" />
           </Link>
         </section>
@@ -60,9 +60,9 @@ export default function BillManagementPage() {
               { icon: Zap, title: 'One-Click Payments', desc: 'Direct links to your biller\'s official payment page. Find your bill, click Pay, done.' },
               { icon: Shield, title: 'Bank-Grade Security', desc: '256-bit encryption, biometric auth, and we never connect to your bank or store payment info.' },
             ].map((f) => (
-              <div key={f.title} className="bg-[#111d33] border border-white/5 rounded-xl p-5 space-y-3">
-                <div className="w-10 h-10 bg-[#FF8A5C]/10 rounded-lg flex items-center justify-center">
-                  <f.icon className="w-5 h-5 text-[#FF8A5C]" />
+              <div key={f.title} className="bg-[#263244] border border-white/5 rounded-xl p-5 space-y-3">
+                <div className="w-10 h-10 bg-[#4D6A9F]/10 rounded-lg flex items-center justify-center">
+                  <f.icon className="w-5 h-5 text-[#4D6A9F]" />
                 </div>
                 <h3 className="font-semibold text-white">{f.title}</h3>
                 <p className="text-sm text-slate-400">{f.desc}</p>
@@ -78,7 +78,7 @@ export default function BillManagementPage() {
           </p>
           <div className="grid sm:grid-cols-2 gap-4">
             {billerCategories.map((cat) => (
-              <div key={cat.category} className="bg-[#111d33] border border-white/5 rounded-xl p-5 space-y-2">
+              <div key={cat.category} className="bg-[#263244] border border-white/5 rounded-xl p-5 space-y-2">
                 <h3 className="font-semibold text-white">{cat.category}</h3>
                 <p className="text-sm text-slate-400">{cat.examples.join(' · ')}</p>
               </div>
@@ -96,7 +96,7 @@ export default function BillManagementPage() {
               { step: '3', title: 'Pay with one click', desc: 'Click Pay to go directly to your biller\'s official payment portal. No middleman, no fees.' },
             ].map((s) => (
               <div key={s.step} className="flex gap-4 items-start">
-                <div className="w-10 h-10 bg-[#FF8A5C]/20 rounded-full flex items-center justify-center text-[#FF8A5C] font-bold flex-shrink-0">
+                <div className="w-10 h-10 bg-[#4D6A9F]/20 rounded-full flex items-center justify-center text-[#4D6A9F] font-bold flex-shrink-0">
                   {s.step}
                 </div>
                 <div>
@@ -108,10 +108,10 @@ export default function BillManagementPage() {
           </div>
         </section>
 
-        <section className="bg-gradient-to-br from-[#FF8A5C]/15 to-[#2AC3B5]/10 border border-[#FF8A5C]/15 rounded-2xl p-8 text-center space-y-4">
+        <section className="bg-gradient-to-br from-[#4D6A9F]/15 to-[#6BCB77]/10 border border-[#4D6A9F]/15 rounded-2xl p-8 text-center space-y-4">
           <h2 className="text-2xl font-bold text-white">Ready to simplify your bills?</h2>
           <p className="text-slate-400">Free forever plan available. No credit card required.</p>
-          <Link href="/login" className="bg-[#FF8A5C] hover:bg-[#e5753d] text-white font-bold px-8 py-4 rounded-full transition-colors inline-flex items-center gap-2">
+          <Link href="/login" className="bg-[#4D6A9F] hover:bg-[#3d5a8f] text-white font-bold px-8 py-4 rounded-full transition-colors inline-flex items-center gap-2">
               Get started free <ArrowRight className="w-5 h-5" />
           </Link>
         </section>
