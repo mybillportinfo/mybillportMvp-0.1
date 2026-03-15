@@ -34,8 +34,8 @@ export function InstallBanner() {
   return (
     <div className="fixed bottom-20 left-4 right-4 z-50 animate-in slide-in-from-bottom-4 duration-300">
       <div className="bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl p-4 flex items-center gap-3">
-        <div className="w-10 h-10 bg-[#FF8A5C]/20 rounded-xl flex items-center justify-center flex-shrink-0">
-          <Smartphone className="w-5 h-5 text-[#FF8A5C]" />
+        <div className="w-10 h-10 bg-[#4D6A9F]/20 rounded-xl flex items-center justify-center flex-shrink-0">
+          <Smartphone className="w-5 h-5 text-[#4D6A9F]" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-white font-semibold text-sm">Add to Home Screen</p>
@@ -44,7 +44,7 @@ export function InstallBanner() {
         <div className="flex items-center gap-2">
           <button
             onClick={handleInstall}
-            className="px-3 py-1.5 bg-[#FF8A5C] text-white rounded-lg text-sm font-semibold hover:bg-[#FF8A5C] transition-colors"
+            className="px-3 py-1.5 bg-[#4D6A9F] text-white rounded-lg text-sm font-semibold hover:bg-[#4D6A9F] transition-colors"
           >
             Install
           </button>
