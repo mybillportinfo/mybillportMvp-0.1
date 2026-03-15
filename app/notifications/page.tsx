@@ -8,7 +8,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { fetchNotifications, markNotificationRead, markAllNotificationsRead, AppNotification, NotificationType } from '../lib/firebase';
 
 const typeConfig: Record<NotificationType, { label: string; color: string; bgColor: string }> = {
-  bill_added: { label: 'Added', color: 'text-[#FF8A5C]', bgColor: 'bg-[#FF8A5C]/10' },
+  bill_added: { label: 'Added', color: 'text-[#4D6A9F]', bgColor: 'bg-[#4D6A9F]/10' },
   due_soon: { label: 'Due Soon', color: 'text-amber-600', bgColor: 'bg-amber-50' },
   due_today: { label: 'Due Today', color: 'text-orange-600', bgColor: 'bg-orange-50' },
   overdue: { label: 'Overdue', color: 'text-red-600', bgColor: 'bg-red-50' },
@@ -104,7 +104,7 @@ export default function NotificationsPage() {
   if (authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-[#FF8A5C] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#4D6A9F] animate-spin" />
       </div>
     );
   }
@@ -118,16 +118,16 @@ export default function NotificationsPage() {
         </Link>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#FF8A5C] rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(255,138,92,0.3)]">
+            <div className="w-10 h-10 bg-[#4D6A9F] rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(77,106,159,0.3)]">
               <div className="relative">
                 <Receipt className="text-white w-6 h-6" />
-                <div className="absolute -bottom-1 -right-1 bg-slate-900 rounded-full p-0.5 border border-[#FF8A5C]/30">
-                  <DollarSign className="text-[#FF8A5C] w-3 h-3" />
+                <div className="absolute -bottom-1 -right-1 bg-slate-900 rounded-full p-0.5 border border-[#4D6A9F]/30">
+                  <DollarSign className="text-[#4D6A9F] w-3 h-3" />
                 </div>
               </div>
             </div>
             <div>
-              <h1 className="text-white text-xl font-bold tracking-tighter">My<span className="text-[#FF8A5C]">BillPort</span> Notifications</h1>
+              <h1 className="text-white text-xl font-bold tracking-tighter">My<span className="text-[#4D6A9F]">BillPort</span> Notifications</h1>
               <p className="text-slate-400 text-xs">
                 {unreadCount > 0 ? `${unreadCount} unread` : 'All caught up'}
               </p>
@@ -137,7 +137,7 @@ export default function NotificationsPage() {
             <button
               onClick={handleMarkAllRead}
               disabled={markingAll}
-              className="flex items-center gap-2 px-3 py-2 bg-[#FF8A5C]/10 text-[#FF8A5C] rounded-lg text-sm hover:bg-[#FF8A5C]/20 transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-3 py-2 bg-[#4D6A9F]/10 text-[#4D6A9F] rounded-lg text-sm hover:bg-[#4D6A9F]/20 transition-colors disabled:opacity-50"
             >
               {markingAll ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -153,7 +153,7 @@ export default function NotificationsPage() {
       <div className="px-4 space-y-2">
         {loading ? (
           <div className="flex justify-center py-8">
-            <Loader2 className="w-6 h-6 text-[#FF8A5C] animate-spin" />
+            <Loader2 className="w-6 h-6 text-[#4D6A9F] animate-spin" />
           </div>
         ) : error ? (
           <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg text-sm">
@@ -175,7 +175,7 @@ export default function NotificationsPage() {
                 className={`rounded-xl p-4 transition-colors ${
                   notif.isRead
                     ? 'bg-slate-800/30 border border-slate-700/50'
-                    : 'bg-slate-800/70 border border-[#FF8A5C]/30'
+                    : 'bg-slate-800/70 border border-[#4D6A9F]/30'
                 }`}
               >
                 <div className="flex items-start gap-3">
@@ -205,7 +205,7 @@ export default function NotificationsPage() {
                   {!notif.isRead && (
                     <button
                       onClick={() => notif.id && handleMarkRead(notif.id)}
-                      className="p-1.5 text-[#FF8A5C] hover:bg-[#FF8A5C]/20 rounded-lg transition-colors flex-shrink-0"
+                      className="p-1.5 text-[#4D6A9F] hover:bg-[#4D6A9F]/20 rounded-lg transition-colors flex-shrink-0"
                       title="Mark as read"
                     >
                       <Check className="w-4 h-4" />
