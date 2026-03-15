@@ -309,7 +309,7 @@ export default function Dashboard() {
     const daysUntil = getDaysUntilDue(bill.dueDate);
     if (daysUntil < 0) return "text-red-500";
     if (daysUntil <= 3) return "text-amber-500";
-    return "text-[#FF8A5C]";
+    return "text-[#4D6A9F]";
   };
 
   const formatDueDate = (date: Date) => {
@@ -361,7 +361,7 @@ export default function Dashboard() {
   if (authLoading || (!user && !authLoading)) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-[#FF8A5C] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#4D6A9F] animate-spin" />
       </div>
     );
   }
@@ -410,15 +410,15 @@ export default function Dashboard() {
       <div className="px-5 pt-12 pb-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#FF8A5C] rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(255,138,92,0.3)]">
+            <div className="w-10 h-10 bg-[#4D6A9F] rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(77,106,159,0.3)]">
               <div className="relative">
                 <Receipt className="text-white w-6 h-6" />
-                <div className="absolute -bottom-1 -right-1 bg-slate-900 rounded-full p-0.5 border border-[#FF8A5C]/30">
-                  <DollarSign className="text-[#FF8A5C] w-3 h-3" />
+                <div className="absolute -bottom-1 -right-1 bg-slate-900 rounded-full p-0.5 border border-[#4D6A9F]/30">
+                  <DollarSign className="text-[#4D6A9F] w-3 h-3" />
                 </div>
               </div>
             </div>
-            <span className="text-white font-bold text-xl tracking-tighter">My<span className="text-[#FF8A5C]">BillPort</span></span>
+            <span className="text-white font-bold text-xl tracking-tighter">My<span className="text-[#4D6A9F]">BillPort</span></span>
           </div>
           <div className="flex items-center gap-1">
             <Link href="/notifications" className="relative p-2 hover:bg-slate-800 rounded-lg transition-colors">
@@ -456,7 +456,7 @@ export default function Dashboard() {
         ) : bills.length === 0 ? (
           <p className="text-white text-2xl font-semibold">Add your first bill</p>
         ) : (
-          <p className="text-[#FF8A5C] text-2xl font-semibold">You&apos;re all caught up ✓</p>
+          <p className="text-[#4D6A9F] text-2xl font-semibold">You&apos;re all caught up ✓</p>
         )}
       </div>
 
@@ -537,7 +537,7 @@ export default function Dashboard() {
             </div>
             <div className="w-px h-8 bg-slate-700" />
             <div>
-              <p className="text-xl font-bold text-[#FF8A5C]">{paidThisMonth.length}</p>
+              <p className="text-xl font-bold text-[#4D6A9F]">{paidThisMonth.length}</p>
               <p className="text-[11px] text-slate-400">Paid this month</p>
             </div>
             <div className="w-px h-8 bg-slate-700" />
@@ -570,13 +570,13 @@ export default function Dashboard() {
       {/* Pending bills notification */}
       {pendingBillCount > 0 && (
         <div className="px-4 mb-4">
-          <Link href="/pending-bills" className="flex items-center gap-3 bg-[#FF8A5C]/10 border border-[#FF8A5C]/30 rounded-xl px-4 py-3 hover:bg-[#FF8A5C]/15 transition-colors">
-            <Inbox className="w-4 h-4 text-[#FF8A5C] flex-shrink-0" />
+          <Link href="/pending-bills" className="flex items-center gap-3 bg-[#4D6A9F]/10 border border-[#4D6A9F]/30 rounded-xl px-4 py-3 hover:bg-[#4D6A9F]/15 transition-colors">
+            <Inbox className="w-4 h-4 text-[#4D6A9F] flex-shrink-0" />
             <div className="flex-1">
-              <span className="text-[#FF8A5C] font-semibold text-sm">{pendingBillCount} bill{pendingBillCount !== 1 ? 's' : ''} waiting for review</span>
-              <p className="text-[#FF8A5C]/70 text-xs">Detected from your forwarding email</p>
+              <span className="text-[#4D6A9F] font-semibold text-sm">{pendingBillCount} bill{pendingBillCount !== 1 ? 's' : ''} waiting for review</span>
+              <p className="text-[#4D6A9F]/70 text-xs">Detected from your forwarding email</p>
             </div>
-            <span className="w-5 h-5 bg-[#FF8A5C] rounded-full flex items-center justify-center text-xs text-white font-bold">{pendingBillCount}</span>
+            <span className="w-5 h-5 bg-[#4D6A9F] rounded-full flex items-center justify-center text-xs text-white font-bold">{pendingBillCount}</span>
           </Link>
         </div>
       )}
@@ -638,7 +638,7 @@ export default function Dashboard() {
               onClick={() => setCategoryFilter('all')}
               className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
                 categoryFilter === 'all'
-                  ? 'bg-[#FF8A5C] text-white'
+                  ? 'bg-[#4D6A9F] text-white'
                   : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
               }`}
             >
@@ -653,7 +653,7 @@ export default function Dashboard() {
                   onClick={() => setCategoryFilter(catVal)}
                   className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
                     categoryFilter === catVal
-                      ? 'bg-[#FF8A5C] text-white'
+                      ? 'bg-[#4D6A9F] text-white'
                       : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
                   }`}
                 >
@@ -680,7 +680,7 @@ export default function Dashboard() {
 
         {loading ? (
           <div className="flex justify-center py-8">
-            <Loader2 className="w-6 h-6 text-[#FF8A5C] animate-spin" />
+            <Loader2 className="w-6 h-6 text-[#4D6A9F] animate-spin" />
           </div>
         ) : bills.length === 0 ? (
           <div className="bg-slate-800/50 rounded-xl p-8 text-center border border-slate-700">
@@ -692,7 +692,7 @@ export default function Dashboard() {
         ) : filteredBills.length === 0 ? (
           <div className="bg-slate-800/50 rounded-xl p-6 text-center border border-slate-700">
             <p className="text-slate-400 mb-2">No bills in this category</p>
-            <button onClick={() => setCategoryFilter('all')} className="text-[#FF8A5C] text-sm underline hover:no-underline">Show all bills</button>
+            <button onClick={() => setCategoryFilter('all')} className="text-[#4D6A9F] text-sm underline hover:no-underline">Show all bills</button>
           </div>
         ) : (
           visibleBills.map((bill) => {
@@ -747,7 +747,7 @@ export default function Dashboard() {
                     </div>
                     {!isFullyPaid && remaining > 0 && (
                       <p className="text-xs font-medium text-slate-600 mt-0.5">
-                        Amount due: <span className="text-[#FF8A5C]">${remaining.toFixed(2)}</span>
+                        Amount due: <span className="text-[#4D6A9F]">${remaining.toFixed(2)}</span>
                       </p>
                     )}
                   </div>
@@ -794,7 +794,7 @@ export default function Dashboard() {
                       <Link
                         href={`/payment?biller=${encodeURIComponent(bill.companyName)}&amount=${remaining.toFixed(2)}`}
                         onClick={() => trackPaymentRedirect(bill.companyName, true)}
-                        className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-semibold rounded-lg bg-[#FF8A5C] text-white hover:bg-[#e5753d] transition-colors"
+                        className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-semibold rounded-lg bg-[#4D6A9F] text-white hover:bg-[#3d5a8f] transition-colors"
                       >
                         <ExternalLink className="w-4 h-4" />
                         Pay ${remaining.toFixed(2)}
@@ -834,7 +834,7 @@ export default function Dashboard() {
 
                       <button
                         onClick={() => bill.id && togglePaymentHistory(bill.id)}
-                        className={`p-2 transition-colors rounded-lg flex-shrink-0 ${showingHistory ? 'text-[#FF8A5C] bg-[#FF8A5C]/10' : 'text-slate-400 hover:text-[#FF8A5C]'}`}
+                        className={`p-2 transition-colors rounded-lg flex-shrink-0 ${showingHistory ? 'text-[#4D6A9F] bg-[#4D6A9F]/10' : 'text-slate-400 hover:text-[#4D6A9F]'}`}
                         title="Payment History"
                       >
                         <Clock className="w-4 h-4" />
@@ -857,7 +857,7 @@ export default function Dashboard() {
                       <div className="mt-3 pt-3 border-t border-slate-100">
                         {historyLoading ? (
                           <div className="flex items-center justify-center py-3">
-                            <Loader2 className="w-4 h-4 text-[#FF8A5C] animate-spin" />
+                            <Loader2 className="w-4 h-4 text-[#4D6A9F] animate-spin" />
                             <span className="ml-2 text-xs text-slate-400">Loading history...</span>
                           </div>
                         ) : paymentHistory.length === 0 ? (
@@ -914,7 +914,7 @@ export default function Dashboard() {
                         </button>
                         <button
                           onClick={() => bill.id && togglePaymentHistory(bill.id)}
-                          className="flex items-center gap-1 px-2.5 py-1.5 text-xs text-slate-500 hover:text-[#FF8A5C] hover:bg-slate-50 rounded-lg transition-colors"
+                          className="flex items-center gap-1 px-2.5 py-1.5 text-xs text-slate-500 hover:text-[#4D6A9F] hover:bg-slate-50 rounded-lg transition-colors"
                         >
                           <Clock className="w-3.5 h-3.5" />
                           History
@@ -938,7 +938,7 @@ export default function Dashboard() {
                       <div className="mt-3 pt-3 border-t border-slate-100">
                         {historyLoading ? (
                           <div className="flex items-center justify-center py-3">
-                            <Loader2 className="w-4 h-4 text-[#FF8A5C] animate-spin" />
+                            <Loader2 className="w-4 h-4 text-[#4D6A9F] animate-spin" />
                             <span className="ml-2 text-xs text-slate-400">Loading history...</span>
                           </div>
                         ) : paymentHistory.length === 0 ? (
@@ -1023,15 +1023,15 @@ export default function Dashboard() {
         <div className="px-4 mt-4 mb-2">
           <button
             onClick={() => setShowInsights(v => !v)}
-            className="w-full flex items-center justify-between py-3 px-4 bg-slate-800 border border-slate-700 rounded-xl hover:border-[#FF8A5C]/30 transition-all"
+            className="w-full flex items-center justify-between py-3 px-4 bg-slate-800 border border-slate-700 rounded-xl hover:border-[#4D6A9F]/30 transition-all"
           >
             <div className="flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-[#FF8A5C]" />
+              <BarChart3 className="w-4 h-4 text-[#4D6A9F]" />
               <span className="text-slate-300 text-sm font-medium">Smart Insights</span>
               {savingsScore && (
                 <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
                   savingsScore.score >= 80 ? 'bg-green-500/15 text-green-400' :
-                  savingsScore.score >= 60 ? 'bg-[#FF8A5C]/15 text-[#FF8A5C]' :
+                  savingsScore.score >= 60 ? 'bg-[#4D6A9F]/15 text-[#4D6A9F]' :
                   savingsScore.score >= 40 ? 'bg-amber-500/15 text-amber-400' :
                   'bg-red-500/15 text-red-400'
                 }`}>Score: {savingsScore.score}/100</span>
@@ -1045,7 +1045,7 @@ export default function Dashboard() {
               {/* Savings score header */}
               <div className="px-4 py-3 border-b border-slate-700 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <Target className="w-4 h-4 text-[#FF8A5C]" />
+                  <Target className="w-4 h-4 text-[#4D6A9F]" />
                   <div>
                     <p className="text-white font-semibold text-sm">Savings Score</p>
                     <p className={`text-xs font-medium ${savingsScore.color}`}>{savingsScore.label}</p>
@@ -1079,7 +1079,7 @@ export default function Dashboard() {
                   <p className="text-xs text-slate-400">{annualProjection.perBiller.length} biller{annualProjection.perBiller.length !== 1 ? 's' : ''} tracked</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-lg font-bold text-[#FF8A5C]">${annualProjection.totalAnnual.toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                  <p className="text-lg font-bold text-[#4D6A9F]">${annualProjection.totalAnnual.toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   <p className="text-[10px] text-slate-500">estimated / year</p>
                 </div>
               </div>
@@ -1095,7 +1095,7 @@ export default function Dashboard() {
                       {p.trend === 'stable' && <Minus className="w-3 h-3 text-slate-500 flex-shrink-0" />}
                     </div>
                     <div className="text-right flex-shrink-0 ml-2">
-                      <p className="text-sm font-medium text-[#FF8A5C]">${p.annualEstimate.toLocaleString('en-CA', { minimumFractionDigits: 2 })}</p>
+                      <p className="text-sm font-medium text-[#4D6A9F]">${p.annualEstimate.toLocaleString('en-CA', { minimumFractionDigits: 2 })}</p>
                       <p className="text-[10px] text-slate-500">${p.monthlyAvg.toFixed(2)}/bill</p>
                     </div>
                   </div>
@@ -1114,7 +1114,7 @@ export default function Dashboard() {
               <div>
                 <h3 className="text-lg font-semibold text-slate-800">Mark as Paid</h3>
                 <p className="text-sm text-slate-500">{markPaidModal.bill.companyName}</p>
-                <p className="text-sm text-[#FF8A5C] font-medium">
+                <p className="text-sm text-[#4D6A9F] font-medium">
                   ${(markPaidModal.bill.totalAmount - markPaidModal.bill.paidAmount).toFixed(2)} due
                   {' \u2022 '}{formatDueDate(markPaidModal.bill.dueDate)}
                 </p>
@@ -1134,7 +1134,7 @@ export default function Dashboard() {
                       onClick={() => setMarkPaidModal(prev => prev ? { ...prev, method: val } : null)}
                       className={`px-3 py-2 text-sm rounded-lg border transition-colors ${
                         markPaidModal.method === val
-                          ? 'border-[#FF8A5C] bg-[#FF8A5C]/10 text-[#e5753d] font-medium'
+                          ? 'border-[#4D6A9F] bg-[#4D6A9F]/10 text-[#3d5a8f] font-medium'
                           : 'border-slate-200 text-slate-600 hover:bg-slate-50'
                       }`}
                     >
@@ -1151,7 +1151,7 @@ export default function Dashboard() {
                   value={markPaidModal.confirmationCode}
                   onChange={(e) => setMarkPaidModal(prev => prev ? { ...prev, confirmationCode: e.target.value } : null)}
                   placeholder="e.g. REF-123456"
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A5C] text-slate-800 text-sm"
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4D6A9F] text-slate-800 text-sm"
                 />
               </div>
 
@@ -1162,7 +1162,7 @@ export default function Dashboard() {
                   value={markPaidModal.notes}
                   onChange={(e) => setMarkPaidModal(prev => prev ? { ...prev, notes: e.target.value } : null)}
                   placeholder="e.g. Paid via bank app"
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A5C] text-slate-800 text-sm"
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4D6A9F] text-slate-800 text-sm"
                 />
               </div>
 
@@ -1217,7 +1217,7 @@ export default function Dashboard() {
                   type="text"
                   value={editModal.companyName}
                   onChange={(e) => setEditModal(prev => prev ? { ...prev, companyName: e.target.value } : null)}
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A5C] text-slate-800 text-sm"
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4D6A9F] text-slate-800 text-sm"
                 />
               </div>
 
@@ -1227,7 +1227,7 @@ export default function Dashboard() {
                   type="text"
                   value={editModal.accountNumber}
                   onChange={(e) => setEditModal(prev => prev ? { ...prev, accountNumber: e.target.value } : null)}
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A5C] text-slate-800 text-sm"
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4D6A9F] text-slate-800 text-sm"
                 />
               </div>
 
@@ -1242,7 +1242,7 @@ export default function Dashboard() {
                     value={editModal.totalAmount}
                     onChange={(e) => setEditModal(prev => prev ? { ...prev, totalAmount: e.target.value } : null)}
                     onKeyDown={(e) => { if (['-', 'e', 'E', '+'].includes(e.key)) e.preventDefault(); }}
-                    className="w-full pl-7 pr-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A5C] text-slate-800 text-sm"
+                    className="w-full pl-7 pr-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4D6A9F] text-slate-800 text-sm"
                   />
                 </div>
               </div>
@@ -1253,7 +1253,7 @@ export default function Dashboard() {
                   type="date"
                   value={editModal.dueDate}
                   onChange={(e) => setEditModal(prev => prev ? { ...prev, dueDate: e.target.value } : null)}
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A5C] text-slate-800 text-sm"
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4D6A9F] text-slate-800 text-sm"
                 />
               </div>
 
@@ -1264,7 +1264,7 @@ export default function Dashboard() {
                   value={editModal.notes}
                   onChange={(e) => setEditModal(prev => prev ? { ...prev, notes: e.target.value } : null)}
                   placeholder="e.g. Updated from Enbridge website"
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A5C] text-slate-800 text-sm"
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4D6A9F] text-slate-800 text-sm"
                 />
               </div>
 
@@ -1278,7 +1278,7 @@ export default function Dashboard() {
                 <button
                   onClick={handleEditBill}
                   disabled={editLoading}
-                  className="flex-1 py-3 px-4 rounded-lg bg-[#FF8A5C] text-white font-semibold hover:bg-[#e5753d] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 py-3 px-4 rounded-lg bg-[#4D6A9F] text-white font-semibold hover:bg-[#3d5a8f] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {editLoading ? (
                     <>
@@ -1378,7 +1378,7 @@ export default function Dashboard() {
                       <div className="space-y-2">
                         {insightsModal.data.tips.map((tip: string, i: number) => (
                           <div key={i} className="flex items-start gap-2 text-sm text-slate-600">
-                            <span className="text-[#FF8A5C] mt-0.5 flex-shrink-0">•</span>
+                            <span className="text-[#4D6A9F] mt-0.5 flex-shrink-0">•</span>
                             <span>{tip}</span>
                           </div>
                         ))}
