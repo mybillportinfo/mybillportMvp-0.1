@@ -1,0 +1,74 @@
+🔍 Fix Email Forwarding & Pending Bills – Replit Diagnostic Prompt
+
+Paste this into Replit to get a clear diagnosis and fix for the email forwarding feature.
+
+---
+
+🚨 Problem
+
+Email forwarding is not working. Users cannot review bills in the pending inbox. The error persists even after fixing the Firebase service account key.
+
+📋 Diagnostic Tasks
+
+1. Check Webhook Logs
+
+· Look at Vercel logs for /api/email-forward calls.
+· Are there any successful hits? Any errors (e.g., 500, 400)?
+· If no logs, the email provider (SendGrid) may not be sending to your webhook URL.
+
+2. Verify SendGrid Inbound Parse Configuration
+
+· Confirm that the MX records for mybillport.com are correctly set to point to SendGrid's servers.
+· In SendGrid Dashboard, verify that the Inbound Parse URL is exactly https://mybillport.com/api/email-forward.
+· Send a test email to your forwarding address and check SendGrid's Activity Feed to see if it was delivered to your webhook.
+
+3. Test Webhook Manually
+
+· Use a tool like Postman or curl to simulate an email POST to your local or production webhook.
+· Include a sample payload matching SendGrid's format.
+· Check if the webhook returns a 200 and if a pending bill is created in Firestore.
+
+4. Check Firestore for Pending Bills
+
+· After sending a test email, check the users/{userId}/pendingBills collection for a new document.
+· If none, the webhook failed to write.
+· If a document exists, check its fields – are they correctly populated?
+
+5. Verify Firestore Security Rules
+
+· Ensure the authenticated user can read their own pending bills:
+  ```
+  match /users/{userId}/pendingBills/{billId} {
+    allow read, write: if request.auth != null && request.auth.uid == userId;
+  }
+  ```
+
+6. Check Frontend Pending Bills Page
+
+· Open browser dev tools when visiting /pending-bills.
+· Look for any console errors (e.g., network 403/404, Firebase permission errors).
+· Verify that the user is authenticated and the correct Firestore query is being made.
+
+7. Ensure Email Alias Exists
+
+· In Firestore, check the emailAliases collection for a document with the user's alias.
+· The document should contain userId and createdAt.
+· If missing, the alias creation API may have failed.
+
+🛠️ Fix Steps (Based on Findings)
+
+· If webhook not hit: Set up SendGrid Inbound Parse correctly (add MX records, configure URL).
+· If webhook hits but no write: Check Firebase Admin SDK initialization – ensure FIREBASE_SA_JSON is set correctly in Vercel environment and the webhook uses Admin SDK to bypass rules.
+· If pending bills not showing on frontend: Check Firestore rules and frontend query.
+· If email alias missing: Re‑run the alias creation API (via settings page) or manually create one for testing.
+
+✅ Expected Outcome
+
+After fixes, sending an email to your @mybillport.com alias should:
+
+· Trigger the webhook
+· Create a document in pendingBills
+· Show up on the Pending Bills page for review
+· Allow user to approve and add to main bills
+
+Please investigate and report back with logs and findings.
