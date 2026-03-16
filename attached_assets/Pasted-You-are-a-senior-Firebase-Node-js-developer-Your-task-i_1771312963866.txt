@@ -1,0 +1,81 @@
+You are a senior Firebase + Node.js developer. Your task is to generate a complete, production‑ready solution for automatically sending email notifications when a new feedback document is created in Firestore.
+
+Project Context
+
+· App: MyBillPort (Next.js + Firebase)
+· Firebase services used: Firestore, Authentication, Cloud Functions
+· Feedback is stored in a Firestore collection named feedback (as built earlier)
+· Destination email: mybillportinfo@gmail.com
+· Email method: Gmail via Nodemailer using an App Password (for security)
+
+Requirements
+
+1. Firebase Cloud Function
+
+· Trigger: onCreate for documents in the feedback collection.
+· Extract data from the new feedback document: userEmail, category, message, createdAt, etc.
+· Send an email to mybillportinfo@gmail.com with a clear subject line and formatted body.
+· Use nodemailer with Gmail's SMTP.
+· Do not hardcode credentials – use Firebase environment configuration (functions.config()).
+· Handle errors gracefully (log errors, optionally retry).
+· Ensure the function runs on Node.js 18 (or 20).
+
+2. Security & Setup Instructions
+
+· Explain how to enable 2‑Factor Authentication on the Gmail account.
+· Explain how to generate an App Password for Gmail.
+· Provide steps to set the email credentials using Firebase CLI:
+  ```bash
+  firebase functions:config:set gmail.email="mybillportinfo@gmail.com" gmail.password="your-app-password"
+  ```
+· Include instructions to deploy the function:
+  ```bash
+  firebase deploy --only functions
+  ```
+
+3. Code Quality
+
+· Use modern JavaScript (ES6+) with async/await.
+· Include proper error logging.
+· Add comments explaining key steps.
+· Ensure the function only runs for new feedback documents (not updates).
+
+Files to Generate
+
+functions/index.js (or the main entry file)
+
+Provide the complete Cloud Function code, including:
+
+· Import statements
+· Nodemailer transporter setup using environment variables
+· The sendFeedbackEmail function
+· Any helper formatting functions
+
+functions/package.json dependencies
+
+List required packages:
+
+· firebase-functions
+· firebase-admin
+· nodemailer
+
+Deployment Instructions
+
+A step‑by‑step guide to deploy the function, including:
+
+· Initializing Firebase Functions in the project
+· Installing dependencies
+· Setting configuration variables
+· Deploying
+
+Assumptions
+
+· Firebase project already exists.
+· Firebase CLI is installed and user is logged in.
+· The feedback collection already exists.
+
+Output Format
+
+Provide all code blocks and instructions in a clear, copy‑paste‑ready format. Use markdown for readability.
+
+Now generate the complete solution.
