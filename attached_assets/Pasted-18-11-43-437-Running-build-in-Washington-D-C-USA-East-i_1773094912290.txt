@@ -1,0 +1,44 @@
+18:11:43.437 Running build in Washington, D.C., USA (East) – iad1
+18:11:43.437 Build machine configuration: 2 cores, 8 GB
+18:11:43.448 Cloning github.com/mybillportinfo/mybillportMvp-0.1 (Branch: main, Commit: 66880f8)
+18:11:43.449 Skipping build cache, deployment was triggered without cache.
+18:11:44.072 Cloning completed: 624.000ms
+18:11:46.011 Running "vercel build"
+18:11:50.201 Vercel CLI 50.28.0
+18:11:50.598 Installing dependencies...
+18:11:58.578 npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
+18:12:00.899 npm warn deprecated json-ptr@3.1.1: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+18:12:01.110 npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+18:12:01.156 npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+18:12:25.006 
+18:12:25.006 added 1332 packages in 34s
+18:12:25.007 
+18:12:25.007 147 packages are looking for funding
+18:12:25.007   run `npm fund` for details
+18:12:25.062 Detected Next.js version: 16.1.6
+18:12:25.063 Running "next build"
+18:12:25.649 Attention: Next.js now collects completely anonymous telemetry regarding usage.
+18:12:25.650 This information is used to shape Next.js' roadmap and prioritize features.
+18:12:25.650 You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+18:12:25.650 https://nextjs.org/telemetry
+18:12:25.650 
+18:12:25.669 ▲ Next.js 16.1.6 (Turbopack)
+18:12:25.670 - Environments: .env.local
+18:12:25.670 
+18:12:25.706   Creating an optimized production build ...
+18:12:57.981 ✓ Compiled successfully in 32.0s
+18:12:57.988   Running TypeScript ...
+18:13:15.177 Failed to compile.
+18:13:15.177 
+18:13:15.178 ./app/api/stripe/checkout/route.ts:8:61
+18:13:15.178 Type error: Type '"2025-01-27.acacia"' is not assignable to type '"2026-01-28.clover"'.
+18:13:15.178 
+18:13:15.178 [0m [90m  6 |[39m [36mexport[39m [36mconst[39m runtime [33m=[39m [32m'nodejs'[39m[33m;[39m
+18:13:15.178  [90m  7 |[39m
+18:13:15.178 [31m[1m>[22m[39m[90m  8 |[39m [36mconst[39m stripe [33m=[39m [36mnew[39m [33mStripe[39m(process[33m.[39menv[33m.[39m[33mSTRIPE_SECRET_KEY[39m[33m![39m[33m,[39m { apiVersion[33m:[39m [32m'2025-01-27.acacia'[39m })[33m;[39m
+18:13:15.178  [90m    |[39m                                                             [31m[1m^[22m[39m
+18:13:15.179  [90m  9 |[39m
+18:13:15.179  [90m 10 |[39m [36mexport[39m [36masync[39m [36mfunction[39m [33mPOST[39m(req[33m:[39m [33mNextRequest[39m) {
+18:13:15.179  [90m 11 |[39m   [36mconst[39m auth [33m=[39m [36mawait[39m verifyFirebaseToken(req[33m.[39mheaders[33m.[39m[36mget[39m([32m'authorization'[39m))[33m;[39m[0m
+18:13:15.274 Next.js build worker exited with code: 1 and signal: null
+18:13:15.306 Error: Command "next build" exited with 1
