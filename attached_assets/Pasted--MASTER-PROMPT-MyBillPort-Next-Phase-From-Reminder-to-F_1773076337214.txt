@@ -1,0 +1,168 @@
+🔥 MASTER PROMPT: MyBillPort Next Phase – From Reminder to Financial Operating System
+
+You are a senior full‑stack architect and product strategist. Your task is to design and generate the next phase of MyBillPort, a Canadian bill management app, after its successful MVP. This phase will transform the app from a simple reminder tool into an indispensable financial operating system for households and small businesses, without relying on Gmail OAuth (which was removed to bypass CASA compliance).
+
+📌 Context
+
+Current State (after Gmail removal):
+
+· Tech stack: Next.js (Vercel), Firebase Auth, Firestore, Tailwind CSS, Claude AI (for OCR), PWA, push notifications.
+· Core features: Manual bill entry, AI‑powered upload (photo/PDF), recurring detection, spike detection, annual projections, savings score, 275+ payment redirects, dashboard with “Needs Attention”, in‑app notifications, profile management, feedback system.
+· Security: Firebase App Check partially implemented, Firestore security rules need updates (pendingBills, pushSubscriptions, gmailTokens), no Gmail OAuth anymore.
+· Business: Free tier with premium planned.
+
+Strategic Goal: Build a defensible, monetizable product that wins against banks and other trackers by offering automation, actionable savings, and payment facilitation.
+
+🎯 New Feature Set (To Be Implemented)
+
+1. Email Forwarding Auto‑Fetch (Replace Gmail Scanner)
+
+· Problem: Users want automatic bill detection without manual entry, but Gmail OAuth triggered CASA.
+· Solution: Provide each user with a unique email address (e.g., bills+userid@mybillport.com). They forward bill emails from their providers (or set up auto‑forwarding). The backend ingests these emails, runs the existing extraction pipeline (regex + AI), and adds bills to their pending review queue.
+· Requirements:
+  · Generate a unique, secure email alias per user (store mapping in Firestore).
+  · Set up an inbound email server (e.g., using SendGrid Inbound Parse, AWS SES, or a custom SMTP server) that forwards emails to a webhook endpoint /api/email-forward.
+  · Webhook parses email (including attachments), extracts bill data using the same extractBillData logic, and creates a pending bill document.
+  · No OAuth, no Gmail scopes, fully privacy‑compliant.
+  · User can copy their email address from settings; instructions for setting up auto‑forwarding in Gmail/Outlook.
+
+2. Payment Facilitation (In‑App Bill Payment)
+
+· Problem: Redirecting to biller sites is friction; users want to pay without leaving the app.
+· Solution: Integrate with a payment processor (Stripe, Braintree, or Canadian processor like Moneris) to let users pay bills directly within MyBillPort. MyBillPort earns a small transaction fee or interchange.
+· Requirements:
+  · Store user payment methods (tokenized via Stripe Elements).
+  · On bill detail page, show “Pay Now” button that initiates payment.
+  · For each biller, we need their payment routing details (bank account or payment processor). Start with a few major billers (Rogers, Enbridge, Toronto Hydro) via partnerships or use Plaid Transfer? Alternatively, use a service like Brim or Paytm Canada? Investigate.
+  · For MVP, we can implement a “Bill Pay” feature where MyBillPort sends funds via EFT (Electronic Fund Transfer) using a partner bank. This is complex. Simpler: integrate with Stripe Connect to create a platform that facilitates payments? Actually, paying bills directly requires integration with billers' systems. This is a large undertaking. Perhaps start with rewards/cashback on bill payments through a partner card? Alternatively, pivot to affiliate‑driven switching first. But the prompt says “payment facilitation”. We'll keep it high‑level, suggesting a phased approach: first integrate with a payment gateway for biller payments, or partner with a service like Paytm Canada or Brim that offers bill pay API. Since it's a master prompt, we'll outline requirements and note that it's a complex feature that may be Phase 2.
+
+Alternative Approach (recommended for MVP): Instead of processing payments directly, integrate cashback/rewards on bill payments via a partner (e.g., when user clicks to pay, they go through an affiliate link that gives them cashback, and MyBillPort gets commission). This is easier and still adds value. We'll include both as options and let the developer decide based on effort.
+
+3. Smart “Switch & Save” Recommendations
+
+· Problem: Users overpay for services (internet, insurance) because they don't switch providers.
+· Solution: Build a database of Canadian provider plans (utilities, telecom, insurance). Compare user's current bills against better offers. Show a card: “You could save $20/month with this Rogers plan.” Include an affiliate link to switch.
+· Requirements:
+  · Create a Firestore collection providerOffers with fields: provider name, plan name, monthly price, features, category, affiliate link, eligibility (region, new customer only, etc.).
+  · Use a background Cloud Function to periodically scrape or update offers (or use a manual admin panel).
+  · On the dashboard, after a bill is added, compare its amount with offers from the same category. If a cheaper offer exists and estimated savings > 10%, show a recommendation.
+  · Recommendations are dismissible and tracked.
+
+4. Bill Negotiation Assistant
+
+· Problem: Users don't know how to negotiate lower rates.
+· Solution: Generate a personalized script or email based on bill history and competitor offers.
+· Requirements:
+  · On a bill detail page, add a “Negotiate” button.
+  · Use Claude to generate a negotiation script (using bill details and competitor data) or pre‑write templates.
+  · User can copy the script or send an email directly via the app (using a mail integration, but that may require Gmail – better to just provide copyable text).
+  · Track success (user can mark if they succeeded).
+
+5. Household Bill Splitting
+
+· Problem: Roommates/families share bills; tracking who paid is messy.
+· Solution: Allow users to create a household, invite members, and assign bills to multiple people. Each member sees their share and can mark it paid.
+· Requirements:
+  · New collection households with members array (user IDs).
+  · Bills can be assigned to a household with shares (percentage or fixed amount).
+  · Each member gets a notification when a bill is due.
+  · A shared dashboard shows who has paid.
+  · Use Firebase Auth with anonymous users? Invitations via email, they sign up and join.
+
+6. Small Business / Landlord Version
+
+· Problem: Property managers and small businesses have multiple units/properties with recurring bills.
+· Solution: A separate product tier (or feature flag) that allows creating multiple “properties” or “units”, each with its own set of bills. Consolidated dashboard for all units.
+· Requirements:
+  · New collections: properties (owned by a user), units (belonging to a property).
+  · Bills can be assigned to a unit.
+  · Reporting: total expenses per property, tax summaries.
+  · Access control: property managers can have read‑only access for owners.
+  · This can be a paid upgrade.
+
+7. Premium Subscription & Monetization
+
+· Features for paid tier ($5–8/month):
+  · Email forwarding auto‑fetch.
+  · Unlimited bills (free tier limited to 5 active bills).
+  · Advanced AI insights (spike explanations, savings opportunities).
+  · Household splitting (maybe limited to 2 members free, more paid).
+  · Priority support.
+· Implementation:
+  · Use Firebase Authentication custom claims or a subscription field in user profile.
+  · Integrate Stripe for payments (recurring).
+  · Feature flags in UI based on subscription status.
+
+🧱 Technical Architecture
+
+· Email forwarding: Set up an inbound email service (e.g., SendGrid Inbound Parse, CloudMailin, or a custom SMTP server on a cheap VPS) that POSTs to /api/email-forward. The endpoint should validate the email (using a secret token) and process attachments.
+· Extraction pipeline: Reuse existing extractBillData (regex + AI) and confidenceScorer. Store pending bills in pendingBills collection.
+· Payment facilitation: For MVP, consider using Stripe Connect to create a platform that facilitates payments? Actually, paying utility bills directly requires integration with billers' systems – this is a heavy lift. Instead, we'll start with affiliate switching and cashback.
+· Switch & Save: Create a providerOffers collection. Add a Cloud Function checkForSavingsOpportunities that runs when a bill is added/updated.
+· Household splitting: Use Firestore subcollections and security rules to ensure members can only access shared data.
+· B2B version: Likely a separate app or feature‑flagged.
+
+📅 Prioritized Roadmap (Next 6 Months)
+
+Priority Feature Estimated Effort
+1 Email forwarding auto‑fetch Medium (2‑3 weeks)
+2 Premium subscription (Stripe) Medium (2 weeks)
+3 Switch & Save recommendations Medium (2 weeks)
+4 Household splitting (basic) Medium (2‑3 weeks)
+5 Bill negotiation assistant Small (1 week)
+6 Payment facilitation (Phase 1: affiliate cashback) Small (1 week)
+7 Small business version (Phase 1: multi‑property) Medium (3 weeks)
+
+📁 Deliverables
+
+For each feature, generate the following (where applicable):
+
+· Firestore schema updates (new collections/fields).
+· Security rules updates.
+· API routes (e.g., /api/email-forward, /api/households, /api/switch-offers).
+· Cloud Functions (e.g., checkSavings, processInboundEmail).
+· UI components (pages, modals, cards).
+· Integration with existing services (Claude, Stripe).
+· Environment variables documentation.
+
+Specifically, generate code for:
+
+1. Email forwarding system:
+   · /api/email-forward – webhook endpoint.
+   · Service emailParser.ts (reuse extraction pipeline).
+   · Firestore emailAliases collection mapping user ID to alias.
+   · Settings page UI to display alias and instructions.
+2. Premium subscription with Stripe:
+   · /api/create-checkout-session (Stripe).
+   · /api/webhook (Stripe events).
+   · Subscription status in user profile.
+   · UI for pricing and upgrade.
+3. Switch & Save:
+   · providerOffers collection.
+   · checkSavingsOpportunities Cloud Function.
+   · Dashboard card component.
+4. Household splitting:
+   · households collection.
+   · Invitation system (via email).
+   · Bill sharing UI.
+5. Negotiation assistant:
+   · Claude‑powered /api/negotiate endpoint.
+   · UI button and modal.
+6. Payment facilitation (affiliate cashback):
+   · Affiliate link database.
+   · Redirector with tracking.
+
+🚀 Deployment Instructions
+
+· After generating code, push to GitHub; Vercel auto‑deploys.
+· Set environment variables in Vercel: Stripe keys, SendGrid API key, Claude API key, etc.
+· Deploy Cloud Functions via Firebase CLI.
+
+✅ Acceptance Criteria
+
+· All new features work end‑to‑end.
+· Existing features remain intact.
+· Security rules are updated.
+· The app remains performant.
+
+Now, generate the complete implementation plan and code for the prioritized features, focusing on the email forwarding system and premium subscription first.
