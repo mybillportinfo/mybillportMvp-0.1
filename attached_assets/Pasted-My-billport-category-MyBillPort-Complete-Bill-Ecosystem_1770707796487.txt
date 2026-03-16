@@ -1,0 +1,371 @@
+My billport category 
+
+MyBillPort – Complete Bill Ecosystem Document (Canada)
+
+1. Purpose of This Document
+
+This document defines every major bill type a Canadian resident may need to track, manage, and eventually pay inside MyBillPort.
+
+Scope:
+	•	Personal (not business)
+	•	Canada-wide
+	•	Covers utilities, telecom, finance, housing, insurance, subscriptions, and government-related bills
+	•	Vendor-agnostic (supports current + future APIs)
+
+This is not about implementation yet — it’s about what must exist.
+
+⸻
+
+2. Core Bill Categories (High-Level)
+	1.	Utilities
+	2.	Telecom & Connectivity
+	3.	Housing (Rent & Mortgage)
+	4.	Financial Products (Credit Cards, Loans)
+	5.	Insurance
+	6.	Subscriptions & Memberships
+	7.	Transportation & Vehicle
+	8.	Government & Public Payments
+	9.	Education & Childcare
+	10.	Miscellaneous Recurring Bills
+
+Each category below includes:
+	•	What the bill is
+	•	Who issues it
+	•	Typical payment cycle
+	•	What data fields MyBillPort must store
+
+⸻
+
+3. Utilities
+
+3.1 Electricity
+
+Who issues it
+	•	Provincial utilities
+	•	Municipal utilities
+
+Major Providers (Examples)
+	•	Ontario: Hydro One, Toronto Hydro, Hydro Ottawa
+	•	Quebec: Hydro-Québec
+	•	BC: BC Hydro
+	•	Alberta: ENMAX, EPCOR
+	•	Manitoba: Manitoba Hydro
+	•	Saskatchewan: SaskPower
+	•	Atlantic: NB Power, Nova Scotia Power
+
+Payment cycle
+	•	Monthly or bi-monthly
+
+Required fields
+	•	Utility provider name
+	•	Account number
+	•	Billing period
+	•	Due date
+	•	Amount due
+	•	Last payment date
+	•	Metered usage (optional, future)
+
+⸻
+
+3.2 Natural Gas
+
+Providers
+	•	Enbridge Gas
+	•	FortisBC
+	•	Énergir (Quebec)
+	•	ATCO Gas (Alberta)
+
+Fields
+	•	Provider
+	•	Account number
+	•	Due date
+	•	Amount
+	•	Billing cycle
+
+⸻
+
+3.3 Water & Sewer
+
+Issued by
+	•	City or regional municipality
+
+Fields
+	•	City/municipality
+	•	Account number
+	•	Due date
+	•	Amount
+	•	Billing period
+
+⸻
+
+4. Telecom & Connectivity
+
+4.1 Mobile Phone Bills
+
+Major carriers
+	•	Bell
+	•	Rogers
+	•	Telus
+
+Regional & sub-brands
+	•	Freedom Mobile
+	•	Videotron
+	•	SaskTel
+	•	Fido, Koodo, Virgin Plus, Public Mobile
+
+Fields
+	•	Carrier
+	•	Phone number
+	•	Plan name
+	•	Due date
+	•	Monthly amount
+
+⸻
+
+4.2 Internet & Wi-Fi
+
+Providers
+	•	Bell
+	•	Rogers
+	•	Telus
+	•	Shaw
+	•	Cogeco
+	•	Eastlink
+	•	TekSavvy
+	•	Xplornet
+	•	Starlink (rural)
+
+Fields
+	•	ISP name
+	•	Account number
+	•	Service address
+	•	Due date
+	•	Amount
+
+⸻
+
+4.3 Cable / TV
+
+Often bundled, but still billable separately.
+
+Providers
+	•	Bell Fibe
+	•	Rogers Cable
+	•	Shaw
+	•	Videotron
+	•	Telus Optik
+
+⸻
+
+5. Housing
+
+5.1 Rent
+
+Paid to
+	•	Individual landlord
+	•	Property management company
+
+Fields
+	•	Landlord / company name
+	•	Unit address
+	•	Monthly rent
+	•	Due date
+	•	Payment method
+	•	Late fee rules (future)
+
+⸻
+
+5.2 Mortgage
+
+Lenders
+	•	Big banks (RBC, TD, BMO, CIBC, Scotia)
+	•	Online banks (Tangerine, Simplii)
+	•	Credit unions
+	•	Mortgage lenders (MCAP, First National)
+
+Fields
+	•	Lender
+	•	Mortgage account number
+	•	Payment frequency (monthly / biweekly)
+	•	Amount
+	•	Next payment date
+
+⸻
+
+6. Financial Products
+
+6.1 Credit Cards – Banks
+
+Issuers
+	•	RBC
+	•	TD
+	•	Scotiabank
+	•	BMO
+	•	CIBC
+
+Fields
+	•	Bank
+	•	Card name
+	•	Last 4 digits
+	•	Statement balance
+	•	Minimum due
+	•	Due date
+
+⸻
+
+6.2 Credit Cards – Retail & Co-Branded
+
+Examples
+	•	Walmart Mastercard
+	•	Canadian Tire Triangle
+	•	PC Financial
+	•	Amazon.ca
+	•	Hudson’s Bay
+	•	Best Buy
+	•	Home Depot
+
+Fields
+	•	Retailer
+	•	Card number (masked)
+	•	Statement balance
+	•	Due date
+
+⸻
+
+6.3 Credit Unions
+
+Examples
+	•	Meridian
+	•	Vancity
+	•	Coast Capital
+	•	Desjardins
+
+Same structure as bank credit cards.
+
+⸻
+
+7. Insurance
+
+7.1 Car Insurance
+
+Private insurers
+	•	Intact
+	•	Aviva
+	•	TD Insurance
+	•	Desjardins
+	•	Co-operators
+	•	Economical
+	•	Sonnet
+
+Public insurers
+	•	ICBC (BC)
+	•	SGI (SK)
+	•	MPI (MB)
+
+Fields
+	•	Insurer
+	•	Policy number
+	•	Vehicle
+	•	Monthly premium
+	•	Renewal date
+
+⸻
+
+7.2 Home / Tenant Insurance
+
+Same insurers as above.
+
+Fields
+	•	Policy number
+	•	Coverage type
+	•	Monthly premium
+	•	Renewal date
+
+⸻
+
+8. Subscriptions & Memberships
+
+8.1 Streaming & Media
+	•	Netflix
+	•	Disney+
+	•	Prime Video
+	•	Crave
+	•	Spotify
+	•	Apple Music
+	•	YouTube Premium
+
+8.2 Software & Cloud
+	•	Google One
+	•	iCloud
+	•	Microsoft 365
+	•	Adobe
+	•	Antivirus services
+
+Fields
+	•	Service name
+	•	Billing cycle
+	•	Amount
+	•	Renewal date
+
+⸻
+
+9. Transportation & Vehicle
+
+9.1 Auto Loans / Leases
+	•	Bank auto loans
+	•	Dealership financing
+
+9.2 Parking / Tolls
+	•	City parking permits
+	•	Highway toll accounts (e.g., 407 ETR)
+
+⸻
+
+10. Government & Public Payments
+
+10.1 Federal
+	•	CRA tax installments
+	•	Student loans (NSLSC)
+
+10.2 Provincial
+	•	Provincial taxes
+	•	Health premiums (where applicable)
+
+10.3 Municipal
+	•	Property tax
+	•	Parking fines
+	•	City services
+
+⸻
+
+11. Education & Childcare
+	•	Daycare
+	•	School tuition
+	•	College / university fees
+	•	Student loan payments
+
+⸻
+
+12. Miscellaneous Recurring Bills
+	•	Gym memberships
+	•	Home security
+	•	Storage units
+	•	HOA / condo fees
+	•	Pet insurance
+	•	Alarm monitoring
+
+⸻
+
+13. Core Functional Requirements (Non-Negotiable)
+
+For every bill, MyBillPort must support:
+	1.	Add bill manually
+	2.	Edit bill
+	3.	Delete bill
+	4.	Due-date tracking
+	5.	Overdue detection
+	6.	In-app notifications
+	7.	Free tier limit (e.g., 3 bills)
+	8.	Paid tier unlock (future)
+
+⸻
