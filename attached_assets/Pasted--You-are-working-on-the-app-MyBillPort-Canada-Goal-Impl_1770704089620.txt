@@ -1,0 +1,94 @@
+
+You are working on the app MyBillPort (Canada).
+
+Goal: Implement a complete, stable bill category system with dynamic fields, matching Canadian bill types.
+❌ Do NOT touch payments, Stripe, Interac, or payment intents.
+
+Step 1 — Data Model
+
+Create a unified Bill model/table with:
+	•	id
+	•	userId
+	•	category (enum/string)
+	•	subcategory (string)
+	•	providerName
+	•	accountIdentifier (string, optional)
+	•	amount
+	•	dueDate
+	•	billingCycle (monthly, biweekly, annual, one-time)
+	•	status (upcoming, paid, overdue)
+	•	metadata (JSON for category-specific fields)
+	•	createdAt, updatedAt
+
+Step 2 — Categories (Hardcode These)
+
+Implement these categories exactly:
+	1.	Utilities
+	2.	Telecom & Connectivity
+	3.	Housing
+	4.	Financial Products
+	5.	Insurance
+	6.	Subscriptions & Memberships
+	7.	Transportation & Vehicle
+	8.	Government & Public Payments
+	9.	Education & Childcare
+	10.	Miscellaneous Recurring Bills
+
+Step 3 — Dynamic Add Bill Form
+	•	User selects Category
+	•	Based on category, show relevant fields only
+	•	Store extra fields inside metadata
+
+Examples:
+	•	Electricity → provider, account number, billing period
+	•	Credit Card → bank name, last 4 digits, minimum due
+	•	Subscription → service name, renewal date
+
+Step 4 — UI Requirements
+	•	“Add Bill” button must work
+	•	Category dropdown must populate
+	•	Bills must save to database
+	•	Bills must appear immediately in:
+	•	All Bills list
+	•	Category-filtered view
+
+Step 5 — Validation
+	•	Required: category, amount, dueDate
+	•	Gracefully handle missing optional fields
+	•	Show user-friendly errors
+
+Step 6 — Non-Negotiables
+	•	Do NOT break existing users
+	•	Do NOT remove previously added bills
+	•	Do NOT add payment logic
+	•	Ensure this works after redeploy
+
+Output:
+	•	Updated schema/model
+	•	Updated Add Bill UI
+	•	Working save + fetch logic
+	•	Confirmation checklist when done
+
+⸻
+
+WHY THIS IS THE RIGHT MOVE (READ THIS CAREFULLY)
+	•	Your “Failed to create payment intent” error is expected — you don’t even have payment methods wired.
+	•	Adding Stripe/Interac now will bury bugs under more bugs.
+	•	Investors, users, and testers care about tracking bills first, not paying them.
+
+Right now your app must answer ONE question clearly:
+
+“Can I add and manage all my bills without friction?”
+
+If the answer is not YES, stop everything else.
+
+⸻
+
+AFTER THIS STEP (DON’T DO YET)
+
+Only after this works end-to-end:
+	1.	Add Payment Method setup screen (cards, Interac)
+	2.	Then create Payment Intent
+	3.	Then link payment → bill
+
+But not now.
