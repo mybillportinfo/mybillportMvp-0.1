@@ -1,0 +1,110 @@
+🔥 MASTER PROMPT: MyBillPort Production-Grade Enhancements
+
+You are a senior Firebase/Next.js developer. Your task is to generate a complete implementation plan and code for three critical enhancements to MyBillPort, a production web app using Firebase (Firestore, Auth) and Vercel API routes.
+
+Project Context:
+
+· Firebase Project ID: mybillport-8e05a
+· Tech Stack: Next.js (Pages Router), TypeScript, Firebase v9+, Tailwind CSS, Vercel for hosting and API routes.
+· Firebase Services: Auth (MFA via SMS/Google/Apple), Firestore (collections: users, bills, bills/{billId}/payments, feedback), Cloud Functions (Node.js), App Check.
+· Vercel API: /api/extract-bill uses Claude Vision for bill scanning.
+· No file storage: images are base64 -> API -> discarded.
+
+Objective: Implement three features to move from MVP to production-grade:
+
+1. Firebase App Check (Web with reCAPTCHA v3) – protect Firestore and Vercel API from unauthorized calls.
+2. Abnormal Usage Logging – Cloud Function to log suspicious activity (rapid bill creation, scan failures, etc.) to Cloud Logging and Firestore.
+3. Daily Usage Analytics – track key events via Google Analytics for Firebase, plus a daily Cloud Function that compiles a report and emails it.
+
+---
+
+📋 Deliverables
+
+Provide complete, production‑ready code for each of the following files. Assume Firebase Admin SDK is already initialized in the functions folder. Use TypeScript where appropriate. Include all necessary imports, error handling, and comments.
+
+Files to Generate
+
+1. App Check Integration
+   · lib/firebase.ts – add App Check initialization with reCAPTCHA v3.
+   · pages/api/extract-bill.ts – add App Check token verification middleware.
+   · firebase.json – instructions for enabling enforcement.
+2. Abnormal Usage Logging
+   · functions/src/index.ts – add two functions:
+     · reportSuspiciousActivity (callable) for client-side reports.
+     · monitorBillCreationRate (Firestore trigger) to detect rapid bill creation.
+   · utils/securityMonitor.ts – client-side detection helpers.
+   · functions/package.json – ensure @google-cloud/logging is included.
+3. Daily Usage Analytics
+   · lib/firebase.ts – add Analytics initialization.
+   · services/analyticsService.ts – event tracking functions.
+   · components/BillScanner.tsx, pages/add-bill.tsx, pages/bill/[id].tsx – integrate tracking calls.
+   · functions/src/analytics.ts – Pub/Sub scheduled function for daily report.
+   · functions/package.json – ensure nodemailer and @google-cloud/logging are present.
+4. Configuration & Deployment Steps
+   · Instructions for setting reCAPTCHA keys, enabling App Check, and deploying functions.
+   · Environment variables needed (Vercel and Firebase).
+
+---
+
+🧠 Detailed Requirements
+
+1. App Check
+
+· Use reCAPTCHA v3. Obtain site key and secret key.
+· In lib/firebase.ts:
+  · Initialize App Check with ReCaptchaV3Provider.
+  · Enable debug token in development (check process.env.NODE_ENV).
+· In pages/api/extract-bill.ts:
+  · Read x-firebase-appcheck header.
+  · Verify token using Firebase Admin's getAppCheck().verifyToken().
+  · Return 401 if invalid/missing.
+· Provide instructions to enable enforcement in Firebase Console after monitoring.
+
+2. Abnormal Usage Logging
+
+Client-side detection (utils/securityMonitor.ts):
+
+· Export functions trackBillCreation(), trackFailedScan(errorType).
+· Keep in‑memory arrays of timestamps, call Cloud Function reportSuspiciousActivity if thresholds exceeded.
+
+Callable Cloud Function (reportSuspiciousActivity):
+
+· Accept activityType, details, confidence.
+· Extract userId from context.auth, IP, user agent.
+· Write structured log to Cloud Logging with appropriate severity.
+· Store a copy in Firestore securityReports collection.
+· If confidence === 'high', trigger email alert (use existing email config).
+
+Firestore Trigger (monitorBillCreationRate):
+
+· On bills creation, count user's bills in last hour.
+· If >20, log warning and create security report.
+
+3. Daily Usage Analytics
+
+Analytics Service (services/analyticsService.ts):
+
+· Export functions: trackBillCreated, trackBillPaid, trackBillScanAttempt, trackUserLogin, trackFeatureUsed.
+· Each function calls logEvent from Firebase Analytics with relevant parameters.
+
+Integrate into pages:
+
+· pages/add-bill.tsx – after successful bill creation, call trackBillCreated with method ('manual' | 'suggested' | 'scan').
+· pages/bill/[id].tsx – after marking paid, call trackBillPaid with onTime boolean.
+· components/BillScanner.tsx – on success/failure, call trackBillScanAttempt.
+
+Daily Report Cloud Function (dailyUsageReport):
+
+· Scheduled via Pub/Sub every day at 8 AM Toronto time.
+· Query Firestore for counts: new users, new bills, bills paid, scan attempts, feedback from previous day.
+· Compute scan success rate.
+· Store report in dailyReports collection.
+· Send email via nodemailer (using existing Gmail config) with a formatted HTML summary.
+
+---
+
+📝 Output Format
+
+For each file, provide the full code in a code block with the file path as a comment. Include brief explanations where necessary. After the code, provide step‑by‑step deployment instructions.
+
+Start with the code generation.
