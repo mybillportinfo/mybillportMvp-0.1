@@ -1,0 +1,199 @@
+You are building a production-grade Canadian biller registry for a fintech platform called MyBillPort (MBP).
+
+A partial database already exists.
+Your task is NOT to overwrite existing entries.
+
+Your task is to:
+	1.	Analyze the existing biller list.
+	2.	Identify missing major Canadian providers.
+	3.	Add only missing providers.
+	4.	Verify all payment URLs using official domains only (.ca or official corporate domains).
+	5.	Return ONLY new entries in clean JSON format.
+
+Do NOT modify existing entries.
+Do NOT repeat existing providers.
+Do NOT guess URLs.
+
+⸻
+
+🎯 REQUIRED OUTPUT FORMAT
+
+Return ONLY valid JSON.
+
+Structure:
+
+{
+“newBillers”: [
+{
+“id”: “slug_format_lowercase”,
+“brandName”: “Provider Name”,
+“accountType”: “personal | business | both”,
+“category”: “Predefined category only”,
+“regions”: [“ON”,“BC”,“AB”],
+“paymentChannels”: {
+“webPortal”: “official payment or login URL”,
+“quickPay”: “guest pay URL or null”,
+“mobileApp”: “App name or null”,
+“bankPayeeName”: “Official payee name or null”,
+“phonePay”: “Official phone number or null”
+},
+“requiresLogin”: true,
+“acceptsCreditCard”: true | false | unknown,
+“acceptsInterac”: true | false | unknown,
+“acceptsPreAuthorizedDebit”: true | false | unknown,
+“notes”: “Clear description of payment method”,
+“verificationSource”: “Exact official URL used”
+}
+]
+}
+
+Return JSON only.
+
+⸻
+
+📂 APPROVED CATEGORIES (USE ONLY THESE)
+
+Utilities - Electricity
+Utilities - Natural Gas
+Utilities - Water
+Telecom - Mobile
+Telecom - Internet
+Telecom - Cable
+Banking - Credit Cards
+Banking - Loans
+Mortgage Lenders
+Insurance - Auto
+Insurance - Home
+Insurance - Life
+Government - Federal
+Government - Provincial
+Government - Municipal
+Transportation - Toll
+Education - Student Loans
+Subscriptions - Digital
+Property Management / Rent
+Miscellaneous Recurring
+
+⸻
+
+🏢 ENSURE COVERAGE OF THESE IF MISSING
+
+Electricity
+
+Hydro One
+Alectra Utilities
+EPCOR
+ENMAX
+FortisBC
+Nova Scotia Power
+Newfoundland Power
+
+Gas
+
+Enbridge Gas
+FortisBC Gas
+ATCO Gas
+Énergir
+
+Telecom Sub-Brands
+
+Koodo
+Virgin Plus
+Freedom Mobile
+Videotron
+Public Mobile
+Lucky Mobile
+
+Insurance (Public + Private)
+
+ICBC
+SGI
+Manitoba Public Insurance
+Intact Insurance
+Desjardins Insurance
+TD Insurance
+Belairdirect
+Aviva Canada
+
+Banks (if not already included)
+
+RBC
+TD
+Scotiabank
+BMO
+CIBC
+National Bank
+
+Government
+
+CRA
+Revenu Québec
+Ontario Ministry of Finance
+All provincial tax authorities
+
+Municipal (Major Cities)
+
+Toronto
+Ottawa
+Vancouver
+Calgary
+Montreal
+Edmonton
+Winnipeg
+
+Transportation
+
+407 ETR
+TransLink
+Presto (Metrolinx)
+
+Student Loans
+
+NSLSC
+Provincial loan agencies
+
+⸻
+
+🔎 VERIFICATION RULES
+	1.	Use ONLY official domains.
+	2.	If payment requires login, mark requiresLogin = true.
+	3.	If no quick pay exists, quickPay = null.
+	4.	If personal & business use same portal → accountType = “both”.
+	5.	If different portals → create separate entries.
+	6.	If cannot verify from official source → exclude provider.
+
+No guessing.
+No fabricated URLs.
+No third-party directories.
+
+⸻
+
+⚠ IMPORTANT
+
+Existing database already contains some major telecom and utility providers.
+
+Before adding any entry:
+	•	Compare against existing list.
+	•	Add ONLY missing providers.
+
+⸻
+
+🎯 END GOAL
+
+Return only the missing providers needed to make the database nationally comprehensive for Canada.
+
+JSON only.
+
+⸻
+
+Why This Is the Right Prompt
+
+This prevents:
+
+• Duplicate entries
+• Hallucinated payment URLs
+• Overwriting verified records
+• Messy formatting
+• Rework
+
+It forces incremental expansion.
