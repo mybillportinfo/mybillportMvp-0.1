@@ -1,0 +1,38 @@
+20:58:41.415 Running build in Washington, D.C., USA (East) – iad1
+20:58:41.416 Build machine configuration: 2 cores, 8 GB
+20:58:41.564 Cloning github.com/mybillportinfo/mybillportMvp-0.1 (Branch: main, Commit: 7a39e60)
+20:58:43.085 Cloning completed: 1.521s
+20:58:44.321 Restored build cache from previous deployment (DusWJQzrtV4MnGDYD8fdvdzCSivV)
+20:58:45.036 Running "vercel build"
+20:58:45.627 Vercel CLI 50.28.0
+20:58:45.933 Installing dependencies...
+20:58:48.110 
+20:58:48.111 up to date in 2s
+20:58:48.112 
+20:58:48.112 147 packages are looking for funding
+20:58:48.112   run `npm fund` for details
+20:58:48.142 Detected Next.js version: 16.1.6
+20:58:48.143 Running "next build"
+20:58:48.872 ▲ Next.js 16.1.6 (Turbopack)
+20:58:48.873 - Environments: .env.local
+20:58:48.873 
+20:58:48.923   Creating an optimized production build ...
+20:59:20.425 ✓ Compiled successfully in 31.2s
+20:59:20.427   Running TypeScript ...
+20:59:38.238   Collecting page data using 1 worker ...
+20:59:39.472 Error: Neither apiKey nor config.authenticator provided
+20:59:39.472     at <unknown> (.next/server/chunks/[root-of-the-server]__f6d23fa8._.js:1:4784)
+20:59:39.473     at Context.asyncModule [as a] (.next/server/chunks/[turbopack]_runtime.js:455:5)
+20:59:39.473     at module evaluation (.next/server/chunks/[root-of-the-server]__f6d23fa8._.js:1:4665)
+20:59:39.473     at instantiateModule (.next/server/chunks/[turbopack]_runtime.js:740:9)
+20:59:39.473     at getOrInstantiateModuleFromParent (.next/server/chunks/[turbopack]_runtime.js:763:12)
+20:59:39.474     at Context.esmImport [as i] (.next/server/chunks/[turbopack]_runtime.js:228:20)
+20:59:39.474     at <unknown> (.next/server/chunks/[root-of-the-server]__f6d23fa8._.js:1:6472)
+20:59:39.474     at Context.asyncModule [as a] (.next/server/chunks/[turbopack]_runtime.js:455:5)
+20:59:39.978 
+20:59:39.979 > Build error occurred
+20:59:39.981 Error: Failed to collect page data for /api/stripe/checkout
+20:59:39.981     at ignore-listed frames {
+20:59:39.981   type: 'Error'
+20:59:39.981 }
+20:59:40.027 Error: Command "next build" exited with 1
