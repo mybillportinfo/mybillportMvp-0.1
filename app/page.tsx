@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 import {
   ArrowRight, DollarSign, Mail, CheckCircle,
@@ -12,6 +13,188 @@ import { FAQ } from "./components/FAQ";
 import { GlobalFootprint } from "./components/GlobalFootprint";
 import { FAQJsonLd, SoftwareApplicationJsonLd } from "./components/JsonLd";
 import { WaitlistForm } from "./components/WaitlistForm";
+
+function PhoneMockup({ children, shadow = "0 32px 64px rgba(0,0,0,0.4)" }: { children: ReactNode; shadow?: string }) {
+  return (
+    <div style={{ display: "inline-block", position: "relative" }}>
+      <div style={{ width: 200, height: 410, borderRadius: "2.2rem", border: "9px solid #1E293B", background: "#0F172A", boxShadow: shadow, position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: 70, height: 16, background: "#1E293B", borderRadius: "0 0 0.9rem 0.9rem", zIndex: 10 }} />
+        <div style={{ position: "absolute", left: -12, top: 66, width: 4, height: 25, background: "#0F172A", borderRadius: 2 }} />
+        <div style={{ position: "absolute", left: -12, top: 100, width: 4, height: 40, background: "#0F172A", borderRadius: 2 }} />
+        <div style={{ position: "absolute", right: -12, top: 100, width: 4, height: 55, background: "#0F172A", borderRadius: 2 }} />
+        <div style={{ position: "absolute", inset: 0, borderRadius: "1.9rem", overflow: "hidden" }}>
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DashboardScreen() {
+  const bills = [
+    { name: "Internet", amount: "$85", due: "Due in 2 days", accent: "#FFB347" },
+    { name: "Hydro", amount: "$142", due: "Due in 5 days", accent: "#6BCB77" },
+    { name: "Rogers", amount: "$67", due: "Overdue", accent: "#ef4444" },
+    { name: "Netflix", amount: "$18", due: "Due in 12 days", accent: "#6BCB77" },
+  ];
+  return (
+    <div style={{ height: "100%", background: "linear-gradient(160deg, #1E2A3A 0%, #263244 100%)", paddingTop: 22, overflow: "hidden" }}>
+      <div style={{ padding: "0 12px 8px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div>
+          <div style={{ fontSize: 9, color: "#94a3b8", marginBottom: 2 }}>Good morning 👋</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "white" }}>My<span style={{ color: "#6BCB77" }}>Bill</span>Port</div>
+        </div>
+        <div style={{ width: 26, height: 26, borderRadius: "50%", background: "linear-gradient(135deg, #6BCB77, #4DA85A)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ width: 11, height: 11, borderRadius: "50%", background: "white" }} />
+        </div>
+      </div>
+      <div style={{ margin: "0 12px 8px", background: "linear-gradient(135deg, #4D6A9F, #3d5a8f)", borderRadius: 13, padding: "10px 12px" }}>
+        <div style={{ fontSize: 8, color: "rgba(255,255,255,0.65)", marginBottom: 2 }}>Total due this month</div>
+        <div style={{ fontSize: 20, fontWeight: 800, color: "white" }}>$312.50</div>
+        <div style={{ display: "flex", gap: 6, marginTop: 7 }}>
+          {[{ l: "Bills", v: "4" }, { l: "Paid", v: "2" }, { l: "Overdue", v: "1" }].map(s => (
+            <div key={s.l} style={{ flex: 1, background: "rgba(255,255,255,0.12)", borderRadius: 7, padding: "3px 0", textAlign: "center" }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "white" }}>{s.v}</div>
+              <div style={{ fontSize: 7, color: "rgba(255,255,255,0.55)" }}>{s.l}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div style={{ padding: "0 12px", display: "flex", flexDirection: "column", gap: 5 }}>
+        {bills.map(b => (
+          <div key={b.name} style={{ background: "rgba(255,255,255,0.06)", borderRadius: 9, padding: "7px 9px", display: "flex", alignItems: "center", gap: 7, border: `1px solid ${b.accent === '#ef4444' ? 'rgba(239,68,68,0.3)' : 'rgba(255,255,255,0.08)'}` }}>
+            <div style={{ width: 27, height: 27, borderRadius: 7, background: b.accent + "25", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <div style={{ width: 12, height: 9, background: b.accent, borderRadius: 2 }} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 9, fontWeight: 600, color: "white" }}>{b.name}</div>
+              <div style={{ fontSize: 7.5, color: b.accent === '#ef4444' ? '#ef4444' : b.accent === '#FFB347' ? '#FFB347' : '#94a3b8', marginTop: 1 }}>{b.due}</div>
+            </div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: "white" }}>{b.amount}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "rgba(15,23,42,0.95)", borderTop: "1px solid rgba(255,255,255,0.08)", padding: "7px 0 10px", display: "flex", justifyContent: "space-around" }}>
+        {[{ icon: "🏠", label: "Home", active: true }, { icon: "📅", label: "Calendar" }, { icon: "➕", label: "Add" }, { icon: "⚙️", label: "Settings" }].map(n => (
+          <div key={n.label} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+            <div style={{ fontSize: 12 }}>{n.icon}</div>
+            <div style={{ fontSize: 7, color: n.active ? "#6BCB77" : "#64748b", fontWeight: n.active ? 700 : 400 }}>{n.label}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function AddBillScreen() {
+  return (
+    <div style={{ height: "100%", background: "linear-gradient(160deg, #1E2A3A 0%, #263244 100%)", paddingTop: 22, overflow: "hidden" }}>
+      <div style={{ padding: "0 12px 10px" }}>
+        <div style={{ fontSize: 7.5, color: "#94a3b8", marginBottom: 3 }}>← Back</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 4 }}>
+          <div style={{ width: 26, height: 26, borderRadius: 7, background: "linear-gradient(135deg, #6BCB77, #4DA85A)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ color: "white", fontSize: 14, fontWeight: 700, lineHeight: 1 }}>+</div>
+          </div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "white" }}>Add a Bill</div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
+          <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#6BCB77" }} />
+          <div style={{ fontSize: 7.5, color: "#94a3b8" }}>Choose how to import</div>
+        </div>
+      </div>
+      <div style={{ padding: "0 12px", display: "flex", flexDirection: "column", gap: 7 }}>
+        <div style={{ background: "linear-gradient(135deg, #263244, #2d3d55)", border: "1px solid rgba(77,106,159,0.4)", borderRadius: 13, padding: "9px 11px", display: "flex", alignItems: "center", gap: 7 }}>
+          <div style={{ width: 30, height: 30, borderRadius: 7, background: "linear-gradient(135deg, #4D6A9F, #3d5a8f)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ width: 13, height: 9, background: "white", borderRadius: 2, opacity: 0.8 }} />
+          </div>
+          <div>
+            <div style={{ fontSize: 9.5, fontWeight: 600, color: "white" }}>Add Manually</div>
+            <div style={{ fontSize: 7, color: "#94a3b8" }}>Type in your bill details</div>
+          </div>
+        </div>
+        <div style={{ background: "linear-gradient(135deg, rgba(107,203,119,0.12), rgba(77,106,159,0.08))", border: "1px solid rgba(107,203,119,0.35)", borderRadius: 13, padding: "9px 11px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 7 }}>
+            <div style={{ width: 30, height: 30, borderRadius: 7, background: "linear-gradient(135deg, #6BCB77, #4DA85A)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ fontSize: 13 }}>✦</span>
+            </div>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                <div style={{ fontSize: 9.5, fontWeight: 600, color: "white" }}>Scan or Upload</div>
+                <div style={{ fontSize: 6, fontWeight: 700, background: "#FFB347", color: "#1E2A3A", padding: "1px 4px", borderRadius: 5 }}>AI</div>
+              </div>
+              <div style={{ fontSize: 7, color: "#94a3b8" }}>Reads amount, date & provider</div>
+            </div>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 4 }}>
+            {["📷 Camera", "🖼 Photo", "📄 PDF"].map(btn => (
+              <div key={btn} style={{ background: "rgba(107,203,119,0.12)", border: "1px solid rgba(107,203,119,0.3)", borderRadius: 7, padding: "5px 0", textAlign: "center", fontSize: 7, color: "white", fontWeight: 600 }}>{btn}</div>
+            ))}
+          </div>
+        </div>
+        <div style={{ background: "linear-gradient(135deg, rgba(255,179,71,0.1), rgba(77,106,159,0.06))", border: "1px solid rgba(255,179,71,0.3)", borderRadius: 13, padding: "9px 11px", display: "flex", alignItems: "center", gap: 7 }}>
+          <div style={{ width: 30, height: 30, borderRadius: 7, background: "linear-gradient(135deg, #FFB347, #f09020)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <span style={{ fontSize: 13 }}>✉</span>
+          </div>
+          <div>
+            <div style={{ fontSize: 9.5, fontWeight: 600, color: "white" }}>Forward Emails</div>
+            <div style={{ fontSize: 7, color: "#94a3b8" }}>Auto-import from inbox</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SettingsScreen() {
+  const rows = [
+    { icon: "🔔", label: "Notifications", color: "#6BCB77" },
+    { icon: "🛡️", label: "Privacy", color: "#4D6A9F" },
+    { icon: "🔒", label: "Security", color: "#FFB347" },
+    { icon: "💬", label: "Feedback", color: "#6BCB77" },
+  ];
+  return (
+    <div style={{ height: "100%", background: "linear-gradient(160deg, #1E2A3A 0%, #263244 100%)", paddingTop: 22, overflow: "hidden" }}>
+      <div style={{ padding: "0 12px 10px" }}>
+        <div style={{ fontSize: 7.5, color: "#94a3b8", marginBottom: 3 }}>← Back</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+          <div style={{ width: 26, height: 26, borderRadius: 7, background: "linear-gradient(135deg, #4D6A9F, #3d5a8f)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>⚙️</div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "white" }}>Settings</div>
+        </div>
+      </div>
+      <div style={{ padding: "0 12px", display: "flex", flexDirection: "column", gap: 6 }}>
+        <div style={{ background: "linear-gradient(135deg, #263244, #2d3d55)", border: "1px solid rgba(107,203,119,0.25)", borderRadius: 13, padding: "9px 11px", display: "flex", alignItems: "center", gap: 7 }}>
+          <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg, #6BCB77, #4DA85A)", border: "2px solid #6BCB77", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, flexShrink: 0 }}>👤</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 9.5, fontWeight: 600, color: "white" }}>MyBillPort User</div>
+            <div style={{ fontSize: 7, color: "#94a3b8" }}>user@email.com</div>
+          </div>
+          <div style={{ fontSize: 10, color: "#475569" }}>›</div>
+        </div>
+        <div style={{ background: "linear-gradient(135deg, rgba(255,179,71,0.1), rgba(77,106,159,0.08))", border: "1px solid rgba(255,179,71,0.25)", borderRadius: 13, padding: "9px 11px", display: "flex", alignItems: "center", gap: 7 }}>
+          <div style={{ width: 28, height: 28, borderRadius: 7, background: "rgba(255,179,71,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>💳</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 9.5, fontWeight: 600, color: "white" }}>Free Plan</div>
+            <div style={{ fontSize: 7, color: "#94a3b8" }}>Up to 5 bills</div>
+          </div>
+          <div style={{ fontSize: 7, fontWeight: 700, background: "rgba(255,179,71,0.2)", color: "#FFB347", padding: "2px 5px", borderRadius: 5 }}>FREE</div>
+        </div>
+        <div style={{ background: "#263244", border: "1px solid rgba(71,85,105,0.25)", borderRadius: 13, overflow: "hidden" }}>
+          {rows.map((r, i) => (
+            <div key={r.label} style={{ padding: "7px 9px", display: "flex", alignItems: "center", gap: 7, borderTop: i > 0 ? "1px solid rgba(255,255,255,0.05)" : "none" }}>
+              <div style={{ width: 22, height: 22, borderRadius: 5, background: r.color + "30", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9 }}>{r.icon}</div>
+              <div style={{ flex: 1, fontSize: 8.5, color: "white", fontWeight: 500 }}>{r.label}</div>
+              <div style={{ fontSize: 10, color: "#475569" }}>›</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 13, padding: "8px 11px", display: "flex", alignItems: "center", gap: 7 }}>
+          <div style={{ width: 22, height: 22, borderRadius: 5, background: "rgba(239,68,68,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9 }}>🚪</div>
+          <div style={{ fontSize: 9, fontWeight: 600, color: "#f87171" }}>Sign Out</div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function LandingPage() {
   return (
@@ -35,35 +218,73 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <section className="pt-20 pb-24 px-5 text-center relative overflow-hidden">
+      <section className="pt-16 pb-8 px-5 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-radial from-[#4D6A9F]/10 via-transparent to-transparent pointer-events-none" />
-        <div className="max-w-3xl mx-auto relative space-y-6">
-          <div className="inline-flex items-center gap-2 bg-[#4D6A9F]/10 border border-[#4D6A9F]/20 text-[#4D6A9F] text-xs font-semibold px-4 py-1.5 rounded-full tracking-wide uppercase">
-            <Globe className="w-3.5 h-3.5" />
-            Available worldwide
+        <div className="max-w-5xl mx-auto relative">
+          <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
+
+            {/* Left — text */}
+            <div className="flex-1 space-y-6 text-center lg:text-left">
+              <div className="inline-flex items-center gap-2 bg-[#4D6A9F]/10 border border-[#4D6A9F]/20 text-[#4D6A9F] text-xs font-semibold px-4 py-1.5 rounded-full tracking-wide uppercase">
+                <Globe className="w-3.5 h-3.5" />
+                Available worldwide
+              </div>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-[1.1] tracking-tight">
+                Never miss a bill again.
+                <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#4D6A9F] to-[#FFB347]">
+                  All in one place.
+                </span>
+              </h1>
+              <p className="text-lg text-slate-400 leading-relaxed max-w-lg mx-auto lg:mx-0">
+                Stop juggling due dates and hunting for invoices. MyBillPort keeps every bill organised, visible, and paid on time — with AI scanning and smart reminders.
+              </p>
+              <div className="flex flex-wrap justify-center lg:justify-start gap-3 pt-1">
+                <Link href="/login" className="bg-[#4D6A9F] hover:bg-[#3d5a8f] text-white font-bold px-8 py-4 rounded-full transition-colors flex items-center gap-2 text-base shadow-lg shadow-[#4D6A9F]/20">
+                  Start for free <ArrowRight className="w-5 h-5" />
+                </Link>
+                <a href="#how" className="border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 font-medium px-8 py-4 rounded-full transition-colors text-base inline-block">
+                  See how it works
+                </a>
+              </div>
+              <p className="text-xs text-slate-500">No credit card · No bank login · Cancel anytime</p>
+              <div className="flex flex-wrap justify-center lg:justify-start gap-5 pt-2">
+                {[
+                  { label: "No bank login" },
+                  { label: "AI bill scanning" },
+                  { label: "120+ billers" },
+                ].map((t) => (
+                  <span key={t.label} className="flex items-center gap-1.5 text-xs text-slate-400">
+                    <CheckCircle className="w-3.5 h-3.5 text-[#6BCB77] flex-shrink-0" />
+                    {t.label}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Right — three phone frames */}
+            <div className="flex-shrink-0 relative hidden md:flex items-end justify-center" style={{ height: 460, width: 360 }}>
+              {/* Left phone — Settings, tilted left */}
+              <div className="absolute" style={{ left: 0, bottom: 0, zIndex: 1, transform: "rotate(-6deg) scale(0.85)", transformOrigin: "center bottom", opacity: 0.9 }}>
+                <PhoneMockup>
+                  <SettingsScreen />
+                </PhoneMockup>
+              </div>
+              {/* Center phone — Dashboard, upright */}
+              <div className="absolute" style={{ left: 100, bottom: 0, zIndex: 3 }}>
+                <PhoneMockup shadow="0 48px 96px rgba(0,0,0,0.55)">
+                  <DashboardScreen />
+                </PhoneMockup>
+              </div>
+              {/* Right phone — Add Bill, tilted right */}
+              <div className="absolute" style={{ left: 218, bottom: 0, zIndex: 2, transform: "rotate(6deg) scale(0.85)", transformOrigin: "center bottom", opacity: 0.9 }}>
+                <PhoneMockup>
+                  <AddBillScreen />
+                </PhoneMockup>
+              </div>
+            </div>
+
           </div>
-          <h1 className="text-4xl md:text-6xl font-extrabold text-white leading-[1.1] tracking-tight">
-            Never miss a bill again.
-            <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#4D6A9F] to-[#FFB347]">
-              All your bills, one place.
-            </span>
-          </h1>
-          <p className="text-lg md:text-xl text-slate-400 leading-relaxed max-w-xl mx-auto">
-            Stop juggling due dates, hunting for invoices, and getting blindsided by price increases.
-            MyBillPort keeps every bill organised, visible, and paid on time — with AI-powered scanning and smart reminders.
-          </p>
-          <div className="flex flex-wrap justify-center gap-3 pt-2">
-            <Link href="/login" className="bg-[#4D6A9F] hover:bg-[#3d5a8f] text-white font-bold px-8 py-4 rounded-full transition-colors flex items-center gap-2 text-base shadow-lg shadow-[#4D6A9F]/20">
-                Start for free <ArrowRight className="w-5 h-5" />
-            </Link>
-            <a href="#how" className="border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 font-medium px-8 py-4 rounded-full transition-colors text-base inline-block">
-                See how it works
-            </a>
-          </div>
-          <p className="text-xs text-slate-500 pt-1">
-            No credit card required · No bank login needed · Cancel anytime
-          </p>
         </div>
       </section>
 
@@ -224,48 +445,6 @@ export default function LandingPage() {
             ))}
           </div>
 
-          <div className="space-y-5">
-            <h3 className="text-center text-lg font-bold text-white">How we compare</h3>
-            <div className="bg-[#263244] border border-white/5 rounded-2xl overflow-x-auto">
-              <table className="w-full text-sm min-w-[600px]">
-                <thead>
-                  <tr className="border-b border-white/5">
-                    <th className="text-left px-5 py-4 text-slate-400 font-medium">Feature</th>
-                    {["MyBillPort", "Mint*", "PocketGuard", "YNAB", "Copilot"].map((app) => (
-                      <th key={app} className={`px-4 py-4 text-center font-semibold ${app === "MyBillPort" ? "text-[#4D6A9F]" : "text-slate-500"}`}>{app}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {[
-                    { feature: "No bank login required",         vals: [true, false, false, false, false] },
-                    { feature: "No email/Gmail access",          vals: [true, true,  true,  true,  true ] },
-                    { feature: "AI bill scanning (photo/PDF)",   vals: [true, false, false, false, false] },
-                    { feature: "Push notifications",             vals: [true, false, true,  false, true ] },
-                    { feature: "Email forwarding import",        vals: [true, false, false, false, false] },
-                    { feature: "Payment redirect (no data stored)", vals: [true, false, false, false, false] },
-                    { feature: "Available outside the US",       vals: [true, false, false, true,  false] },
-                    { feature: "Free tier",                      vals: [true, "N/A", true,  false, false] },
-                  ].map((row, i) => (
-                    <tr key={row.feature} className={i % 2 === 0 ? "bg-white/[0.01]" : ""}>
-                      <td className="px-5 py-3 text-slate-300 text-sm">{row.feature}</td>
-                      {row.vals.map((v, j) => (
-                        <td key={j} className="px-4 py-3 text-center">
-                          {typeof v === "boolean"
-                            ? v
-                              ? <CheckCircle className="w-4 h-4 text-[#6BCB77] mx-auto" />
-                              : <X className="w-4 h-4 text-slate-600 mx-auto" />
-                            : <span className="text-xs text-slate-500">{v}</span>
-                          }
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <p className="text-xs text-slate-600 text-center">* Mint shut down in January 2024. Comparison based on last known feature set.</p>
-          </div>
         </section>
 
         <section id="how" className="scroll-mt-20 space-y-12">
