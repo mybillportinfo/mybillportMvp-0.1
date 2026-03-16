@@ -1,0 +1,149 @@
+Master Prompt: Firebase Auth Persistence + Bill Payment History
+
+Copy and paste the entire block below into Replit AI (or your preferred AI coding assistant). It will generate a complete, production‑ready implementation for:
+
+· ✅ Stay logged in (Firebase Auth local persistence)
+· ✅ Bill payment history (Firestore schema + “Mark as Paid” flow)
+· ✅ One‑tap status updates + payment subcollection
+
+---
+
+```
+You are a senior Firebase + React developer. Your task is to generate a complete implementation for two features in an existing bill‑tracking web app (MyBillPort). The app uses Next.js (or plain React) with Firebase Auth and Firestore. Assume Firebase is already initialized.
+
+---
+
+## FEATURE 1: PERSISTENT LOGIN (STAY LOGGED IN)
+
+**Goal:** Users should remain logged in after closing the browser or refreshing the page.
+
+**Requirements:**
+
+1. Modify the Firebase Auth initialization to set persistence to `LOCAL`.
+2. Ensure this is applied before any sign-in attempt.
+3. Provide a custom React hook `useAuth()` that returns the current user and loading state, and automatically handles persistence.
+
+**Implementation Details:**
+
+- Use `setPersistence(auth, browserLocalPersistence)` right after `getAuth()`.
+- Wrap the app with an `AuthProvider` context.
+- Use `onAuthStateChanged` to listen to auth state.
+
+**Expected Output:**
+- `lib/firebase.js` – updated with persistence setting.
+- `contexts/AuthContext.jsx` – complete AuthProvider component.
+- `hooks/useAuth.js` – custom hook.
+
+---
+
+## FEATURE 2: BILL PAYMENT HISTORY & “MARK AS PAID”
+
+**Goal:** Users can manually mark bills as paid, and the app stores a history of payments for each bill.
+
+**Firestore Schema Changes:**
+
+**1. Bills collection document – add these fields:**
+
+```javascript
+{
+  // ... existing fields (billerName, amount, dueDate, etc.)
+  status: 'upcoming' | 'paid' | 'overdue',  // default 'upcoming'
+  paidAt: Timestamp | null,                // default null
+  lastPaymentAmount: number | null,
+  lastPaymentDate: Timestamp | null
+}
+```
+
+2. New subcollection: bills/{billId}/payments
+
+Each payment document:
+
+```javascript
+{
+  paidAt: Timestamp,          // server timestamp
+  amount: number,            // snapshot of bill amount at time of payment
+  method: 'online' | 'mail' | 'in‑person' | null,
+  confirmationCode: string,  // optional, user can enter
+  recordedVia: 'manual',     // or later 'email_forward'
+  notes: string
+}
+```
+
+UI Components Required:
+
+· Bill Detail Page: Add a prominent “✓ Mark as Paid” button (green). When clicked:
+  · Update the bill document: status = 'paid', paidAt = serverTimestamp(), lastPaymentAmount = bill.amount, lastPaymentDate = serverTimestamp().
+  · Create a new document in the payments subcollection with the current bill amount and a timestamp.
+  · Show a success toast/message.
+  · Change button to “Paid on [Date]” (disabled).
+· Bill Status Indicator: On both the dashboard list and detail view, show:
+  · 🟢 “Paid” (if status = 'paid' and due date passed or today)
+  · 🟡 “Upcoming” (if status = 'upcoming' and due date in future)
+  · 🔴 “Overdue” (if status = 'upcoming' and due date < today)
+· Payment History View: On the bill detail page, add a “Payment History” accordion or modal that lists all payments from the subcollection, newest first.
+
+Smart Nudge (Optional but recommended):
+
+· If the user clicks “Pay on [Biller] Website”, after 5 seconds show a small non‑intrusive prompt: “Did you complete your payment? [✓ Yes, mark paid] [Not yet]”.
+
+Firestore Security Rules:
+
+· Users can only read/write bills where request.auth.uid == resource.data.userId.
+· For the payments subcollection, enforce same user ID rule (denormalize userId into each payment doc or rely on parent bill check).
+
+Code Generation Tasks:
+
+1. Firestore helper functions (services/billService.js):
+   · markBillAsPaid(billId, amount, method = 'online')
+   · getPaymentHistory(billId)
+   · updateBillStatus(billId) (to automatically set overdue)
+2. React components:
+   · BillStatusBadge.jsx – displays status with colour and icon.
+   · MarkPaidButton.jsx – handles the mark‑as‑paid flow.
+   · PaymentHistory.jsx – fetches and displays payments.
+   · Integration into the existing BillDetail.jsx page.
+3. Firestore indexes (if needed):
+   · Collection bills with composite query userId + dueDate for dashboard sorting.
+   · Subcollection payments sorted by paidAt descending.
+
+---
+
+Assumptions:
+
+· Firebase v9+ modular SDK.
+· React functional components with hooks.
+· Tailwind CSS for styling (or provide plain CSS classes).
+· Existing Firestore bills collection already has userId, billerName, amount, dueDate.
+
+Output Style:
+
+· Provide each file's complete code in a clear, copy‑paste‑ready format.
+· Include comments explaining key lines.
+· No placeholder comments like “// your code here” – write the full implementation.
+
+Now generate the complete implementation for both features.
+
+```
+
+---
+
+## ✅ What This Prompt Will Produce
+
+| File | Purpose |
+|------|---------|
+| `lib/firebase.js` | Auth persistence configuration |
+| `contexts/AuthContext.jsx` | Auth provider with user state |
+| `hooks/useAuth.js` | Convenience hook for components |
+| `services/billService.js` | Firestore operations for bills & payments |
+| `components/BillStatusBadge.jsx` | Reusable status indicator |
+| `components/MarkPaidButton.jsx` | One‑click payment recording |
+| `components/PaymentHistory.jsx` | Payment history list |
+| `pages/bill/[id].jsx` (or your existing detail page) | Updated with new components |
+| `firestore.indexes.json` | Required composite indexes |
+
+**Total implementation time with this prompt:** ~30 minutes of copy/paste + minor adjustments.
+
+---
+
+**Your move:** Paste the prompt into Replit AI, let it generate the code, then integrate the files into your project.
+```
