@@ -1,0 +1,118 @@
+Here's a refined, comprehensive master prompt for Replit that incorporates all the details from the Google CASA discussion and ensures a clean removal of Gmail functionality.
+
+---
+
+🔥 MASTER PROMPT: Remove Gmail Scanner & CASA Requirements
+
+Paste this into Replit AI (or any coding assistant) to update MyBillPort so it no longer requests Gmail scopes, eliminating the need for a CASA Tier 2 audit.
+
+---
+
+📌 Background & Goal
+
+Why this change is needed:
+Google requires a CASA Tier 2 security audit (cost $500–$2,000 + weeks of time) for apps that use sensitive Gmail scopes (like gmail.readonly). To avoid this delay and expense, we will remove all Gmail‑related functionality and only keep basic Google Sign‑In (openid, email, profile).
+
+What stays:
+
+· Google Sign‑In (authentication only).
+· All existing bill management features (manual entry, upload/OCR, recurring detection, dashboard, reminders, etc.).
+· Firebase Auth with Google provider (but now without extra scopes).
+
+What is removed:
+
+· Gmail OAuth scope https://www.googleapis.com/auth/gmail.readonly.
+· All API routes under /api/gmail/*.
+· All frontend UI components related to Gmail integration (Connect Gmail, Pending Bills, etc.).
+· Any background Cloud Functions that sync Gmail.
+· Firestore collections gmailTokens and optionally pendingBills (if not used elsewhere).
+· Any references to these features in navigation, settings, or other pages.
+
+---
+
+🛠️ Implementation Tasks
+
+1. Update Firebase Google Auth Provider
+
+· In lib/firebase.ts (or wherever you initialize Firebase Auth), remove the line that adds the Gmail scope.
+· The provider should now be:
+  ```typescript
+  const provider = new GoogleAuthProvider();
+  // No extra scopes – defaults to openid, email, profile.
+  ```
+
+2. Delete Gmail API Routes
+
+· Delete the entire folder pages/api/gmail/ (or routes/gmail/ if using Express).
+· Remove any imports or references to these routes elsewhere in the code.
+
+3. Remove Gmail UI Components
+
+· Search for and delete components that mention "Gmail", "Connect Gmail", "Scan Gmail", "Pending Bills", etc.
+· Specifically remove:
+  · GmailConnectButton
+  · GmailScanner
+  · PendingBills page (if it was only for Gmail)
+  · Any section in settings that shows Gmail connection status.
+· Update navigation (e.g., bottom tab bar) to remove links to these pages.
+
+4. Clean Up Firestore
+
+· The gmailTokens collection should be deleted entirely (or left empty but no writes).
+· If pendingBills is still used for upload‑scanned bills, keep it; otherwise delete.
+· Update Firestore security rules to remove any references to these collections if they are no longer needed.
+
+5. Remove Background Cloud Functions
+
+· Delete any Cloud Functions that sync Gmail (e.g., syncGmailBills, refreshGmailToken).
+· Update firebase.json to exclude those functions from deployment.
+
+6. Test the App
+
+· Ensure Google Sign‑In works (you should only see the basic email scope request).
+· Verify that all other features (manual add, upload with OCR, dashboard, reminders, notifications, etc.) work as before.
+· Check that there are no broken imports or references to Gmail code.
+
+7. Update OAuth Consent Screen (External Step)
+
+· After the code changes, go to Google Cloud Console → APIs & Services → OAuth consent screen.
+· Remove any sensitive scopes (like Gmail) and resubmit for verification.
+· With only basic scopes, verification will be fast (days, not weeks).
+
+---
+
+📁 Files Likely Affected
+
+· lib/firebase.ts (auth configuration)
+· pages/api/gmail/* (whole folder)
+· components/GmailConnectButton.tsx
+· components/GmailScanner.tsx
+· pages/pending-bills.tsx (if Gmail‑only)
+· app/settings/page.tsx (remove Gmail section)
+· components/BottomNav.tsx or navigation component
+· firestore.rules (remove rules for gmailTokens, pendingBills)
+· functions/src/index.ts (remove Gmail‑related functions)
+· package.json (remove any Gmail‑specific dependencies if unused)
+
+---
+
+✅ Acceptance Criteria
+
+· Google Sign‑In requests only basic profile info (no Gmail warning).
+· All Gmail API routes return 404 or are removed.
+· No Gmail UI elements appear anywhere in the app.
+· Existing bill management features work correctly.
+· The app builds without errors and passes linting.
+· (After deployment) The OAuth consent screen in Google Cloud shows only non‑sensitive scopes.
+
+---
+
+🚀 Deployment Notes
+
+· After making these changes, push to GitHub; Vercel will auto‑deploy.
+· Update environment variables if any Gmail‑related secrets are no longer needed (e.g., GOOGLE_CLIENT_SECRET remains for login).
+· Monitor logs to ensure no errors from removed endpoints.
+
+---
+
+Now generate the necessary code changes and provide a summary of what was modified.
