@@ -1,0 +1,139 @@
+Your deployment actually compiled successfully, but it failed during TypeScript validation. The real problem is here:
+
+Property 'subscription_data' does not exist on type 'Session'
+
+This is coming from Stripe API types, not from Next.js or Vercel.
+
+In short: your code is using a field that Stripe no longer exposes in the Session object.
+
+⸻
+
+🔴 The Problem
+
+This line is wrong:
+
+session.subscription_data?.metadata?.firebaseUid
+
+In the latest Stripe API, the Checkout Session object contains:
+
+session.subscription
+
+but not
+
+session.subscription_data
+
+subscription_data is only used when creating a session, not when retrieving it from a webhook.
+
+⸻
+
+✅ The Correct Fix
+
+Replace this line:
+
+session.subscription_data?.metadata?.firebaseUid
+
+with:
+
+session.metadata?.firebaseUid
+
+or retrieve metadata from the subscription object instead.
+
+⸻
+
+✔ Corrected Code
+
+Change your block to this:
+
+if (session.mode !== 'subscription') break;
+
+const uid =
+  session.metadata?.firebaseUid ||
+  (session.customer
+    ? await getUidFromCustomer(session.customer as string)
+    : null);
+
+if (!uid) break;
+
+const sub = await stripe.subscriptions.retrieve(
+  session.subscription as string
+);
+
+
+⸻
+
+⚡ Even Better Version (Production Safe)
+
+A stronger version would be:
+
+if (session.mode !== "subscription") break;
+
+let uid = session.metadata?.firebaseUid;
+
+if (!uid && session.customer) {
+  uid = await getUidFromCustomer(session.customer as string);
+}
+
+if (!uid) {
+  console.error("No Firebase UID found");
+  break;
+}
+
+const subscriptionId = session.subscription as string;
+
+const sub = await stripe.subscriptions.retrieve(subscriptionId);
+
+
+⸻
+
+📌 Why This Happened
+
+You probably copied code from an older Stripe tutorial.
+
+Stripe changed their typings in the SDK, so:
+
+Field	Status
+subscription_data	❌ create-only
+subscription	✅ correct
+
+
+⸻
+
+🚀 After Fix
+
+Push again:
+
+git add .
+git commit -m "Fix Stripe session typing"
+git push
+
+Then redeploy on Vercel.
+
+Your build should pass.
+
+⸻
+
+⚠️ One More Brutal Truth
+
+Your project already has:
+	•	Stripe
+	•	Firebase
+	•	Next.js
+	•	AI plans
+	•	Bill parsing
+
+But the core MyBillPort value (bill ingestion + tracking) still isn’t stable.
+
+Adding more integrations before that works will slow you down and create more errors like this.
+
+The smartest move right now:
+
+1️⃣ Fix Stripe deploy
+2️⃣ Launch MVP
+3️⃣ Get real users
+4️⃣ THEN add AI agents
+
+Not the other way around.
+
+⸻
+
+✅ If you want, send me your route.ts webhook file, and I can fix the entire Stripe webhook properly so you don’t hit the next 3 errors that usually come after this one.
