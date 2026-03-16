@@ -1,0 +1,126 @@
+ MASTER PROMPT: Comprehensive MyBillPort Codebase Audit & Status Report
+
+You are a senior software architect and product manager. Your task is to fully analyze the MyBillPort codebase (as present in this Replit workspace) and produce a detailed report on its completion status, based on the business plan and feature list below.
+
+📌 Project Context
+
+· App Name: MyBillPort – Canadian bill management & financial intelligence app.
+· Tech Stack: Next.js (Pages Router), TypeScript, Tailwind CSS, Firebase (Auth, Firestore, Cloud Functions), Vercel hosting, Claude AI, Stripe, SendGrid.
+· Current State: The app has been developed over several months. Many features are implemented, but some may be incomplete, have bugs, or require environment configuration.
+
+📋 Expected Features (Based on Business Plan & Discussions)
+
+Use this checklist to evaluate what is done, partially done, or missing.
+
+Core Functionality
+
+· User Authentication
+  · Email/password sign‑up/login
+  · Google OAuth (with proper scopes – no Gmail after CASA removal)
+  · MFA / 2FA (if implemented)
+  · Password reset, email verification, account deletion
+· Bill Management
+  · Add, edit, delete bills
+  · Fields: biller name, amount, due date, category, account number, notes
+  · Status tracking (unpaid, paid, overdue, partial)
+  · Recurring detection (auto‑flag recurring bills)
+  · Spike detection (≥20% change vs 3‑month average)
+  · Payment history subcollection
+· Dashboard
+  · Overview with greeting, status banner (overdue/due soon/all clear)
+  · Next urgent bill card with "Pay Now" button
+  · Simple monthly summary (bills this month, paid, owing)
+  · Collapsible "Smart Insights" panel (savings score, annual projections, etc.)
+· Payment Redirection
+  · 275+ Canadian biller payment URLs (hardcoded or in Firestore)
+  · Fallback to Google search for unknown billers
+· AI Extraction (Upload)
+  · /api/extract-bill endpoint
+  · Supports image uploads (JPG, PNG) and PDFs
+  · Uses Claude Vision + Google Vision fallback
+  · Extracts: vendor, amount, due date, account number, confidence
+  · Returns structured data with confidence scoring
+· Email Forwarding (Auto‑Fetch)
+  · Unique bills+userid@mybillport.com per user
+  · /api/email-forward webhook (SendGrid Inbound Parse)
+  · Extracts bill data from forwarded emails (same pipeline)
+  · Stores in pendingBills collection
+· Pending Bills Review
+  · Page /pending-bills to review, edit, approve, or reject extracted bills
+  · Confirmed bills move to main bills collection
+· AI Chat Assistant
+  · Floating chat widget (AIChatWidget.tsx)
+  · Backend /api/ai-assistant with Claude and tool calling
+  · Tools: get_bills, get_bills_due, get_monthly_spending, detect_bill_increase, get_subscriptions
+  · Responses are conversational and data‑driven
+· Bill Negotiation Assistant
+  · /api/negotiate endpoint
+  · Generates personalized negotiation scripts based on bill history and competitor offers
+· Switch & Save Recommendations
+  · Database of provider offers (providerOffers.ts)
+  · Dashboard cards showing potential savings (≥10% cheaper)
+  · Dismissible recommendations
+· Savings Score & Annual Projections
+  · calculateSavingsScore function (0–100)
+  · calculateAnnualProjections function (per‑biller and total)
+  · Displayed in Smart Insights panel
+· Notifications
+  · In‑app notification centre (bell icon)
+  · Push notifications (web push via VAPID) – subscribed on first load
+  · Notification triggers: due soon, overdue, bill added, payment success
+· Progressive Web App (PWA)
+  · manifest.json, service worker, installable
+  · Offline support (caching)
+· Feedback System
+  · In‑app feedback form (category + message)
+  · Stored in Firestore feedback collection
+· Provider Registry & Fuzzy Matching
+  · List of Canadian providers with canonical names and categories
+  · fuzzyMatch.ts to normalize user‑entered biller names
+· Security
+  · Firebase App Check (reCAPTCHA Enterprise) – initialized but may not be enforced
+  · Firestore security rules – need review for completeness
+  · Environment variables: ANTHROPIC_API_KEY, GOOGLE_APPLICATION_CREDENTIALS_JSON, FIREBASE_SERVICE_ACCOUNT, SENDGRID_API_KEY, STRIPE_*, etc.
+  · Rate limiting on AI endpoints (server‑side)
+· Premium Subscription (Stripe)
+  · /api/stripe/checkout, /api/stripe/webhook, /api/stripe/portal
+  · Subscription status stored in user profile
+  · Feature flags: free tier (5 active bills), premium unlimited
+· Profile Management
+  · Edit username, email, password
+  · Profile photo upload (canvas‑resized, stored in Firestore)
+  · Account deletion (cascading cleanup)
+· Global Footprint / Roadmap Page (optional frontend)
+  · Map component showing live/coming soon countries (Canada, Australia, NZ, etc.)
+
+Infrastructure & Configuration
+
+· Vercel environment variables correctly set
+· Firebase project configuration (App Check, Authentication, Firestore indexes)
+· SendGrid Inbound Parse configured for email forwarding
+· Stripe webhook endpoint registered
+· Custom domain (mybillport.com) working with SSL
+
+🔍 Analysis Tasks
+
+1. Examine the codebase (all files) to determine for each feature above:
+   · ✅ Done – fully implemented, functional, and integrated.
+   · ⚠️ Partial – exists but has bugs, missing parts, or not fully integrated.
+   · ❌ Missing – not implemented or removed.
+2. Identify any critical bugs or security gaps (e.g., Firestore rules, App Check enforcement, missing environment variables).
+3. Assess overall completion percentage – an estimate based on the feature list and their state.
+4. If any feature is partially done and can be completed within this session (e.g., missing environment var, small code tweak), attempt to fix it and document the change. Otherwise, note what is required (e.g., "need to set STRIPE_PRICE_ID in Vercel").
+5. Produce a final report with:
+   · Summary table of features and their status.
+   · List of pending actions (with priorities).
+   · Overall completion percentage.
+   · Recommendations for next steps.
+
+🧠 Use Your Best Judgment
+
+· Assume you have full access to the codebase (as in a Replit workspace).
+· If you need to check environment variables, note that you cannot see Vercel secrets, but you can infer from code where they are used.
+· For Firebase configuration, you can check lib/firebase.ts and firestore.rules.
+· For frontend features, examine page components and hooks.
+
+Proceed with the audit now. Be thorough, honest
