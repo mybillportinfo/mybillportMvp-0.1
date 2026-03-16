@@ -1,0 +1,48 @@
+17:48:43.949 Running build in Washington, D.C., USA (East) – iad1
+17:48:43.950 Build machine configuration: 2 cores, 8 GB
+17:48:43.960 Cloning github.com/mybillportinfo/mybillportMvp-0.1 (Branch: main, Commit: 683245f)
+17:48:43.961 Skipping build cache, deployment was triggered without cache.
+17:48:44.601 Cloning completed: 641.000ms
+17:48:46.447 Running "vercel build"
+17:48:47.169 Vercel CLI 50.28.0
+17:48:47.505 Installing dependencies...
+17:48:54.749 npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
+17:48:56.390 npm warn deprecated json-ptr@3.1.1: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+17:48:57.542 npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+17:48:57.543 npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+17:49:20.276 
+17:49:20.277 added 1332 packages in 32s
+17:49:20.278 
+17:49:20.278 147 packages are looking for funding
+17:49:20.278   run `npm fund` for details
+17:49:20.331 Detected Next.js version: 16.1.6
+17:49:20.331 Running "next build"
+17:49:20.924 Attention: Next.js now collects completely anonymous telemetry regarding usage.
+17:49:20.925 This information is used to shape Next.js' roadmap and prioritize features.
+17:49:20.925 You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+17:49:20.926 https://nextjs.org/telemetry
+17:49:20.926 
+17:49:20.944 ▲ Next.js 16.1.6 (Turbopack)
+17:49:20.945 - Environments: .env.local
+17:49:20.945 
+17:49:20.982   Creating an optimized production build ...
+17:49:53.474 ✓ Compiled successfully in 32.2s
+17:49:53.474   Running TypeScript ...
+17:50:10.503 Failed to compile.
+17:50:10.503 
+17:50:10.503 ./app/api/ai-assistant/route.ts:273:11
+17:50:10.504 Type error: Type '(MessageParam | { role: string; content: string; })[]' is not assignable to type 'MessageParam[]'.
+17:50:10.504   Type 'MessageParam | { role: string; content: string; }' is not assignable to type 'MessageParam'.
+17:50:10.504     Type '{ role: string; content: string; }' is not assignable to type 'MessageParam'.
+17:50:10.504       Types of property 'role' are incompatible.
+17:50:10.504         Type 'string' is not assignable to type '"user" | "assistant"'.
+17:50:10.504 
+17:50:10.504 [0m [90m 271 |[39m       [33m.[39mjoin([32m''[39m)[33m;[39m
+17:50:10.504  [90m 272 |[39m
+17:50:10.504 [31m[1m>[22m[39m[90m 273 |[39m     [36mconst[39m updatedHistory[33m:[39m [33mAnthropic[39m[33m.[39m[33mMessageParam[39m[] [33m=[39m [
+17:50:10.505  [90m     |[39m           [31m[1m^[22m[39m
+17:50:10.505  [90m 274 |[39m       [33m...[39mhistory[33m,[39m
+17:50:10.505  [90m 275 |[39m       { role[33m:[39m [32m'user'[39m[33m,[39m content[33m:[39m message }[33m,[39m
+17:50:10.505  [90m 276 |[39m       { role[33m:[39m [32m'assistant'[39m[33m,[39m content[33m:[39m text }[33m,[39m[0m
+17:50:10.609 Next.js build worker exited with code: 1 and signal: null
+17:50:10.659 Error: Command "next build" exited with 1
