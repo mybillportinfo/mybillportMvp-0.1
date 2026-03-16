@@ -1,0 +1,206 @@
+Based on your screenshot and the repeated issues, it's clear that the current scanner is too naive: it treats every Rogers email as a bill, even order confirmations and payment receipts, and fails to extract key fields like amount and due date because they aren't explicitly labeled. The result is a pile of low‑confidence entries that require manual correction – exactly what you wanted to avoid.
+
+Below is a master prompt for Replit that will rebuild your Gmail scanner into an intelligent, multi‑stage pipeline that:
+
+· Classifies emails by type (bill vs receipt vs order vs other)
+· Extracts fields using both regex + AI with context awareness
+· Deduplicates and groups related emails
+· Delivers high‑confidence results with clear guidance
+
+Copy and paste this into Replit AI (or use it as a guide for your developers).
+
+---
+
+🔥 MASTER PROMPT: Intelligent Gmail Bill Scanner v2 for MyBillPort
+
+You are a senior AI/backend engineer. Rebuild MyBillPort's Gmail bill scanner to solve the problems shown in the attached screenshot:
+
+· Rogers order confirmations and payment receipts are being treated as bills.
+· Amount and due date are missing for most emails.
+· Duplicate entries appear for the same biller.
+· Account numbers are partially extracted but not consistently.
+
+Goal
+
+Create a smart classification + extraction pipeline that identifies real bills, extracts all relevant fields (amount, due date, account number), and presents a clean list of bills to review – with high confidence where possible.
+
+Architecture Overview
+
+```
+[Gmail API] → [Classifier] → [Type‑Specific Extractor] → [Deduplicator] → [Confidence Scorer] → [UI‑Ready Output]
+```
+
+1. Email Classifier (First Pass)
+
+Add a module that categorizes each email before extraction:
+
+```typescript
+type EmailType = 
+  | 'bill'           // actual bill/statement (contains amount due, due date)
+  | 'receipt'        // payment confirmation (may contain amount but not due date)
+  | 'order'          // order confirmation (may contain amount but no due date)
+  | 'promo'          // marketing / promotional
+  | 'other';
+
+function classifyEmail(email: { from: string; subject: string; snippet: string }): EmailType {
+  // Use keyword rules first, fallback to AI if ambiguous
+  const lowerSubject = email.subject.toLowerCase();
+  const lowerSnippet = email.snippet.toLowerCase();
+  
+  if (
+    lowerSubject.includes('bill') ||
+    lowerSubject.includes('statement') ||
+    lowerSubject.includes('ebill') ||
+    lowerSubject.includes('your invoice') ||
+    lowerSubject.includes('amount due') ||
+    lowerSnippet.includes('amount due')
+  ) {
+    return 'bill';
+  }
+  
+  if (
+    lowerSubject.includes('payment received') ||
+    lowerSubject.includes('payment confirmation') ||
+    lowerSubject.includes('thank you for your payment')
+  ) {
+    return 'receipt';
+  }
+  
+  if (
+    lowerSubject.includes('order confirmation') ||
+    lowerSubject.includes('your order') ||
+    lowerSubject.includes('shipment status')
+  ) {
+    return 'order';
+  }
+  
+  // If uncertain, use Claude to classify
+  const aiType = callClaudeForClassification(email);
+  return aiType;
+}
+```
+
+2. Type‑Specific Extraction Strategies
+
+Different email types need different extraction logic:
+
+For bill emails:
+
+· Use enhanced regex + AI to extract: amountDue, dueDate, accountNumber, statementDate, minimumPayment.
+· Prompt must explicitly ask for these fields.
+· Use the fuzzy regex and proximity scoring from the previous design.
+
+For receipt emails:
+
+· Extract amount (the payment amount) but do not treat it as a bill.
+· Store separately or mark as “payment confirmation” – don’t show in main bills list unless user opts in.
+· Possibly link to an existing bill.
+
+For order emails:
+
+· Ignore entirely (or store in a separate “orders” section if you ever want to track purchases).
+
+For promo / other:
+
+· Ignore.
+
+3. Enhanced Extraction for Bills
+
+3.1. Account Number Extraction
+
+Account numbers often appear in formats like:
+
+· Account: 91 00 64 33899 2
+· Account No. ****3389
+· Acct: 123456789
+
+Regex examples:
+
+```javascript
+// For spaced numbers
+const spacedAccount = /Account\s*[:#]?\s*([0-9]{2}\s+[0-9]{2}\s+[0-9]{2}\s+[0-9]{5}\s+[0-9])/i;
+
+// For masked numbers
+const maskedAccount = /Account\s*[:#]?\s*\*+([0-9]+)/i;
+
+// Clean the result: remove spaces, keep only digits.
+```
+
+If regex fails, use Claude with a prompt that specifically asks for account number even if masked.
+
+3.2. Amount Extraction (Smart disambiguation)
+
+Emails often contain multiple numbers: current charges, previous balance, total due. Use proximity to keywords to pick the correct one:
+
+```javascript
+function extractAmount(text) {
+  const amounts = findAllAmounts(text); // all $ numbers
+  const keywords = ['amount due', 'new charges', 'current bill', 'payment due', 'total due'];
+  return rankByProximity(amounts, keywords, text);
+}
+```
+
+3.3. Due Date Extraction
+
+Look for patterns:
+
+· Due date: March 15, 2026
+· Payment due by 2026-03-15
+· Please pay before 15 Mar 2026
+
+Use a library like date-fns to parse multiple formats, and fallback to AI.
+
+4. Deduplication & Grouping
+
+If multiple emails from the same biller arrive (e.g., a reminder and the actual bill), group them by thread ID and show only the most complete extraction.
+
+· If one email in a thread has a high‑confidence amount and due date, use that.
+· If none have both, merge information from multiple emails (e.g., account number from one, amount from another).
+
+5. Confidence Scoring & Routing
+
+After extraction, compute confidence per field and overall:
+
+```javascript
+function calculateConfidence(extraction) {
+  let score = 0;
+  if (extraction.amountDue && extraction.amountDue.confidence > 0.8) score += 40;
+  if (extraction.dueDate && extraction.dueDate.confidence > 0.8) score += 30;
+  if (extraction.accountNumber && extraction.accountNumber.confidence > 0.8) score += 20;
+  if (extraction.billerName && extraction.billerName.confidence > 0.8) score += 10;
+  return score; // 0-100
+}
+```
+
+If score < 50, mark as “needs review” and highlight missing fields.
+
+6. UI Feedback (Based on Screenshot)
+
+· Show a clear badge: “Bill”, “Receipt”, “Order” so users know why it was included.
+· For low‑confidence entries, pre‑fill what you can and highlight what's missing.
+· Provide one‑click “Ignore” for non‑bills (so they don't reappear).
+
+7. Implementation Steps for Replit
+
+1. Create the classifier module – start with rules, add AI fallback.
+2. Enhance extraction functions – add fuzzy regex and proximity scoring.
+3. Build deduplication logic – group by thread ID, merge extractions.
+4. Update the /api/gmail/scan endpoint to use the new pipeline.
+5. Modify the frontend to display email type and allow ignoring.
+
+8. Testing Checklist
+
+· Rogers bill email → classified as bill, amount/due date extracted.
+· Rogers payment receipt → classified as receipt, not shown as bill.
+· Rogers order confirmation → ignored.
+· Enbridge email with spaced account number → account number extracted correctly.
+· Multiple emails in same thread → grouped, merged.
+· Low‑confidence email → shows missing fields clearly.
+
+9. Expected Outcome
+
+After implementing, the “Bills found” list should contain only real bills, with amount and due date pre‑filled whenever possible. Duplicates and irrelevant emails (order confirmations, receipts) will be filtered out or clearly marked. The user will see a clean, actionable list – no more “30% — edit” for non‑bills.
+
+---
+
+Now, generate the full code for the classifier, enhanced extractors, deduplicator, and updated scan endpoint. Use TypeScript, modular files, and include error handling. Assume Firebase and Gmail API are already set up.
