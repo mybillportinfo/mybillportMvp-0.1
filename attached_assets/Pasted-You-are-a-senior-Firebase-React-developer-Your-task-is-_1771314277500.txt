@@ -1,0 +1,93 @@
+You are a senior Firebase + React developer. Your task is to generate a complete, production‑ready solution for adding a feedback form to an existing Next.js app called MyBillPort. The app already uses Firebase Authentication and Firestore.
+
+📌 Project Context
+
+· App: MyBillPort – a bill‑tracking app for Canadians.
+· Tech Stack: Next.js, React, Firebase Auth, Firestore, Tailwind CSS, react‑hot‑toast.
+· Current State: A feedback form UI exists (floating button + modal), but submissions fail with the error: Missing or insufficient permissions. This is because Firestore security rules don't yet allow writes to the feedback collection.
+· Goal: Fix the permissions, ensure the form submits correctly, and optionally set up email notifications to mybillportinfo@gmail.com whenever new feedback is received.
+
+🎯 What to Generate
+
+1. Firestore Security Rules (Required)
+
+Provide the updated rules for the feedback collection. Choose the appropriate option:
+
+· Option A (Authenticated users only): Allow create only if request.auth != null. Deny all reads, updates, deletes.
+· Option B (Allow anonymous submissions): Allow create if authenticated OR if userEmail == 'anonymous'. Deny all other operations.
+
+Also include instructions on how to deploy these rules (via Firebase CLI or Firebase Console).
+
+2. Feedback Form Component (If needed)
+
+If the existing UI is incomplete or needs refinement, generate a complete FeedbackButton.jsx component that:
+
+· Renders a floating button (bottom‑right) that opens a modal.
+· Modal contains:
+  · Category dropdown: Bug Report, Feature Request, Billing Question, Usability, General Feedback.
+  · Message textarea (required).
+  · Cancel and Submit buttons.
+· On submit, validates that message is not empty, then writes to Firestore collection feedback with the following fields:
+  · userId: user?.uid or null
+  · userEmail: user?.email or 'anonymous'
+  · message: string
+  · category: string
+  · createdAt: serverTimestamp()
+  · status: 'new'
+  · userAgent: navigator.userAgent
+  · page: window.location.pathname
+· Shows loading state on submit button, success/error toasts using react-hot-toast.
+· Closes modal on successful submission, on overlay click, and on Escape key.
+
+3. Cloud Function for Email Notifications (Optional but Recommended)
+
+Create a Firebase Cloud Function (sendFeedbackEmail) that:
+
+· Triggers on onCreate of a document in the feedback collection.
+· Extracts data from the new feedback document.
+· Sends an email to mybillportinfo@gmail.com using Nodemailer with Gmail SMTP.
+· Uses Gmail App Password for authentication (provide setup instructions).
+· Email subject: New Feedback: [Category] and body includes user email, message, category, and page.
+· Store credentials using Firebase environment config (functions.config()).
+· Handle errors and log appropriately.
+
+Provide the complete index.js for the functions folder, plus package.json dependencies.
+
+4. Integration & Deployment Instructions
+
+· Step‑by‑step guide to deploy the updated Firestore rules.
+· How to add the FeedbackButton component to your app (e.g., in _app.jsx).
+· If using the Cloud Function:
+  · How to enable 2FA on the Gmail account and generate an App Password.
+  · How to set config variables: firebase functions:config:set gmail.email="mybillportinfo@gmail.com" gmail.password="app-password"
+  · How to deploy the function: firebase deploy --only functions
+· Ensure all code uses async/await and proper error handling.
+
+📁 Expected Output
+
+Provide all code files in a copy‑paste‑ready format with clear comments. Use markdown to separate sections and include file names.
+
+Example structure:
+
+```markdown
+## 1. Firestore Rules (add to firestore.rules)
+... rule snippet ...
+
+## 2. FeedbackButton.jsx
+... full component code ...
+
+## 3. Cloud Function (functions/index.js)
+... full function code ...
+
+## 4. Deployment Steps
+... numbered steps ...
+```
+
+🧠 Additional Notes
+
+· Assume Firebase is already initialized in lib/firebase.js and useAuth hook is available.
+· Use Tailwind CSS classes for styling (feel free to use standard classes).
+· Do not hardcode any secrets – use environment variables or Firebase config.
+· Make the component accessible (keyboard navigation, focus management).
+
+Now, generate
