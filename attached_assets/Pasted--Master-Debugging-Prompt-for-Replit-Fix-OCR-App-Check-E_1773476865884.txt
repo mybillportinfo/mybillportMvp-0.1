@@ -1,0 +1,68 @@
+🔥 Master Debugging Prompt for Replit: Fix OCR & App Check Errors
+
+Paste this into Replit AI (the chat assistant within your Replit workspace). It will analyze your codebase and configuration to identify the root causes of the “Could not extract bill data” and “App verification failed” errors, then provide a step‑by‑step fix plan.
+
+---
+
+📌 Context
+
+You are a senior developer debugging MyBillPort, a Next.js app using Firebase (Auth, Firestore, App Check) and Anthropic Claude API. The app has recently been updated with biller‑specific parsers and enhanced OCR. However, users now see:
+
+· Could not extract bill data when uploading bills (OCR failure)
+· App verification failed – likely Firebase App Check error
+
+Your task is to analyze the codebase and identify the exact causes, then produce a clear fix plan.
+
+🔍 What to Examine
+
+1. Environment Variables & API Key Usage
+
+· Check all files where ANTHROPIC_API_KEY is referenced (e.g., lib/claude.ts, pages/api/extract-bill.ts, pages/api/chat.ts).
+· Verify that the key is loaded correctly from process.env.ANTHROPIC_API_KEY and not modified (no extra spaces, line breaks). Look for any fallback logic that might fail.
+· Ensure the key is actually passed in API calls to Anthropic (check x-api-key header).
+
+2. Firebase App Check
+
+· Find where App Check is initialized (likely lib/firebase.ts). Verify that it uses initializeAppCheck with the correct provider (reCAPTCHA) and that isTokenAutoRefreshEnabled is true.
+· Look for any code that manually fetches and attaches App Check tokens to API requests. The app uses both httpsCallable (which auto‑attaches) and possibly raw fetch calls.
+· Identify which endpoints are protected by App Check on the server side. In Vercel API routes, there should be a check for the App Check token (e.g., using req.headers['x-firebase-appcheck'] and verifying with Firebase Admin).
+· Check if App Check enforcement is enabled in Firebase Console (but that’s external; we can only infer from code comments or environment flags like APPCHECK_ENFORCEMENT).
+
+3. OCR Extraction Endpoint (/api/extract-bill)
+
+· Review the endpoint’s code for proper error handling and logging.
+· Check that it correctly receives the image, calls the extraction pipeline (Claude Vision), and returns structured data.
+· Look for any new bugs introduced with biller‑specific parsers: are they throwing unhandled exceptions? Are they properly integrated?
+· Ensure the endpoint returns appropriate HTTP status codes and error messages.
+
+4. AI Chat Endpoint (/api/chat)
+
+· Similar review: authentication, token verification, tool calling, and response handling.
+· Check that it uses the same Anthropic client and API key.
+
+5. Logging & Error Details
+
+· Scan the code for console.log or console.error statements that would output useful debug info (e.g., request IDs, error stacks). The user should check Vercel logs manually, but we can infer from the code where logs would appear.
+· Identify any places where errors are swallowed (e.g., empty catch blocks).
+
+6. Recent Code Changes (Biller Parsers)
+
+· Examine the new parser files (lib/parsers/) – ensure they export functions correctly and are imported without errors.
+· Check the integration point (likely lib/extractBillDataEnhanced.ts) – does it handle parser failures gracefully?
+
+📋 Output Format
+
+Provide a detailed report with:
+
+1. Findings – list each potential issue discovered.
+2. Root Cause – for each error, explain what is likely causing it.
+3. Fix Steps – concrete, step‑by‑step instructions to resolve (including code changes and configuration updates).
+4. Verification – how to test after fixes.
+
+If you cannot access certain information (e.g., Vercel logs, Firebase Console), explicitly state what the user needs to check manually.
+
+🚀 Execution
+
+Proceed with the analysis now. Use your knowledge of the codebase (as you have read it during previous sessions) and assume you have access to all files in the Replit workspace. If you need to simulate log access, note that you can’t, but you can tell the user what to look for.
+
+Start by listing the relevant files you will examine. Then go through each step. Be thorough.
