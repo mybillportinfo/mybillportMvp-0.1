@@ -210,7 +210,7 @@ export default function LandingPage() {
                 icon: Lock,
                 title: "Local AI processing",
                 body: "When you upload a bill image, our AI reads it in memory to extract the details, then discards it. Your document is never stored on our servers.",
-                tag: "BYOK-ready in Enterprise",
+                tag: "BYOK-ready in Business",
               },
             ].map((card) => (
               <div key={card.title} className="bg-[#263244] border border-[#6BCB77]/10 rounded-2xl p-6 space-y-4 hover:border-[#6BCB77]/25 transition-colors">
@@ -312,7 +312,7 @@ export default function LandingPage() {
           <div className="grid sm:grid-cols-3 gap-5 items-start">
             <div className="bg-[#263244] border border-white/5 rounded-2xl p-7 space-y-5">
               <div>
-                <p className="text-sm font-semibold text-slate-400 mb-1">Hobby</p>
+                <p className="text-sm font-semibold text-slate-400 mb-1">Free</p>
                 <p className="text-4xl font-extrabold text-white">Free</p>
                 <p className="text-xs text-slate-500 mt-1">Forever · No credit card</p>
               </div>
@@ -353,9 +353,9 @@ export default function LandingPage() {
 
             <div className="bg-[#263244] border border-white/5 rounded-2xl p-7 space-y-5">
               <div>
-                <p className="text-sm font-semibold text-slate-400 mb-1">Enterprise</p>
+                <p className="text-sm font-semibold text-slate-400 mb-1">Business</p>
                 <p className="text-4xl font-extrabold text-white">Custom</p>
-                <p className="text-xs text-slate-500 mt-1">Tailored to your team</p>
+                <p className="text-xs text-slate-500 mt-1">For teams Tailored to your team businesses</p>
               </div>
               <ul className="space-y-2.5 text-sm text-slate-300">
                 {["Unlimited seats", "SSO / SAML login", "Custom biller integrations", "Dedicated onboarding", "SLA & compliance docs"].map((i) => (
