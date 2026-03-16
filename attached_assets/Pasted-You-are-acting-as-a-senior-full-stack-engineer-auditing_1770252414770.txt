@@ -1,0 +1,103 @@
+You are acting as a senior full-stack engineer auditing and fixing a production MVP for investor demo readiness.
+
+Project: MyBillPort MVP
+Frontend is already deployed on Vercel and reachable.
+The problem: UI loads but core actions (sign up, add bill, settings) do not function reliably.
+
+Your tasks are mandatory and must be completed in this order:
+
+1. BACKEND AUDIT
+	•	Identify whether a backend already exists in this project.
+	•	Clearly state:
+	•	Is backend present? YES or NO
+	•	Technology used (Firebase / Node / API routes / other)
+	•	Where auth logic lives
+	•	Where bill data is stored
+
+If backend is missing or incomplete, you must create it.
+
+⸻
+
+2. AUTHENTICATION (CRITICAL)
+
+Ensure authentication is fully functional using the existing stack (Firebase if present):
+
+Required flows:
+	•	Sign up with email + password
+	•	Login
+	•	Persist session on refresh
+	•	Logout
+
+Requirements:
+	•	No mock logic
+	•	No console-only success
+	•	Auth state must control UI access
+	•	Errors must surface to UI
+
+⸻
+
+3. BILL MANAGEMENT (CRITICAL)
+
+Implement real bill functionality:
+
+Required:
+	•	Add bill
+	•	Fetch bills for logged-in user
+	•	Delete bill
+	•	Bills must be user-scoped (no shared data)
+
+Bill fields:
+	•	providerName
+	•	amount
+	•	dueDate
+	•	createdAt
+	•	userId
+
+Data must persist after refresh.
+
+⸻
+
+4. SETTINGS PAGE
+
+Ensure settings page:
+	•	Fetches current user profile
+	•	Shows email
+	•	Logout button works
+
+⸻
+
+5. MAILERSEND CHECK
+	•	Verify MailerSend configuration
+	•	Confirm it is not blocking auth
+	•	Remove MailerSend from critical paths if unstable
+	•	Do NOT add unnecessary email flows
+
+⸻
+
+6. ERROR HANDLING
+	•	Remove silent failures
+	•	Surface errors to UI
+	•	Add basic loading states
+
+⸻
+
+7. INVESTOR DEMO STANDARD
+
+After fixes, the following MUST work without dev tools:
+	•	New user can sign up
+	•	User can log in
+	•	User can add a bill
+	•	User can refresh page and still see bills
+	•	Logout works
+
+⸻
+
+8. FINAL OUTPUT REQUIRED
+
+You must respond with:
+	1.	Summary of what was broken
+	2.	What you fixed or built
+	3.	Any remaining risks (if any)
+	4.	Confirmation that this is investor-demo safe
+
+Do not explain concepts. Do not teach. Just execute and fix.
