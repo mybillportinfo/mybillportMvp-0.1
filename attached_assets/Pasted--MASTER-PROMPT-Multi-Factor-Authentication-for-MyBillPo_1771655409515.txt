@@ -1,0 +1,132 @@
+🔥 MASTER PROMPT: Multi-Factor Authentication for MyBillPort (Email + Phone + 2FA)
+
+You are a senior Next.js/Firebase developer. Your task is to implement a comprehensive multi‑factor authentication system for MyBillPort, a Canadian bill‑tracking app built with:
+
+· Next.js (Pages Router), TypeScript, Tailwind CSS
+· Firebase Authentication (already set up with email/password)
+· Firebase Firestore, Cloud Functions, App Check (as previously implemented)
+· Hosted on Vercel with API routes
+
+Objective: Enable users to sign in using either email/password or phone number, link those methods to a single account, and optionally enforce two‑factor authentication (2FA) for high‑security users. The system must be seamless, secure, and follow Firebase best practices.
+
+---
+
+📋 Deliverables
+
+Generate complete, production‑ready code for the following files. Assume Firebase is already initialized in lib/firebase.ts. Use TypeScript, include proper error handling, comments, and ensure the UI matches MyBillPort's existing design (Tailwind).
+
+1. Firebase Configuration & Console Setup
+
+· Provide step‑by‑step instructions to enable Email/Password and Phone sign‑in providers in the Firebase Console.
+· Explain how to set up reCAPTCHA for phone authentication (site key and secret key) and where to store them in Vercel environment variables.
+
+2. Authentication UI Components
+
+· components/Auth/EmailSignIn.tsx – form for email/password sign‑in and sign‑up.
+· components/Auth/PhoneSignIn.tsx – form for phone number sign‑in (with country code picker, reCAPTCHA container, and OTP verification).
+· components/Auth/AuthMethodPicker.tsx – a screen that lets the user choose between email or phone sign‑in (shown on /login).
+· components/Auth/LinkAccountsModal.tsx – a modal that appears when a user signs in with a new method and an existing account is found, asking if they want to link the accounts.
+
+3. Authentication Logic & Hooks
+
+· hooks/useAuth.ts – enhance the existing hook to include phone sign‑in, linking, and 2FA state.
+· pages/api/auth/recaptcha.ts – a Vercel API route to provide the reCAPTCHA site key to the frontend (or use environment variables directly).
+· utils/auth.ts – helper functions for phone sign‑in (e.g., sendOTP, verifyOTP, linkPhoneToCurrentUser, linkEmailToCurrentUser).
+
+4. Account Linking Implementation
+
+· When a user signs in with email and later tries to sign in with phone (or vice versa), Firebase will throw an auth/account-exists-with-different-credential error. Implement the flow to fetch the existing email and prompt the user to sign in with that method, then link the new credential.
+· Use fetchSignInMethodsForEmail and linkWithCredential.
+
+5. Two‑Factor Authentication (2FA) – Optional but Implement
+
+· Allow users to enable 2FA after they are signed in (e.g., in settings).
+· Use Firebase's built‑in multi‑factor authentication (MFA) with SMS.
+· Create a page: /settings/security where users can enroll a phone number as a second factor.
+· During sign‑in, after email/password, if MFA is enrolled, prompt for the SMS code.
+
+---
+
+🧠 Detailed Requirements
+
+A. Phone Sign‑In Flow
+
+1. User enters phone number with country code (use react-phone-number-input or similar).
+2. A reCAPTCHA verifier is rendered invisibly (or with a checkbox fallback).
+3. Firebase sends an SMS with a 6‑digit code.
+4. User enters code → signed in.
+5. If an account already exists with that phone number (i.e., phone is already linked), sign in normally.
+6. If an account exists with the same email but phone is not linked, handle linking (see below).
+
+B. Account Linking
+
+· When signInWithPhoneNumber fails with auth/account-exists-with-different-credential, extract the email from the error.
+· Show a modal: "An account with email [email] already exists. Sign in with that email to link your phone."
+· User signs in with email/password, then we link the phone credential using linkWithCredential.
+· Similarly, if email sign‑in finds an existing phone account, offer to link.
+
+C. 2FA (Multi‑Factor Authentication)
+
+· Use Firebase MFA (available in the Blaze plan).
+· Enrollment: after email/password sign‑in, if user enables 2FA in settings, collect phone number, send SMS, and complete enrollment using multiFactor.getSession() and multiFactor.enroll.
+· Sign‑in: after first factor (email/password), if MFA enrolled, Firebase will throw a auth/multi-factor-auth-required error. Handle it by showing a UI to enter the SMS code, then call multiFactorResolver.resolveSignIn.
+
+D. Security & Best Practices
+
+· All sensitive operations must be protected with Firebase App Check (already enabled).
+· Use environment variables for reCAPTCHA keys.
+· Ensure the UI gracefully handles errors (e.g., invalid phone, too many requests).
+· Store user's MFA enrollment info in Firestore? (Firebase manages this internally; we just need to know if MFA is enabled for UI hints.)
+
+---
+
+📁 File Structure & Code
+
+You must generate the following files with full, working code:
+
+```
+lib/firebase.ts                 // (update with reCAPTCHA and MFA imports)
+hooks/useAuth.ts                // extended hook
+utils/auth.ts                   // phone & linking helpers
+components/Auth/AuthMethodPicker.tsx
+components/Auth/EmailSignIn.tsx
+components/Auth/PhoneSignIn.tsx
+components/Auth/LinkAccountsModal.tsx
+pages/login.tsx                 // new login page using AuthMethodPicker
+pages/settings/security.tsx     // 2FA enrollment page
+pages/api/auth/recaptcha.ts     // optional endpoint for reCAPTCHA key
+```
+
+Also include instructions for:
+
+· Enabling MFA in Firebase Console (under Authentication → Sign‑in method → Multi‑factor authentication).
+· Setting up the reCAPTCHA keys and adding them to Vercel environment variables (NEXT_PUBLIC_RECAPTCHA_SITE_KEY and RECAPTCHA_SECRET_KEY for server‑side verification – though Firebase handles verification, the site key is needed client‑side).
+
+---
+
+📦 Dependencies to Install
+
+Add these to package.json:
+
+· react-phone-number-input (for phone input)
+· input-otp or similar for OTP entry (optional)
+· firebase (already there, but ensure version 10.13+ for MFA support)
+
+---
+
+🚀 Deployment Notes
+
+· After implementation, deploy to Vercel and test.
+· Ensure that the Firebase project's MFA is enabled and phone numbers are allowed (may require enabling in Firebase Console).
+
+---
+
+✅ Acceptance Criteria
+
+· A user can sign up with email, then later add phone and have both methods work.
+· A user can sign up with phone, then later add email.
+· If a user tries to sign in with a phone that belongs to an existing email account, they are prompted to link.
+· 2FA can be enabled and works during sign‑in.
+· The UI is clean, mobile‑friendly, and matches MyBillPort's style.
+
+Generate the complete code now, with explanations where helpful.
