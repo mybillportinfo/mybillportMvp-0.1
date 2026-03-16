@@ -1,0 +1,92 @@
+You are a senior React/Next.js developer. Update the Add Bill page for MyBillPort with the following design:
+
+🎯 Overview
+
+The page has three sections:
+
+1. 🇨🇦 Suggested Providers – grid of Canadian billers.
+2. ✏️ Add Manually – button for manual entry.
+3. 🤖 Bill Scanner (Agent Under Training) – replaces old "Coming Soon" upload button. This button should feel playful and build anticipation.
+
+---
+
+📱 Detailed Layout (Mobile‑First)
+
+Section 1: Suggested Providers
+
+· Title: "🇨🇦 Suggested Providers" (small, gray text).
+· Grid: 2 columns on mobile, 3–4 on larger screens.
+· Buttons: show provider name (e.g., "Toronto Hydro"). Clicking logs provider name (or navigates to /add-bill?provider=slug). Use a simple card style: white background, border, rounded, hover effect.
+
+Section 2: Add Manually
+
+· A single large button: "✏️ Add Manually".
+· Clicking navigates to /add-bill/manual (if route exists, else logs).
+
+Section 3: Bill Scanner (Agent Under Training)
+
+· A button with:
+  · Purple background (bg-purple-50), purple border (border-purple-300), dashed border (border-2 border-dashed).
+  · Content: 🤖 Bill Scanner (Agent Under Training).
+  · On click: show a toast using react-hot-toast with message:
+    "Our AI agent is learning to read bills! Check back soon."
+  · Hover effect: darker purple (hover:bg-purple-100).
+
+---
+
+🧩 Code Implementation
+
+Data (hardcoded inside component)
+
+```js
+const suggestedProviders = [
+  { name: 'Toronto Hydro', slug: 'toronto-hydro' },
+  { name: 'Rogers', slug: 'rogers' },
+  { name: 'Bell', slug: 'bell' },
+  { name: 'Enbridge', slug: 'enbridge' },
+  { name: 'Hydro One', slug: 'hydro-one' },
+  { name: 'Telus', slug: 'telus' }
+];
+```
+
+Styling
+
+· Use Tailwind CSS exclusively.
+· Buttons have consistent padding, rounded corners, and hover states.
+· The agent button is distinct with dashed border and robot emoji.
+
+Toast
+
+· Import toast from react-hot-toast (assume already installed).
+· Show success/info toast on agent button click.
+
+Routing
+
+· Use useRouter from Next.js for navigation (if needed).
+· For now, just log provider clicks.
+
+---
+
+✅ Acceptance Criteria
+
+· Page renders with three sections.
+· Suggested providers click logs name.
+· Manual button navigates to /add-bill/manual or logs.
+· Agent button shows purple styling and displays toast with correct message.
+· All buttons are touch‑friendly (min height 44px).
+· Design matches MyBillPort's clean aesthetic.
+
+---
+
+🚫 Avoid
+
+· No actual bill creation logic yet.
+· No backend calls.
+
+---
+
+📁 File to Edit
+
+pages/add-bill.jsx (or the equivalent). Generate the full component code.
+
+Now implement the updated Add Bill page exactly as described.
