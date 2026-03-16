@@ -1,0 +1,330 @@
+🔥 Master Prompt: Fix Email Forwarding & Pending Bills
+
+Paste this into Replit AI to diagnose and fix the email forwarding system.
+
+---
+
+📌 Current Problem
+
+The email forwarding feature is failing silently. The UI shows "Could not load pending bills" and "No pending bills" even after test emails were sent. This indicates one or more failures in the pipeline:
+
+1. Inbound email not reaching webhook (SendGrid/email provider issue)
+2. Webhook not processing email correctly
+3. Webhook failing to write to Firestore (permissions or schema)
+4. Frontend not fetching pending bills correctly
+
+---
+
+🔍 Step 1: Verify Inbound Email Configuration
+
+Check SendGrid Inbound Parse Settings
+
+```typescript
+// lib/emailConfig.ts
+export const EMAIL_DOMAIN = 'mybillport.com';
+export const INBOUND_PARSE_URL = 'https://mybillport.com/api/email-forward';
+```
+
+Verify in SendGrid Dashboard:
+
+· Domain: mybillport.com
+· Inbound Parse URL: https://mybillport.com/api/email-forward
+· Check that MX records are properly configured for your domain
+
+Test with SendGrid's Diagnostic Tool
+
+Send a test email to your forwarding address and check SendGrid's Activity Feed to confirm it's reaching their servers.
+
+---
+
+🔍 Step 2: Check Webhook Logs
+
+Add detailed logging to your webhook endpoint:
+
+```typescript
+// pages/api/email-forward.ts
+import { NextApiRequest, NextApiResponse } from 'next';
+import { adminDb } from '../../../lib/firebaseAdmin';
+import { extractBillData } from '../../../lib/extractBillData';
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  console.log('📧 Email webhook received:', {
+    method: req.method,
+    headers: req.headers,
+    bodyType: typeof req.body,
+    timestamp: new Date().toISOString()
+  });
+
+  if (req.method !== 'POST') {
+    console.log('❌ Invalid method:', req.method);
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  try {
+    // Parse the incoming email (SendGrid format)
+    const { to, from, subject, text, html, attachments } = req.body;
+    
+    console.log('📨 Email details:', {
+      to,
+      from,
+      subject,
+      textLength: text?.length,
+      hasAttachments: attachments?.length > 0
+    });
+
+    // Extract the email alias (to address)
+    const emailAlias = Array.isArray(to) ? to[0] : to;
+    
+    // Look up user by email alias
+    console.log('🔍 Looking up user for alias:', emailAlias);
+    const aliasSnapshot = await adminDb.collection('emailAliases')
+      .doc(emailAlias)
+      .get();
+
+    if (!aliasSnapshot.exists) {
+      console.log('❌ No user found for alias:', emailAlias);
+      return res.status(200).json({ message: 'Alias not found - ignoring' });
+    }
+
+    const userId = aliasSnapshot.data()?.userId;
+    console.log('✅ Found user:', userId);
+
+    // Extract bill data using your existing extraction logic
+    console.log('🤖 Extracting bill data...');
+    const extractedData = await extractBillData({
+      from,
+      subject,
+      text,
+      html,
+      attachments
+    });
+
+    console.log('📊 Extracted data:', extractedData);
+
+    // Store in pending bills
+    const pendingRef = adminDb.collection('users').doc(userId)
+      .collection('pendingBills').doc();
+
+    await pendingRef.set({
+      ...extractedData,
+      sourceEmail: from,
+      sourceSubject: subject,
+      receivedAt: new Date(),
+      status: 'pending',
+      createdAt: new Date()
+    });
+
+    console.log('✅ Pending bill saved:', pendingRef.id);
+
+    return res.status(200).json({ 
+      message: 'Email processed successfully',
+      pendingId: pendingRef.id 
+    });
+
+  } catch (error) {
+    console.error('❌ Error processing email:', error);
+    return res.status(500).json({ 
+      error: 'Failed to process email',
+      details: error.message 
+    });
+  }
+}
+```
+
+---
+
+🔍 Step 3: Test Webhook Manually
+
+Create a test script to simulate an incoming email:
+
+```typescript
+// scripts/test-email-forward.ts
+import fetch from 'node-fetch';
+
+async function testEmailWebhook() {
+  const testEmail = {
+    to: 'bills.abc123.xyz@mybillport.com', // Use a real alias
+    from: 'enbridge@enbridge.com',
+    subject: 'Your Enbridge Bill - March 2026',
+    text: `
+      Account: 91 00 64 33899 2
+      Amount due: $142.50
+      Due date: March 25, 2026
+      
+      Thank you for being a valued customer.
+    `,
+    attachments: []
+  };
+
+  try {
+    const response = await fetch('http://localhost:3000/api/email-forward', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(testEmail)
+    });
+
+    const result = await response.json();
+    console.log('Response:', result);
+  } catch (error) {
+    console.error('Test failed:', error);
+  }
+}
+
+testEmailWebhook();
+```
+
+Run with:
+
+```bash
+npx tsx scripts/test-email-forward.ts
+```
+
+---
+
+🔍 Step 4: Fix Firestore Security Rules
+
+Ensure pending bills can be read by the frontend:
+
+```javascript
+// firestore.rules
+match /users/{userId}/pendingBills/{billId} {
+  allow read, write: if request.auth != null && request.auth.uid == userId;
+}
+```
+
+Also check that the emailAliases collection is readable by your webhook (which uses Admin SDK, so rules don't apply, but ensure the document exists).
+
+---
+
+🔍 Step 5: Update Frontend to Fetch Pending Bills
+
+```typescript
+// lib/firebase.ts
+export const getPendingBills = async (userId: string) => {
+  const snapshot = await db.collection('users').doc(userId)
+    .collection('pendingBills')
+    .where('status', '==', 'pending')
+    .orderBy('receivedAt', 'desc')
+    .get();
+
+  return snapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  }));
+};
+```
+
+```typescript
+// app/pending-bills/page.tsx
+import { useEffect, useState } from 'react';
+import { useAuth } from '../../hooks/useAuth';
+import { getPendingBills } from '../../lib/firebase';
+
+export default function PendingBillsPage() {
+  const { user } = useAuth();
+  const [bills, setBills] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const loadBills = async () => {
+      try {
+        setLoading(true);
+        const pending = await getPendingBills(user.uid);
+        setBills(pending);
+      } catch (err) {
+        console.error('Error loading pending bills:', err);
+        setError('Could not load pending bills');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadBills();
+  }, [user]);
+
+  if (loading) return <div>Loading pending bills...</div>;
+  if (error) return <div className="text-red-500">{error}</div>;
+  if (bills.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-gray-500">No pending bills</p>
+        <p className="text-sm text-gray-400">
+          Bills detected from your forwarding email will appear here for review.
+        </p>
+        <a href="/settings" className="text-blue-500 hover:underline mt-4 inline-block">
+          Set up email forwarding in Settings
+        </a>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <h1 className="text-2xl font-bold mb-6">Pending Bills</h1>
+      <div className="space-y-4">
+        {bills.map(bill => (
+          <BillReviewCard key={bill.id} bill={bill} />
+        ))}
+      </div>
+    </div>
+  );
+}
+```
+
+---
+
+🔍 Step 6: Add Manual Retry Button
+
+Add a button to manually trigger email alias creation:
+
+```typescript
+// app/settings/page.tsx
+const createEmailAlias = async () => {
+  try {
+    setCreatingAlias(true);
+    const token = await user.getIdToken();
+    const response = await fetch('/api/user/create-email-alias', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    
+    const data = await response.json();
+    if (response.ok) {
+      setEmailAlias(data.emailAlias);
+      toast.success('Email forwarding address created!');
+    } else {
+      toast.error('Failed to create email alias');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    toast.error('Failed to create email alias');
+  } finally {
+    setCreatingAlias(false);
+  }
+};
+```
+
+---
+
+🚀 Deployment Checklist
+
+· Deploy updated webhook with enhanced logging
+· Test with a real email to your forwarding address
+· Check Vercel logs for webhook hits
+· Verify Firestore documents created in pendingBills
+· Confirm frontend displays them correctly
+
+---
+
+📊 Expected Results
+
+Step Expected Outcome
+Send email to alias Webhook logs show receipt
+Webhook processes email Firestore document created
+Visit pending bills Bills appear in list
+Approve bill Moves to main bills list
+
+This systematic approach will identify exactly where the pipeline is breaking. Let me know what logs reveal!
