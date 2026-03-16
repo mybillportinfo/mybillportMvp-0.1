@@ -1,0 +1,50 @@
+ git remote set-url origin https://$(printenv GITHUB_PERSONAL_ACCESS_TOKEN1)@github.com/mybillportinfo/MVP-0.1.git
+git rm -r --cached .next/
+git commit -m "Remove .next build cache from tracking"
+git push origin main --force
+fatal: pathspec '.next/' did not match any files
+On branch main
+Your branch is ahead of 'origin/main' by 141 commits.
+  (use "git push" to publish your local commits)
+
+nothing to commit, working tree clean
+Enumerating objects: 2363, done.
+Counting objects: 100% (2363/2363), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (1767/1767), done.
+Writing objects: 100% (2276/2276), 11.77 MiB | 6.06 MiB/s, done.
+Total 2276 (delta 1057), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (1057/1057), completed with 42 local objects.
+remote: error: GH013: Repository rule violations found for refs/heads/main.
+remote: 
+remote: - GITHUB PUSH PROTECTION
+remote:   —————————————————————————————————————————
+remote:     Resolve the following violations before pushing again
+remote: 
+remote:     - Push cannot contain secrets
+remote: 
+remote:     
+remote:      (?) Learn how to resolve a blocked push
+remote:      https://docs.github.com/code-security/secret-scanning/working-with-secret-scanning-and-push-protection/working-with-push-protection-from-the-command-line#resolving-a-blocked-push
+remote:     
+remote:     
+remote:       —— GitHub Personal Access Token ——————————————————————
+remote:        locations:
+remote:          - commit: 0f99067ec9019cf894586d6e58a7a0214ea96a5c
+remote:            path: .next/dev/cache/turbopack/0c06f068/00000893.sst:13615
+remote:          - commit: 0f99067ec9019cf894586d6e58a7a0214ea96a5c
+remote:            path: .next/dev/cache/turbopack/0c06f068/00000893.sst:64984
+remote:          - commit: 0f99067ec9019cf894586d6e58a7a0214ea96a5c
+remote:            path: .next/dev/cache/turbopack/0c06f068/00000893.sst:79485
+remote:          - commit: 0f99067ec9019cf894586d6e58a7a0214ea96a5c
+remote:            path: .next/dev/cache/turbopack/0c06f068/00000893.sst:82895
+remote:     
+remote:        (?) To push, remove secret from commit(s) or follow this URL to allow the secret.
+remote:        https://github.com/mybillportinfo/MVP-0.1/security/secret-scanning/unblock-secret/39wDDTXeDZDFcKctDGM6aLvOlu4
+remote:     
+remote: 
+remote: 
+To https://github.com/mybillportinfo/MVP-0.1.git
+ ! [remote rejected] main -> main (push declined due to repository rule violations)
+error: failed to push some refs to 'https://github.com/mybillportinfo/MVP-0.1.git'
+~/workspace$  
