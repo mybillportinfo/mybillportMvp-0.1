@@ -1,0 +1,165 @@
+🔥 Master Prompt for Replit: Build MyBillPort AI Assistant & OCR Enhancement
+
+You are a senior full‑stack developer. Your task is to implement the following features for MyBillPort, a Next.js app with Firebase, Firestore, Tailwind CSS, and Claude API already integrated. The goal is to add:
+
+1. AI Bill Assistant – A chat interface where users can ask natural language questions about their bills and get instant answers based on their data.
+2. OCR Bill Extraction Enhancement – Improve the accuracy of bill scanning (photo/PDF) by adding a multi‑engine pipeline (Google Vision + biller‑specific parsers) and a confidence‑based review system.
+
+All code must be production‑ready, modular, and well‑commented. Use existing project structure. Assume the following:
+
+· Firebase Admin SDK is initialized in lib/firebaseAdmin.ts.
+· User authentication is handled via Firebase Auth.
+· Current bill extraction uses Claude Vision directly; we will enhance it.
+
+---
+
+📁 Part 1: AI Bill Assistant
+
+1.1 Backend Bills Query API
+
+Create a new file pages/api/bills/query.ts that accepts a POST request with a user ID and optional filters (date range, biller, etc.) and returns the user's bills from Firestore.
+
+Specifications:
+
+· Method: POST
+· Authentication: Verify Firebase ID token from Authorization header.
+· Request body (JSON):
+  ```typescript
+  {
+    userId?: string; // optional, if not provided use token uid
+    startDate?: string; // ISO date
+    endDate?: string;
+    biller?: string;
+    status?: 'upcoming' | 'paid' | 'overdue';
+  }
+  ```
+· Response: Array of bills with fields: id, billerName, amount, dueDate, status, paidAt, etc.
+
+Implementation steps:
+
+· Import adminDb from lib/firebaseAdmin.
+· Verify token and get uid.
+· Build Firestore query on users/{uid}/bills with optional filters.
+· Return JSON response.
+
+1.2 Chat API Endpoint
+
+Create pages/api/chat.ts that handles conversation with an LLM (Claude or GPT-4) and provides tool/function calling to fetch bill data.
+
+Dependencies: Install @anthropic-ai/sdk (if using Claude) or openai.
+
+Environment variables: Add ANTHROPIC_API_KEY or OPENAI_API_KEY to Vercel.
+
+Implementation:
+
+· Import the appropriate SDK.
+· Define a system prompt (see below).
+· Define a tools array for function calling (if using OpenAI) or use Claude's tool use.
+· The tool get_bills will call the /api/bills/query endpoint internally.
+· Parse user message, call LLM with conversation history, execute tool calls, and return final response.
+
+System prompt example:
+
+```
+You are MyBillPort AI, a helpful assistant that answers questions about the user's bills. You have access to their bills via the `get_bills` function. When asked about due dates, amounts, or summaries, call that function and use the returned data to answer. Be concise and friendly.
+```
+
+1.3 Chat UI Component
+
+Create components/ChatAssistant.tsx – a floating chat button that opens a modal with conversation history.
+
+Features:
+
+· Button (similar to feedback button) fixed at bottom‑right.
+· Modal with message list and input field.
+· On send, call /api/chat with user message and conversation history.
+· Display responses.
+· Loading state and error handling.
+
+Integration: Place the component in the root layout (app/layout.tsx) so it appears on all pages.
+
+1.4 Update Layout
+
+In app/layout.tsx, import and add <ChatAssistant />.
+
+---
+
+📁 Part 2: OCR Bill Extraction Enhancement
+
+2.1 Multi‑Engine Extraction Pipeline
+
+Create a new file lib/extractBillDataEnhanced.ts that combines Google Vision OCR and Claude.
+
+Dependencies: Install @google-cloud/vision.
+
+Function extractBillDataEnhanced(fileBuffer: Buffer, mimeType: string, fileName?: string):
+
+1. If image, call Google Vision textDetection to get raw text.
+2. If PDF, extract text using pdf-parse.
+3. Pass the raw text to Claude with a structured prompt (same as before) to extract fields.
+4. Return structured bill data with confidence scores.
+
+Fallback: If Google Vision fails, use Claude Vision directly (as before).
+
+2.2 Biller‑Specific Parsers
+
+Create a directory lib/parsers/ with files for each major biller (e.g., enbridge.ts, rogers.ts). Each exports a function parse(text: string): ExtractedBill | null that uses regex or pattern matching to extract fields.
+
+Example for Enbridge:
+
+```typescript
+export function parseEnbridge(text: string) {
+  const accountRegex = /Account\s*[:#]?\s*([0-9]{2}\s+[0-9]{2}\s+[0-9]{2}\s+[0-9]{5}\s+[0-9])/i;
+  const amountRegex = /Amount due\s*\$?([\d,]+\.\d{2})/i;
+  const dueDateRegex = /Due date\s*([A-Za-z]+\s+\d{1,2},?\s*\d{4})/i;
+  // ... extract and return
+}
+```
+
+2.3 Enhanced Extraction Pipeline Integration
+
+Update the existing /api/extract-bill route (or wherever you handle bill uploads) to:
+
+1. First, try biller‑specific parser based on email subject or sender (if available).
+2. If no match, use multi‑engine pipeline (Google Vision + Claude).
+3. Compute confidence scores.
+4. If confidence > 0.9, auto‑accept and add to bills (with user notification).
+5. If confidence between 0.7 and 0.9, store in pendingBills collection for user review.
+6. If confidence < 0.7, return error prompting manual entry.
+
+2.4 Pending Bills Page Update
+
+Ensure the existing /pending-bills page displays bills from the enhanced pipeline with the ability to review, edit, and confirm.
+
+---
+
+🧪 Testing & Validation
+
+· Create test scripts for each parser using sample bill texts.
+· Test the chat assistant with various queries.
+· Ensure all API routes are protected by Firebase Auth.
+
+---
+
+🚀 Deployment
+
+· After coding, push to GitHub; Vercel auto‑deploys.
+· Add required environment variables in Vercel: ANTHROPIC_API_KEY, GOOGLE_APPLICATION_CREDENTIALS (or set GOOGLE_APPLICATION_CREDENTIALS_JSON).
+
+---
+
+📋 File Checklist
+
+```
+pages/api/bills/query.ts
+pages/api/chat.ts
+components/ChatAssistant.tsx
+lib/extractBillDataEnhanced.ts
+lib/parsers/enbridge.ts
+lib/parsers/rogers.ts
+lib/parsers/bell.ts
+lib/parsers/torontoHydro.ts
+... (add more as needed)
+```
+
+Now, implement all of the above with clean code, error handling, and comments.
