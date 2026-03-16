@@ -1,0 +1,178 @@
+// App.jsx
+import React from "react";
+
+function App() {
+  return (
+    <div style={{ fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, sans-serif", color: "#0f172a", background: "#0b1220", minHeight: "100vh", margin: 0 }}>
+      {/* Page container */}
+      <div style={{ maxWidth: 960, margin: "0 auto", padding: "32px 16px 64px" }}>
+        
+        {/* Logo / Nav */}
+        <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ width: 28, height: 28, borderRadius: 9999, background: "linear-gradient(135deg,#22c55e,#0ea5e9)" }} />
+            <span style={{ fontWeight: 700, fontSize: 20, color: "#e5e7eb" }}>MyBillPort</span>
+          </div>
+          <nav style={{ display: "flex", gap: 16, fontSize: 14 }}>
+            <a href="#how" style={{ color: "#9ca3af", textDecoration: "none" }}>How it works</a>
+            <a href="#benefits" style={{ color: "#9ca3af", textDecoration: "none" }}>Benefits</a>
+            <a href="#pricing" style={{ color: "#9ca3af", textDecoration: "none" }}>Pricing</a>
+          </nav>
+        </header>
+
+        {/* Hero */}
+        <main>
+          <section style={{ marginBottom: 48 }}>
+            <p style={{ fontSize: 12, fontWeight: 500, letterSpacing: 1.5, textTransform: "uppercase", color: "#22c55e", marginBottom: 12 }}>
+              Early access · AI bill assistant
+            </p>
+            <h1 style={{ fontSize: 32, lineHeight: 1.15, color: "#f9fafb", marginBottom: 16 }}>
+              Cut your bills with an AI that actually watches them
+            </h1>
+            <p style={{ fontSize: 16, lineHeight: 1.6, color: "#d1d5db", maxWidth: 560, marginBottom: 24 }}>
+              MyBillPort will scan your bills, spot spikes, and surface savings opportunities in minutes – 
+              before your provider quietly hikes the price. No bank connection required to start.
+            </p>
+
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginBottom: 16 }}>
+              <button
+                style={{
+                  padding: "10px 18px",
+                  borderRadius: 9999,
+                  border: "none",
+                  background: "linear-gradient(135deg,#22c55e,#0ea5e9)",
+                  color: "#020617",
+                  fontWeight: 600,
+                  fontSize: 14,
+                  cursor: "pointer"
+                }}
+                onClick={() => alert("TODO: connect early access waitlist")}
+              >
+                Get early access
+              </button>
+              <button
+                style={{
+                  padding: "10px 18px",
+                  borderRadius: 9999,
+                  border: "1px solid #4b5563",
+                  background: "transparent",
+                  color: "#e5e7eb",
+                  fontWeight: 500,
+                  fontSize: 14,
+                  cursor: "pointer"
+                }}
+                onClick={() => window.scrollTo({ top: 520, behavior: "smooth" })}
+              >
+                See how it works
+              </button>
+            </div>
+
+            <p style={{ fontSize: 12, color: "#6b7280" }}>
+              Built in Canada for people who are done being surprised by their bills.
+            </p>
+          </section>
+
+          {/* How it works */}
+          <section id="how" style={{ marginBottom: 48 }}>
+            <h2 style={{ fontSize: 20, color: "#f9fafb", marginBottom: 12 }}>How MyBillPort works</h2>
+            <p style={{ fontSize: 14, color: "#9ca3af", marginBottom: 16 }}>
+              Think of it as a bill analyst on your side – fast, focused, and always watching for bad surprises.
+            </p>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 16 }}>
+              <div style={{ padding: 16, borderRadius: 16, background: "#020617", border: "1px solid #1f2937" }}>
+                <h3 style={{ fontSize: 14, color: "#e5e7eb", marginBottom: 8 }}>1. Bring your bills in</h3>
+                <p style={{ fontSize: 13, color: "#9ca3af" }}>
+                  Snap a photo or upload a PDF and let AI extract the details, or enter a bill manually in under 30 seconds.
+                </p>
+              </div>
+              <div style={{ padding: 16, borderRadius: 16, background: "#020617", border: "1px solid #1f2937" }}>
+                <h3 style={{ fontSize: 14, color: "#e5e7eb", marginBottom: 8 }}>2. MBP reads and understands</h3>
+                <p style={{ fontSize: 13, color: "#9ca3af" }}>
+                  MyBillPort will detect sudden increases, promo expiries, and classify each bill by category.
+                </p>
+              </div>
+              <div style={{ padding: 16, borderRadius: 16, background: "#020617", border: "1px solid #1f2937" }}>
+                <h3 style={{ fontSize: 14, color: "#e5e7eb", marginBottom: 8 }}>3. Get clear, simple insights</h3>
+                <p style={{ fontSize: 13, color: "#9ca3af" }}>
+                  You will see exactly which bills jumped, which look overpriced, and what to say when you call your provider.
+                </p>
+              </div>
+              <div style={{ padding: 16, borderRadius: 16, background: "#020617", border: "1px solid #1f2937" }}>
+                <h3 style={{ fontSize: 14, color: "#e5e7eb", marginBottom: 8 }}>4. Turn insight into savings</h3>
+                <p style={{ fontSize: 13, color: "#9ca3af" }}>
+                  Use negotiation scripts or upgrade to a concierge audit and let us handle the hard calls for you.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* Benefits */}
+          <section id="benefits" style={{ marginBottom: 48 }}>
+            <h2 style={{ fontSize: 20, color: "#f9fafb", marginBottom: 12 }}>Why people will use MyBillPort</h2>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 16 }}>
+              <div style={{ padding: 16, borderRadius: 16, background: "#020617", border: "1px solid #1f2937" }}>
+                <h3 style={{ fontSize: 14, color: "#e5e7eb", marginBottom: 8 }}>Stop quiet overpayments</h3>
+                <p style={{ fontSize: 13, color: "#9ca3af" }}>
+                  MBP will watch for fee creep and price hikes so you do not wake up to a bill that is 20% higher for no reason.
+                </p>
+              </div>
+              <div style={{ padding: 16, borderRadius: 16, background: "#020617", border: "1px solid #1f2937" }}>
+                <h3 style={{ fontSize: 14, color: "#e5e7eb", marginBottom: 8 }}>Know your true recurring burn</h3>
+                <p style={{ fontSize: 13, color: "#9ca3af" }}>
+                  See, in one place, what is locked‑in, what is negotiable, and what you can cancel this month to free up cash.
+                </p>
+              </div>
+              <div style={{ padding: 16, borderRadius: 16, background: "#020617", border: "1px solid #1f2937" }}>
+                <h3 style={{ fontSize: 14, color: "#e5e7eb", marginBottom: 8 }}>Save time and headspace</h3>
+                <p style={{ fontSize: 13, color: "#9ca3af" }}>
+                  No more hunting through portals and PDFs. MyBillPort will pull out the signal and show you where to act.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* Pricing */}
+          <section id="pricing" style={{ marginBottom: 48 }}>
+            <h2 style={{ fontSize: 20, color: "#f9fafb", marginBottom: 12 }}>Simple, fair pricing</h2>
+            <p style={{ fontSize: 14, color: "#9ca3af", marginBottom: 16 }}>
+              During our pilot, access will be free while we learn from early users and tune the experience.
+            </p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 16 }}>
+              <div style={{ padding: 16, borderRadius: 16, background: "#020617", border: "1px solid #1f2937" }}>
+                <h3 style={{ fontSize: 14, color: "#e5e7eb", marginBottom: 4 }}>Free (Pilot)</h3>
+                <p style={{ fontSize: 24, fontWeight: 700, color: "#e5e7eb", marginBottom: 8 }}>$0</p>
+                <p style={{ fontSize: 13, color: "#9ca3af" }}>
+                  Track bills, upload documents, and get core AI insights while we are in early access.
+                </p>
+              </div>
+              <div style={{ padding: 16, borderRadius: 16, background: "#020617", border: "1px solid #22c55e" }}>
+                <h3 style={{ fontSize: 14, color: "#bbf7d0", marginBottom: 4 }}>Pro (Coming soon)</h3>
+                <p style={{ fontSize: 24, fontWeight: 700, color: "#bbf7d0", marginBottom: 8 }}>$5–9 / mo</p>
+                <p style={{ fontSize: 13, color: "#9ca3af" }}>
+                  Deeper forecasting, more accounts, and priority support once we prove consistent savings.
+                </p>
+              </div>
+              <div style={{ padding: 16, borderRadius: 16, background: "#020617", border: "1px solid #1f2937" }}>
+                <h3 style={{ fontSize: 14, color: "#e5e7eb", marginBottom: 4 }}>Concierge audit</h3>
+                <p style={{ fontSize: 24, fontWeight: 700, color: "#e5e7eb", marginBottom: 8 }}>$29+ once</p>
+                <p style={{ fontSize: 13, color: "#9ca3af" }}>
+                  A one‑time “bill audit” where we will review your key bills and help unlock the top savings.
+                </p>
+              </div>
+            </div>
+          </section>
+        </main>
+
+        {/* Footer */}
+        <footer style={{ borderTop: "1px solid #1f2937", paddingTop: 16, marginTop: 16 }}>
+          <p style={{ fontSize: 12, color: "#6b7280" }}>
+            © {new Date().getFullYear()} MyBillPort · Not a bank. We help you understand and optimise your bills.
+          </p>
+        </footer>
+      </div>
+    </div>
+  );
+}
+
+export default App;
