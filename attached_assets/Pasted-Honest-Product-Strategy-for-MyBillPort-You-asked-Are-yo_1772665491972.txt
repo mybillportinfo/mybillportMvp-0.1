@@ -1,0 +1,85 @@
+Honest Product Strategy for MyBillPort
+
+You asked:
+
+Are you willing to delete features (like Savings Score and Annual Projection) if they don’t support the core promise? Or are you emotionally attached to them?
+
+Here’s my unfiltered answer:
+
+Yes, I am absolutely willing to delete them – if they don’t directly help users never miss a bill.
+
+But let’s be precise:
+
+· Savings Score and Annual Projection are not reminders. They’re financial wellness metrics.
+· They do not help someone pay a bill on time.
+· They add cognitive load and make the app feel like a budgeting tool, not a bill reminder.
+
+The screenshot you shared shows exactly this problem:
+
+· Top of the dashboard: Annual Projection, Savings Score, Stable spending, Unpaid/Overdue stats.
+· Then a “Needs Attention” card, then a list of bills.
+· That’s too many things competing for attention.
+
+The core promise is “Never miss a bill again.”
+The primary job of the home screen should be to show what needs attention now, and nothing else.
+
+---
+
+🎯 What Supports the Core Promise?
+
+Must-haves on the main screen:
+
+· Greeting (personal touch)
+· Clear status: “You have 1 overdue bill” or “All caught up”
+· The next urgent bill (with amount, due date, “Pay Now” button)
+· Simple monthly summary (Bills this month / Paid this month) – minimal
+
+Nice-to-haves (secondary):
+
+· On‑time payment streak (gamification, encourages consistency)
+· Late fees avoided (positive reinforcement)
+· Upcoming bills list (already in your “All” tab)
+· Savings Score and Annual Projection – these are not reminders; they belong in an insights panel that users can optionally expand.
+
+---
+
+💡 My Recommendation
+
+1. Move Savings Score and Annual Projection out of the main dashboard.
+   Put them in a collapsible “Smart Insights” section (as you already described in the redesign prompt).
+   This keeps the main screen clean but still offers depth for users who want it.
+2. Keep them, but not front and center.
+   If you delete them entirely, you lose a potential retention hook – users might enjoy tracking their score over time. But they should never distract from the primary task: paying bills on time.
+3. Test with real users.
+   If most users never open the insights panel, consider removing them in a future version.
+   If they do, keep them. Data, not emotion, should decide.
+
+---
+
+🧠 Are You Emotionally Attached?
+
+Be honest: You probably are.
+You built these features, they look cool, and they make the app feel “smart.”
+But if they don’t help users accomplish their goal, they’re just noise.
+
+A great product is defined by what it doesn’t have, not what it has.
+The best apps are ruthlessly focused on one job.
+
+---
+
+✅ Final Verdict
+
+Feature Keep on Main Screen? Where to Put It
+Overdue/Due soon status ✅ Yes Top banner
+Next urgent bill card ✅ Yes Primary focus
+Monthly summary ✅ Yes Small text summary
+On‑time streak 🤔 Maybe Tiny, bottom of list
+Savings Score ❌ No Collapsible insights panel
+Annual Projection ❌ No Collapsible insights panel
+Spending insights ❌ No Collapsible insights panel
+
+Action: Implement the redesign exactly as your master prompt describes.
+Then, after launch, monitor how often users expand the insights panel.
+If it’s rarely opened, consider removing those features entirely in a later version.
+
+You’re not deleting value – you’re surfacing the right value at the right time.
