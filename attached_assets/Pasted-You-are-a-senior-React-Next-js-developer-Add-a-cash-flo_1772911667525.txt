@@ -1,0 +1,47 @@
+You are a senior React/Next.js developer. Add a cash flow calendar to MyBillPort as a new tab in the bottom navigation.
+
+## Feature Requirements
+
+### 1. Calendar View
+- Display a monthly calendar grid (Sunday–Saturday).
+- Show the current month by default, with previous/next month navigation.
+- For each day, show a small dot or badge if a bill is due that day (count badge if multiple).
+- Color‑code days based on cash flow:
+  - **Green** if total bills due that day are covered by projected income.
+  - **Red** if not enough funds (requires income data).
+  - **Gray** if no bills due.
+
+### 2. Data Sources
+- **Bills**: Fetch from Firestore `bills` where `userId` = current user and `dueDate` is in the displayed month. Include only unpaid/upcoming bills (status ≠ paid).
+- **Income (optional)**: Allow users to enter payday schedule (e.g., bi‑weekly, monthly) in settings. Store in `userPreferences`. If no income, show only bills without color coding.
+
+### 3. Daily Summary Popup
+When a user taps a day with bills, show a modal listing:
+- Each bill due that day: name, amount, status.
+- Total due that day.
+- (If income data) projected balance after that day.
+- **Add a "Mark as Paid" shortcut** button for each bill (calls your existing `markBillAsPaid` function).
+
+### 4. Monthly Summary Below Calendar
+- **Money In**: Total income for the month (based on paydays).
+- **Money Out**: Total bills due this month.
+- **Net**: Difference (green/red).
+- **Low Funds Alert**: If any day has negative projected cash, show a warning.
+
+### 5. Integration
+- Create `app/calendar/page.tsx` (or `pages/calendar.tsx`).
+- Update the bottom navigation component to include a Calendar link.
+- Use existing Firestore hooks and authentication.
+- Assume Firebase is already set up, Tailwind CSS available.
+
+### 6. Styling
+- Clean, readable grid (Tailwind).
+- Responsive design.
+
+## Deliverables
+- Full code for `app/calendar/page.tsx`.
+- New components: `CalendarGrid`, `DayPopup`, `MonthSummary`.
+- Update to navigation.
+- (Optional) Income preference page snippet.
+
+Use TypeScript, modular code, and error handling.
