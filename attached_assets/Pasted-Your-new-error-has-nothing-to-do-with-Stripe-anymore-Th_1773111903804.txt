@@ -1,0 +1,120 @@
+Your new error has nothing to do with Stripe anymore. That part is fixed. The build now fails because of useSearchParams() on the /signup page.
+
+Error:
+
+useSearchParams() should be wrapped in a suspense boundary at page "/signup"
+
+This happens because in Next.js App Router, useSearchParams() is a client-side hook, but your page is being pre-rendered on the server during build on Vercel.
+
+So the fix is simple: make /signup a client page and disable static prerendering.
+
+⸻
+
+Fix /signup/page.tsx
+
+Open:
+
+/app/signup/page.tsx
+
+Add these two lines at the very top:
+
+'use client'
+
+export const dynamic = 'force-dynamic'
+
+Example corrected file start:
+
+'use client'
+
+export const dynamic = 'force-dynamic'
+
+import { useSearchParams } from 'next/navigation'
+
+export default function SignupPage() {
+  const searchParams = useSearchParams()
+  const referral = searchParams.get("ref")
+
+  return (
+    <div>
+      Signup Page
+    </div>
+  )
+}
+
+This tells Next.js:
+	•	do not prerender this page
+	•	run it only on the client
+	•	allow useSearchParams() safely
+
+⸻
+
+If the error still appears
+
+Then wrap the component with Suspense.
+
+Example:
+
+'use client'
+
+import { Suspense } from "react"
+import SignupContent from "./SignupContent"
+
+export default function Page() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SignupContent />
+    </Suspense>
+  )
+}
+
+And move your logic to SignupContent.
+
+But in 90% of cases, just adding:
+
+'use client'
+export const dynamic = 'force-dynamic'
+
+fixes it.
+
+⸻
+
+Why this happened
+
+You added referral codes using URL parameters, something like:
+
+/signup?ref=ABC123
+
+To read that you used:
+
+useSearchParams()
+
+But Next.js tried to statically generate /signup at build time, and there is no browser URL at build time, so the build crashes.
+
+⸻
+
+After Fix
+
+Push again:
+
+git add .
+git commit -m "Fix signup useSearchParams build error"
+git push
+
+Vercel will redeploy and the build should finally succeed.
+
+⸻
+
+Honest advice
+
+You’re actually very close to a stable deploy now. The remaining issues are just Next.js App Router quirks, not architecture problems.
+
+Once this deploy succeeds, stop touching infrastructure for a bit and focus on:
+	1.	Add bill
+	2.	Reminder notifications
+	3.	Referral signup flow
+
+Those three things alone can make MyBillPort usable.
+
+⸻
+
+If you want, I can also show you one tiny change that makes your referral system go viral (most startups miss it).
