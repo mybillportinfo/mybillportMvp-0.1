@@ -1,0 +1,231 @@
+🔥 MYBILLPORT – RECURRING INTELLIGENCE ENGINE (MASTER BUILD PROMPT)
+
+You are a senior React + Firebase engineer building a production-grade fintech app called MyBillPort using:
+
+· Next.js (Pages Router)
+· Firebase v9 modular SDK
+· Firestore
+· Tailwind CSS
+· react-hot-toast
+· Firebase Cloud Functions (Node.js 18+)
+
+Your task is to generate a complete, production‑ready Recurring Intelligence Engine.
+
+Do not simplify. Do not omit validation. Do not cut corners.
+
+---
+
+🎯 FEATURE OVERVIEW
+
+Implement an intelligent system that:
+
+1. Auto‑detects recurring bills – after a user adds the same biller 2+ times, the system recognizes the pattern and flags the bill as recurring, with detected frequency (monthly, quarterly, yearly, etc.).
+2. Alerts on amount changes – when a recurring bill's amount deviates significantly (>±15% or >$10) from its historical average, the user receives an alert.
+3. Provides manual override – user can confirm/override recurrence settings and dismiss alerts.
+4. Logs all detections – audit trail for transparency.
+5. Powers predictive forecasting – recurring flags feed directly into cash flow projections.
+
+---
+
+📦 FILES TO GENERATE (FULL CODE)
+
+Return complete, copy‑paste‑ready code for each of these files:
+
+1. Recurring Detection Service – services/recurringService.js
+
+· Core detection logic
+· Update bill documents with recurring, recurringFrequency, recurringConfidence
+· Store historical averages
+
+2. Amount Change Alert Service – services/alertService.js
+
+· Compare new bill amount vs historical average
+· Create/update alert documents in Firestore
+· Push notifications (in‑app + email placeholder)
+
+3. Cloud Function – functions/src/recurringDetection.js
+
+· Scheduled trigger (daily)
+· Batch process all users' bills
+· Call detection services
+· Include deployment instructions
+
+4. React Components
+
+· components/RecurringBadge.jsx – shows recurring icon + frequency
+· components/AmountChangeAlert.jsx – banner/toast for amount change
+· components/RecurringConfirmationModal.jsx – asks user: “This looks recurring. Auto‑add every month?”
+
+5. Integration into Existing Pages
+
+· Update pages/bill/[id].jsx – show recurring badge, amount change alert
+· Update pages/dashboard.jsx – show upcoming recurring bills summary
+· Update services/billService.js – hook into bill creation to trigger detection
+
+6. Firestore Schema Updates
+
+Provide the exact Firestore document structure for:
+
+· bills – new fields
+· alerts – collection (user subcollection or root)
+· recurringPatterns – optional: store detected patterns separately
+
+7. Security Rules Snippet
+
+Ensure users can only read/write their own alerts and recurring flags.
+
+8. Activity Logging
+
+Log all detections, confirmations, and dismissals using existing activityService.js.
+
+---
+
+🧠 DATA MODEL ASSUMPTIONS (EXTENDED)
+
+bills collection – new fields
+
+```javascript
+{
+  // ... existing fields (userId, billerName, amount, dueDate, etc.)
+  
+  // Recurring detection
+  recurring: boolean,                // true if confidently recurring
+  recurringFrequency: 'monthly' | 'quarterly' | 'yearly' | null,
+  recurringConfidence: 0.0–1.0,     // ML confidence score (0.8+ = auto‑flag)
+  recurringLastDetected: Timestamp,
+  
+  // Amount change tracking
+  averageAmount: number,            // rolling average of last 3 payments
+  amountChangePercent: number | null, // deviation from average
+  amountChangeAlertDismissed: boolean, // user dismissed the alert
+  amountChangeAlertDismissedAt: Timestamp | null,
+  
+  // Detection metadata
+  detectionVersion: string,         // schema version
+  lastAnalyzedAt: Timestamp
+}
+```
+
+alerts collection – new root or subcollection
+
+Option A: Root collection alerts with userId field
+Option B: Subcollection users/{userId}/alerts
+
+Document structure:
+
+```javascript
+{
+  userId: string,
+  type: 'recurring_detected' | 'amount_change' | 'overdue' | 'forecast_stress',
+  billId: string | null,
+  billerName: string,
+  message: string,
+  severity: 'info' | 'warning' | 'critical',
+  read: boolean,
+  dismissed: boolean,
+  actionTaken: boolean,
+  metadata: {
+    previousAmount: number | null,
+    newAmount: number | null,
+    detectedFrequency: string | null,
+    confidence: number | null
+  },
+  createdAt: Timestamp,
+  expiresAt: Timestamp | null     // auto‑cleanup after 30 days
+}
+```
+
+---
+
+🧩 DETECTION ALGORITHM SPECIFICATION
+
+Recurring Detection
+
+Trigger: Every time a bill is created/updated.
+
+Logic:
+
+1. Query all bills from same user + same billerName.
+2. Sort by dueDate ascending.
+3. If count >= 2, calculate intervals between consecutive due dates.
+4. Identify dominant frequency:
+   · If intervals average 28–31 days → monthly
+   · If intervals average 85–95 days → quarterly
+   · If intervals average 360–370 days → yearly
+5. Confidence score = (number of consistent intervals / total intervals) * (min(occurrences, 5)/5)
+6. If confidence >= 0.7 AND frequency detected → set recurring = true, store frequency.
+7. If recurring already true but frequency changed → update and alert.
+
+Amount Change Detection
+
+Trigger: Bill creation/update (only if recurring = true).
+
+Logic:
+
+1. Calculate average amount of last 3 bills (or all if less) for same biller.
+2. Compare current amount:
+   · If |current - avg| > avg * 0.15 OR |current - avg| > 10 → significant change.
+3. Create alert if not already dismissed for this bill/cycle.
+4. Store amountChangePercent and averageAmount on the bill.
+
+---
+
+🚀 CLOUD FUNCTION SCHEDULE
+
+Deploy a Firebase Cloud Function that runs daily at 2:00 AM:
+
+· Iterate over all active users (batch).
+· For each user, call recurringDetection.processUser(userId).
+· Batch writes to avoid Firestore limits.
+
+Provide full function code with:
+
+· onSchedule trigger
+· Batched pagination
+· Error handling and logging
+
+---
+
+🎨 UI/UX REQUIREMENTS
+
+RecurringBadge.jsx
+
+· Small pill with 🔄 icon and frequency text (e.g., "Monthly")
+· Hover tooltip: "Recurring bill – detected automatically"
+· If confidence < 0.7, show as grey with question mark, click to confirm.
+
+AmountChangeAlert.jsx
+
+· Inline banner on bill detail page (top of card).
+· Red background for >15% increase, yellow for >15% decrease, blue for exact matches.
+· Text: "Your {billerName} bill increased {percent}% from last month (${prev} → ${new})."
+· Buttons: [Dismiss] [Review Bill]
+· Once dismissed, hide for that bill.
+
+RecurringConfirmationModal.jsx
+
+· Appears after 2nd bill added for same biller (if not already confirmed).
+· "We noticed you pay {billerName} every month. Would you like BillPort to auto‑track this as a recurring bill?"
+· Buttons: [Yes, Auto‑Add] [Not Now]
+· On confirm: set recurring = true, recurringFrequency = monthly.
+
+---
+
+🔥 MASTER PROMPT – EXECUTE NOW
+
+Generate every file listed above with:
+
+· Full, production‑ready code
+· No placeholders
+· Type‑safe (JSDoc comments)
+· Error handling
+· Batched Firestore operations
+· Respects Firebase free tier limits (avoid heavy scans)
+
+Start with services/recurringService.js and proceed in logical order.
+
+Do not ask for clarification. Assume all dependencies are available.
+
+---
+
+BEGIN CODE GENERATION.
