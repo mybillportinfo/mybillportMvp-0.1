@@ -1,0 +1,66 @@
+The Gmail connection works, but bill detection logic is fundamentally weak. The system is missing clearly structured bill emails (example: Enbridge eBill with visible amount and due date in the body). This is not a Gmail issue — it is an extraction and fallback logic problem.
+
+I need you to refactor the bill scanning pipeline with the following improvements:
+	1.	Stop silently dropping emails
+	•	Do NOT discard emails if Claude fails to extract amount or due date.
+	•	If subject or body indicates billing, create a “Pending Bill” entry anyway.
+	•	Mark missing fields as null and allow manual review.
+	2.	Improve HTML → text extraction
+	•	Properly parse multipart emails.
+	•	Prefer text/plain part if available.
+	•	If only text/html exists, use a robust HTML-to-text conversion (strip scripts, styles, hidden spans, preserve line breaks).
+	•	Ensure numbers like “$80.81” and dates like “2026/03/18” remain intact in extracted text.
+	3.	Add deterministic fallback extraction (non-AI)
+Before calling Claude, run regex-based extraction:
+	•	Extract all currency values (e.g., $\d+(.\d{2})?)
+	•	Extract all date patterns (YYYY/MM/DD, MM/DD/YYYY, etc.)
+	•	If subject contains “bill”, “statement”, or “ebill”, assume it’s a candidate.
+	•	Choose the most likely “current bill amount” (prefer phrases near “new bill amount”, “amount due”, “payment due”).
+	4.	Improve search logic
+	•	Fetch up to 150 emails from last 90 days.
+	•	Do not rely only on 4 keyword queries.
+	•	Also include: subject:(ebill OR statement OR account OR due OR payment)
+	•	Consider filtering by has:attachment OR common financial domains.
+	5.	Attachment support
+	•	If email contains PDF attachment, download it.
+	•	Extract text from PDF (use pdf-parse or equivalent).
+	•	Pass extracted text into the same extraction pipeline.
+	•	If parsing fails, still create draft bill using sender + subject.
+	6.	Biller name fallback
+	•	If AI fails, derive biller name from sender domain.
+Example: ebill@enbridge.com → Enbridge
+	•	Capitalize properly and store as biller_name.
+	7.	Improve logging and transparency
+When scan completes, return a structured summary:
+	•	Emails scanned: X
+	•	Candidate billing emails: Y
+	•	Successfully parsed: Z
+	•	Created pending drafts: N
+	•	Skipped (reason): count
+Do NOT show misleading message like “No new bills found” unless truly zero candidates were detected.
+	8.	Improve Claude prompt
+Explicitly instruct:
+	•	Extract ONLY the current bill amount (not total account balance).
+	•	Extract due date.
+	•	Ignore historical balances and cumulative totals.
+	•	Return structured JSON only.
+
+This system must never silently discard a likely bill email again. Even incomplete data should produce a reviewable draft.
+
+After implementing, show me:
+	•	Updated sync route
+	•	Extraction pipeline logic
+	•	Example parsed output from a sample Enbridge-style email
+
+⸻
+
+That’s how you talk to it.
+
+Clear.
+Technical.
+No emotional language.
+No vague “fix it.”
+
+Now send that.
+
+If after that it still fails, then we move from patching to redesigning the detection strategy entirely.
