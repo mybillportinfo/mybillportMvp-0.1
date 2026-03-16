@@ -1,0 +1,149 @@
+🔥 Replit Prompt: Update Cloud Function with Google Vision + Claude
+
+Copy and paste this entire prompt into Replit AI (or your Replit chat) to complete Step 5.
+
+---
+
+```
+You are acting as a senior Firebase developer. Please update my Firebase Cloud Function (scanBill) with the following improvements:
+
+1. Replace the existing `scanBill` function code with the enhanced version below.
+2. Install the required npm package: `@google-cloud/vision` in the `functions` folder.
+3. Ensure that the function uses Google Vision OCR first, then passes extracted text to Claude for structuring.
+4. Remind me to set the Firebase config for Google Vision credentials (if not already done) using:
+   firebase functions:config:set google.application_credentials='{"type":"service_account",...}'
+5. After updating, I'll deploy with `firebase deploy --only functions`.
+
+Here is the new code for `functions/index.js`:
+
+```javascript
+const functions = require('firebase-functions');
+const Anthropic = require('@anthropic-ai/sdk');
+const vision = require('@google-cloud/vision');
+
+// Initialize clients
+const anthropic = new Anthropic({
+  apiKey: functions.config().anthropic.key,
+});
+
+// Initialize Vision client with credentials
+let visionClient;
+try {
+  const credentials = functions.config().google.application_credentials;
+  if (credentials && typeof credentials === 'string') {
+    visionClient = new vision.ImageAnnotatorClient({
+      credentials: JSON.parse(credentials)
+    });
+  } else {
+    visionClient = new vision.ImageAnnotatorClient();
+  }
+} catch (error) {
+  console.error('Failed to initialize Vision client:', error);
+}
+
+exports.scanBill = functions
+  .region('northamerica-northeast1')
+  .https.onCall(async (data, context) => {
+    if (!context.auth) {
+      throw new functions.https.HttpsError('unauthenticated', 'You must be logged in.');
+    }
+
+    const { imageBase64 } = data;
+    if (!imageBase64) {
+      throw new functions.https.HttpsError('invalid-argument', 'Image data required.');
+    }
+
+    try {
+      // Step 1: Google Vision OCR
+      console.log('Running Google Vision OCR...');
+      const imageBuffer = Buffer.from(imageBase64, 'base64');
+      const [visionResult] = await visionClient.textDetection({
+        image: { content: imageBuffer.toString('base64') }
+      });
+      
+      const textAnnotations = visionResult.textAnnotations;
+      let extractedText = '';
+      if (textAnnotations && textAnnotations.length > 0) {
+        extractedText = textAnnotations[0].description;
+        console.log('OCR successful. Text length:', extractedText.length);
+      } else {
+        throw new functions.https.HttpsError(
+          'failed-precondition',
+          'No text could be read from this image. Please ensure the bill is clear and try again.'
+        );
+      }
+
+      // Step 2: Claude structuring
+      console.log('Sending text to Claude for structuring...');
+      const claudeResponse = await anthropic.messages.create({
+        model: 'claude-3-sonnet-20240229',
+        max_tokens: 1024,
+        temperature: 0.1,
+        messages: [
+          {
+            role: 'user',
+            content: `Extract bill information from this text and return ONLY this JSON format:
+
+Text from bill:
+${extractedText}
+
+Return this exact JSON structure:
+{
+  "merchant_name": "string (the company name)",
+  "total_amount": number (just the number, no currency symbol),
+  "due_date": "YYYY-MM-DD (if found, otherwise null)",
+  "account_number": "string or null",
+  "confidence": "high|medium|low"
+}
+
+Only return valid JSON, no other text.`
+          }
+        ]
+      });
+
+      const billData = JSON.parse(claudeResponse.content[0].text);
+      console.log('Bill scan successful:', billData);
+
+      return {
+        ...billData,
+        _debug: {
+          ocrLength: extractedText.length,
+          ocrPreview: extractedText.substring(0, 200) + '...'
+        }
+      };
+
+    } catch (error) {
+      console.error('Scan error:', error);
+      if (error.message.includes('OCR')) {
+        throw new functions.https.HttpsError(
+          'failed-precondition',
+          'Could not read text from image. Please ensure the photo is clear and well-lit.'
+        );
+      } else if (error.message.includes('JSON')) {
+        throw new functions.https.HttpsError(
+          'internal',
+          'Could not understand bill format. Please try a different image.'
+        );
+      } else {
+        throw new functions.https.HttpsError(
+          'internal',
+          'Failed to process bill. Please try again.'
+        );
+      }
+    }
+  });
+```
+
+Please:
+
+· Replace the contents of functions/index.js with this code.
+· In the terminal (inside the functions folder), run: npm install @google-cloud/vision
+· Remind me to set the Firebase config for Google Vision credentials (as shown above) if I haven't already.
+· After these steps, I'll deploy the function.
+
+Thank you!
+
+```
+
+**Paste this into Replit AI** – it will guide you through the update. After it's done, don't forget to deploy with `firebase deploy --only functions`.
+```
