@@ -1,0 +1,47 @@
+You are a senior Next.js/Firebase developer. Fix the calendar feature in MyBillPort to persist income data and display bills correctly.
+
+## Current Problems
+- Income entered on a specific date disappears after navigation (not saved).
+- Bills with due dates are not shown on the calendar.
+
+## Requirements
+
+### 1. Income Persistence
+- Create a Firestore collection `income` with documents containing:
+  - `userId` (string)
+  - `amount` (number)
+  - `date` (Firestore Timestamp) – the payday date.
+  - `frequency` (enum: 'once', 'weekly', 'biweekly', 'monthly') – default 'once'.
+  - `description` (string, optional).
+  - `createdAt` (Timestamp).
+- Add security rules: users can only read/write their own income.
+- On the calendar page, allow user to tap a day to add income (modal with amount and frequency).
+- When income is added/edited, save to Firestore and update the calendar view immediately.
+- On calendar load, fetch all income for the displayed month (and optionally future recurring income).
+
+### 2. Bill Display on Calendar
+- Modify calendar to fetch bills for the displayed month from Firestore (where `userId` = current user and `dueDate` falls within month).
+- Show a small badge/dot on days with bills (count if multiple).
+- In the day popup, list bills due that day with name, amount, and status (paid/unpaid). Include "Mark as Paid" button for each bill (call existing `markBillAsPaid` function).
+- Ensure bills are displayed regardless of whether income is set.
+
+### 3. Calendar Logic
+- Reuse the existing calendar component structure (grid, navigation).
+- Combine income and bill data to compute daily totals and color coding (optional, but keep if already there).
+- Ensure all data is fetched on month change.
+
+### 4. Implementation Steps
+- Update `lib/firestore.ts` or create `services/incomeService.ts` with functions: `addIncome`, `updateIncome`, `deleteIncome`, `getIncomeForMonth`.
+- Modify `app/calendar/page.tsx` to:
+  - Fetch bills and income for current month.
+  - Store them in component state.
+  - Pass to calendar grid and popup components.
+- Add income modal component (reuse or adapt existing modal style).
+- Update Firestore security rules for `income` collection.
+
+### 5. Testing
+- After implementation, add income on a day, navigate away and back – data should persist.
+- Ensure bills with due dates appear on correct days.
+- Verify that marking a bill as paid updates the calendar (bill disappears or status changes).
+
+Deliver full code changes, focusing on the calendar page and new income service. Assume Firebase already initialized.
