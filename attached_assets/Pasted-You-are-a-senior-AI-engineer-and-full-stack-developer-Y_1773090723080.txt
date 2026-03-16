@@ -1,0 +1,137 @@
+You are a senior AI engineer and full-stack developer.
+
+Your task is to build a production-ready AI assistant called MyBillPort AI Agent for a bill management platform used by Canadian users.
+
+The AI assistant should help users understand, manage, and optimize their bills.
+
+Tech stack requirements:
+- Backend: Node.js with Express
+- AI integration: OpenAI API
+- Database: PostgreSQL (or Supabase compatible)
+- Frontend: simple chat widget using HTML, CSS, and JavaScript
+- API architecture: REST endpoints
+- Secure environment variables for API keys
+- Modular folder structure
+
+Core AI Agent Features:
+
+1. Bill Understanding
+The AI must answer questions like:
+- "What bills are due this week?"
+- "How much did I spend on utilities this month?"
+- "Which bill increased the most?"
+
+The AI should analyze user bill data from the database.
+
+2. Smart Bill Insights
+The AI should detect:
+- bill increases
+- recurring subscriptions
+- unusual spikes
+- yearly spending estimates
+
+3. Savings Recommendations
+If a bill looks high, the AI should respond with suggestions such as:
+- cheaper telecom plans
+- switching providers
+- negotiation advice
+
+4. AI Bill Assistant Personality
+The assistant should behave like a helpful financial assistant:
+- concise
+- friendly
+- data-driven
+- privacy aware
+
+5. API Tools / Functions
+Create functions that the AI can call:
+- getBills(userId)
+- getBillsDue(userId)
+- getMonthlySpending(userId)
+- detectBillIncrease(userId)
+- getSubscriptions(userId)
+
+Use structured tool calling so the AI can retrieve real data.
+
+6. Chat API Endpoint
+Create endpoint:
+
+POST /api/ai-assistant
+
+Request body:
+{
+  "userId": "123",
+  "message": "What bills are due this week?"
+}
+
+The endpoint should:
+- fetch user bill data
+- call the OpenAI API
+- return a structured AI response
+
+7. Database Schema
+
+Create a simple bills table:
+
+bills:
+- id
+- user_id
+- bill_name
+- category
+- amount
+- due_date
+- recurring
+- created_at
+
+8. Frontend Chat Widget
+
+Build a simple chat interface inside a dashboard:
+
+Features:
+- message input
+- AI responses
+- loading indicator
+- scrollable conversation
+- quick suggestion buttons
+
+Example quick prompts:
+• Bills due this week
+• Subscription spending
+• Biggest bill increase
+• Annual spending
+
+9. Security
+- never expose API keys
+- validate userId
+- sanitize inputs
+
+10. Future AI Capabilities (structure code for expansion)
+- email bill ingestion
+- OCR bill scanning
+- payment reminders
+- bill negotiation assistant
+- provider switching recommendations
+
+Project Structure:
+
+/mybillport-ai
+  /server
+    index.js
+    routes/ai.js
+    services/aiService.js
+    services/billService.js
+  /client
+    index.html
+    chat.js
+    styles.css
+  .env
+  package.json
+
+The output should include:
+- full backend code
+- OpenAI integration
+- frontend chat UI
+- comments explaining the code
+- instructions to run the project locally
+
+The final product should behave like a real AI financial assistant for bill management.
