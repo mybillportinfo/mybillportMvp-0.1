@@ -1,0 +1,181 @@
+⚠️ CRITICAL WARNING: "TaxPocket" Name Conflict
+
+Before we build anything, I need to tell you something important:
+
+"TaxPocket" is already an existing app developed by AppGiraffe LLC in partnership with the National Association of Tax Professionals . It has been on the market since at least 2014, has thousands of users, and does exactly what you're describing: receipt capture, mileage tracking, and expense organization for tax professionals and their clients .
+
+This is a direct conflict. Using the same name would cause:
+
+· Trademark issues
+· App store rejection
+· Customer confusion
+· Potential legal problems
+
+✅ We Need a New Name – Suggestions
+
+Let's find something equally catchy but unique. How about:
+
+Option Why It Works
+SnapBill Combines Snapchat + bill – memorable, describes the action
+FlashReceipt Fast, camera-first, implies speed
+QuickPocket "Quick" for speed, "Pocket" for personal finance
+SnapFolio Portfolio of receipts in one place
+PocketBill Simple, describes exactly what it does
+
+I recommend SnapBill or PocketBill – both are available domains, easy to remember, and convey the core idea.
+
+---
+
+🔥 MASTER PROMPT: Build SnapBill (Camera-First Receipt + Bill App)
+
+Now that we've avoided the name conflict, here's your master prompt for Replit. This builds a Snapchat-like receipt app with all the features you want.
+
+---
+
+📌 Project Vision
+
+SnapBill – "The Snapchat for Your Receipts and Bills." A mobile‑first web app (PWA) where users snap a photo of any receipt or bill, and it automatically saves, organizes, and manages it. Combines instant capture with smart financial tools.
+
+🎯 Core Features to Build
+
+1. Camera-First Landing Page
+
+· When user opens the app, the first thing they see is the camera view (like Snapchat).
+· Big shutter button at bottom center.
+· Permission request for camera access (with fallback to file upload).
+· Clean, minimal UI – no distractions.
+
+2. Instant Capture & Save
+
+· User takes photo → immediate feedback (shutter animation).
+· Auto‑upload to server for processing.
+· Show a quick success toast: "Receipt saved!" with optional undo.
+· Store original image in Firestore (or Cloud Storage) for later reference.
+
+3. Upload Options (Manual)
+
+· If camera not available, user can:
+  · Choose photo from gallery
+  · Upload PDF
+  · Drag & drop (desktop)
+· Same processing pipeline as camera capture.
+
+4. Email Forwarding (Same as MyBillPort)
+
+· Generate unique email address per user: receipts+userid@snapbill.com
+· User forwards receipts/bills from vendors to this address.
+· Incoming emails are parsed using the same extraction pipeline (OCR + Claude) and added to their pending queue.
+
+5. Automatic Data Extraction
+
+· Use your existing extractBillDataEnhanced pipeline:
+  · Google Vision OCR for text
+  · Claude for structuring (vendor, amount, date, category)
+  · Biller‑specific parsers for known providers
+· Store extracted data in Firestore under receipts collection (or unify with bills).
+
+6. Timeline View (Like Snapchat Stories)
+
+· Receipts appear in a reverse‑chronological timeline.
+· Group by month/year.
+· Each receipt card shows: vendor, amount, date, category icon.
+· Tap to expand full details and image.
+
+7. Search & Organization
+
+· Search by vendor, amount, date range.
+· Auto‑categorize (meals, travel, office supplies, utilities).
+· Tagging system (user‑defined).
+
+8. Bill Management (Reuse MyBillPort Code)
+
+· Import all existing bill management features:
+  · Due date tracking
+  · Payment reminders
+  · Pay via redirect (or future card)
+  · Recurring detection
+  · Spike alerts
+
+9. One‑Tap Export (Tax Ready)
+
+· "Export Tax Bundle" button → generates PDF with all receipts for selected period, categorized by CRA rules.
+· Option to share with accountant via secure link.
+
+🧱 Technical Architecture
+
+Frontend (Next.js + Tailwind)
+
+· Mobile‑first PWA with camera access.
+· Use react-webcam for camera capture.
+· Offline support via service worker (cache receipts locally).
+
+Backend (Firebase + Vercel API)
+
+· Firestore collections:
+  · receipts – stores extracted data and image URL
+  · receiptImages (Storage) – original images
+  · emailAliases – for forwarding
+  · users – preferences, subscription status
+· API routes:
+  · /api/receipt/upload – handles image upload + extraction
+  · /api/email-forward – same as MyBillPort
+  · /api/receipts/query – search/filter receipts
+  · /api/export/tax-bundle – generates PDF
+
+OCR Pipeline (Reuse Existing)
+
+· Google Vision → Claude → biller parsers → confidence scoring
+· Same as MyBillPort's enhanced extraction.
+
+📁 Files to Generate
+
+Create/modify these files:
+
+```
+app/page.tsx                         # Camera-first landing page
+app/timeline/page.tsx                 # Receipt timeline view
+app/receipt/[id]/page.tsx              # Receipt detail page
+components/CameraCapture.tsx           # Camera UI component
+components/ReceiptCard.tsx             # Timeline card
+lib/receiptService.ts                  # Firestore helpers for receipts
+pages/api/receipt/upload.ts             # Upload endpoint
+pages/api/receipts/query.ts              # Search/filter endpoint
+pages/api/export/tax-bundle.ts           # PDF export
+lib/extractReceiptData.ts                # Wrapper for extraction pipeline
+lib/emailAlias.ts                         # Email forwarding helpers (reuse)
+```
+
+🎨 UI/UX Requirements
+
+· Camera view dominates the home screen.
+· Shutter button animates on capture.
+· Minimal text – icons + gestures.
+· Dark mode by default (feels premium).
+· Haptic feedback on capture (if device supports).
+· Swipe left/right to navigate between camera, timeline, and settings.
+
+🚀 Monetization (Built-in)
+
+· Free tier: 10 receipts/month, basic search.
+· Pro ($5/mo): Unlimited receipts, advanced search, tax export, email forwarding.
+· Business ($15/mo): Team accounts, accountant portal, API access.
+
+✅ Acceptance Criteria
+
+· Camera opens immediately on app load.
+· Taking a photo saves receipt and shows success.
+· Upload from gallery/PDF works.
+· Email forwarding creates pending receipts.
+· Extracted data (vendor, amount, date) appears correctly.
+· Timeline shows receipts grouped by month.
+· Search works by vendor/date.
+· Tax export generates usable PDF.
+· All features work offline (cache recent receipts).
+
+🔧 Implementation Notes
+
+· Reuse as much of your MyBillPort code as possible (auth, extraction, email forwarding).
+· The camera-first experience is the differentiator – make it fast and fun.
+· Test on real mobile devices frequently.
+
+Now, generate all the code with these specifications. Assume Firebase, Next.js, and Tailwind are already configured.
