@@ -1,0 +1,53 @@
+You are a senior React/Next.js developer. Add a cash flow calendar to MyBillPort as a new tab in the bottom navigation.
+
+## Feature Requirements
+
+### 1. Calendar View
+- Display a monthly calendar grid (Sunday–Saturday).
+- Show the current month by default, with previous/next month navigation.
+- For each day, show:
+  - A small dot or badge if a bill is due that day.
+  - If multiple bills, show a count badge.
+- Color‑code days based on cash flow:
+  - **Green** if total income (if entered) minus total bills due that day >= 0.
+  - **Red** if negative (low funds).
+  - **Gray** if no bills due.
+
+### 2. Data Sources
+- **Bills**: Fetch from Firestore `bills` collection where `userId` = current user, and `dueDate` is in the displayed month. Use `status` to exclude paid bills? Or show all upcoming bills (maybe include paid but gray out). For MVP, show only unpaid/upcoming bills.
+- **Income (optional)**: Allow users to enter their payday schedule (e.g., bi‑weekly, monthly) via a settings page. Store in `userPreferences`. If no income data, show only bills.
+
+### 3. Daily Summary Popup
+When a user taps a day with bills, show a small modal listing:
+- Each bill due that day: name, amount, status (paid/unpaid).
+- Total due that day.
+- If income data exists, show projected balance after that day.
+
+### 4. Monthly Summary Below Calendar
+- **Money In**: Total income for the month (based on paydays).
+- **Money Out**: Total bills due this month.
+- **Net**: Difference (color‑coded green/red).
+- **Low Funds Alert**: If any day in the month has negative projected cash, show a warning.
+
+### 5. Integration
+- Add a new file `app/calendar/page.tsx` (or `pages/calendar.tsx`).
+- Update the bottom navigation component to include a Calendar link.
+- Use existing Firestore hooks and authentication.
+
+### 6. Styling
+- Use Tailwind CSS.
+- Calendar grid should be responsive.
+- Keep it clean and readable – avoid clutter.
+
+### 7. Future Enhancements (Optional – not needed now)
+- Ability to mark bills as paid from the calendar.
+- Sync with Gmail‑detected bills automatically.
+- Income input directly from calendar.
+
+## Deliverables
+- Full code for `app/calendar/page.tsx` (or equivalent).
+- Any new components (e.g., `CalendarGrid`, `DayPopup`, `MonthSummary`).
+- Update to navigation.
+- Instructions for adding income preference (optional).
+
+Assume Firebase Auth and Firestore are already set up. Use TypeScript.
