@@ -1,0 +1,290 @@
+Absolutely — here’s the complete, production-ready step-by-step plan to connect Gmail and auto-detect bills in MyBillPort.
+
+This is the exact sequence you must follow, with no assumptions and no missing pieces.
+
+⸻
+
+📌 PHASE 0 — What You Should Already Have
+
+Before you do anything else:
+
+✅ Domain mybillport.com is verified
+✅ Privacy Policy & Terms hosted on your domain
+✅ Gmail API enabled in Google Cloud
+✅ OAuth credentials (Client ID + Secret) created
+✅ Environment variables set in Vercel
+✅ Gmail scanning backend code implemented via Replit/master prompt
+
+If any of the above is not complete, do not proceed until it is.
+
+⸻
+
+🔧 PHASE 1 — Google Cloud OAuth Setup (Exact)
+
+Step 1.1 — Enable Gmail API
+	1.	Go to Google Cloud Console
+	2.	Select your MyBillPort project
+	3.	APIs & Services → Library
+	4.	Search for Gmail API → Click Enable
+
+⸻
+
+Step 1.2 — Create OAuth 2.0 Credentials
+	1.	APIs & Services → Credentials
+	2.	Click Create Credentials → OAuth client ID
+	3.	Choose Web application
+	4.	Name: MyBillport Gmail Integration
+
+Add Redirect URI (must be exact):
+
+https://mybillport.com/api/gmail/callback
+
+No trailing slash. No previews.
+
+Save the Client ID + Client Secret.
+
+⸻
+
+Step 1.3 — OAuth Consent Screen
+	1.	APIs & Services → OAuth consent screen
+	2.	User Type: External
+	3.	App Name: MyBillport
+	4.	User Support Email: your business email
+	5.	Developer contact email: same
+	6.	Add domain: mybillport.com
+
+Add Scopes
+
+Click “Add or remove scopes,” then select:
+
+https://www.googleapis.com/auth/gmail.readonly
+
+Nothing else.
+
+Add Test Users (while testing)
+
+Add:
+	•	Your Gmail
+	•	Any testers you want to allow initially
+
+Only these emails can authorize until you get verified.
+
+⸻
+
+📝 PHASE 2 — Update Your Privacy Policy
+
+Google requires explicit statements about Gmail access.
+
+Add exactly:
+
+⸻
+
+Gmail Integration Disclosure Example
+
+Gmail Integration
+MyBillPort may request read-only access to your Gmail account to help detect billing emails. We use this access to identify billing messages, extract billing metadata — such as biller name, amount due, and due date — and create or update bills in your account.
+
+What we access:
+Only email metadata (sender, subject, snippet) in messages that contain billing information. We do not access unrelated emails.
+
+How we use it:
+To help you automate bill tracking. Extractions are used to populate your bill dashboard.
+
+What we store:
+Only the extracted billing data (biller name, amount due, due date). We do not store full email content.
+
+Disconnection:
+You may disconnect Gmail access at any time, which revokes access tokens and deletes associated data.
+
+Third-party sharing:
+We do not share your Gmail data. We use Google API Services only as described.
+
+⸻
+
+Make sure:
+🔹 Your privacy page is live at
+https://mybillport.com/privacy
+
+⸻
+
+🔧 PHASE 3 — Set Environment Variables in Vercel
+
+Go to:
+
+Vercel → Project → Settings → Environment Variables
+
+Add exactly:
+
+Key	Value
+GOOGLE_CLIENT_ID	Your Client ID
+GOOGLE_CLIENT_SECRET	Your Client Secret
+GOOGLE_REDIRECT_URI	https://mybillport.com/api/gmail/callback
+FIREBASE_SERVICE_ACCOUNT	Full JSON of your Firebase service account
+
+⚠ Do not include quotes or line breaks incorrectly in JSON.
+
+⸻
+
+🚀 PHASE 4 — Deploy Backend Code
+	1.	Write or confirm the Gmail API routes in Replit:
+	•	/api/gmail/connect
+	•	/api/gmail/callback
+	•	/api/gmail/scan
+	•	/api/gmail/disconnect
+	•	Helper modules (gmailClient.js, etc.)
+	2.	Push code to GitHub
+	3.	Vercel auto-deploys
+
+Optional local testing:
+	•	Add http://localhost:3000/api/gmail/callback as a redirect URI temporarily
+	•	Add local environment variables in .env.local
+	•	Run npm run dev
+
+⸻
+
+🧪 PHASE 5 — End-to-End Testing
+	1.	Go to:
+https://mybillport.com/settings (or wherever the “Connect Gmail” button is)
+	2.	Click Connect Gmail
+	3.	Google consent screen should appear
+	•	If app is not verified yet → click Advanced → Proceed
+	4.	Authorize with registered test email
+	5.	You should return to MyBillPort
+	6.	Check Firestore:
+	•	Document should exist:
+users/{userId}/gmailIntegration with stored tokens
+	7.	Trigger scan:
+	•	Hit /api/gmail/scan
+	•	Inspect returned extracted bills in the console/report
+	8.	Click Disconnect
+	•	Firestore document should be deleted
+	•	Refresh tokens revoked
+
+If any step fails:
+	•	Double-check redirect URI
+	•	Ensure env vars are live
+	•	Confirm Firebase admin SDK init
+
+⸻
+
+🎥 PHASE 6 — Prepare Verification Materials
+
+Before you publish publicly, you must get verified by Google.
+
+Google will want:
+
+⸻
+
+✔ Demo Video
+
+Record a real screenshare showing:
+	1.	Logging into MyBillPort
+	2.	Clicking Connect Gmail
+	3.	Google consent screen showing the requested scope (gmail.readonly)
+	4.	Gmail successfully connected
+	5.	A bill scan running and showing extracted results
+	6.	Disconnect flow
+
+Narrate:
+
+“We request read-only Gmail access to extract billing metadata such as biller name, amount due, and due date. We do not read other emails or store full email content.”
+
+Upload as Unlisted on YouTube.
+
+⸻
+
+✔ Scope Justification Text
+
+When submitting verification, use this exact explanation:
+
+MyBillPort helps users manage and automate recurring bills. With users’ consent, we scan their Gmail inbox for billing notifications (e.g., invoices, statements) using the Gmail read-only scope. We extract only billing metadata such as sender name, amount due, and due date to populate the user’s bill dashboard. We do not access unrelated emails, modify emails, or store full email bodies. This scope is the minimum required to analyze billing messages and help users track their expenses.
+
+⸻
+
+✔ Data Handling Response
+
+Be prepared to answer:
+	•	Do you store email contents?
+→ No — only extracted structured fields.
+	•	Do you send email content anywhere?
+→ Only extracted snippets when running bill extraction logic, but we never store full email text.
+	•	Do you share data with third parties?
+→ No.
+
+⸻
+
+🚀 PHASE 7 — Submit for Verification
+	1.	Go to:
+Google Cloud → OAuth Consent Screen → Publish App
+	2.	Upload demo video link
+	3.	Paste scope justification text
+	4.	Confirm privacy policy URL
+	5.	Confirm redirect URI
+	6.	Submit for review
+
+Review timeline:
+📅 3–7 business days (sometimes longer)
+
+Until approval:
+➡️ Only your test users can connect Gmail
+➡️ Public users will see “Google hasn’t verified this app” warning.
+
+⸻
+
+⚠ CRITICAL PRODUCTION ADVICE
+
+Until verification is done, do NOT show Gmail connect to general users.
+
+Instead:
+	•	Mark it as “Beta”
+	•	Only enable for test accounts
+	•	Hide behind a feature flag
+	•	Do not promote it publicly until verified
+
+This prevents users from encountering the scary Google warning and abandoning.
+
+⸻
+
+🧠 Troubleshooting
+
+📍 Redirect mismatch
+
+Error: redirect_uri_mismatch
+Fix: Exact match in Google console + code + environment variable.
+
+📍 Access denied
+
+Error: access_denied
+Fix: Add user as test user in OAuth consent screen.
+
+📍 Tokens not refreshing
+
+Fix: Ensure refresh token is saved on first consent.
+
+📍 Firebase auth fails
+
+Ensure API routes verify Firebase ID token from Authorization header.
+
+⸻
+
+📊 Final Quick Summary
+
+Step	Status
+Gmail API enabled	✔️
+OAuth credentials created	✔️
+OAuth consent screen configured	✔️
+Scopes added	✔️
+Test users added	✔️
+Privacy policy updated	✔️
+Env vars in Vercel	✔️
+Code deployed to Vercel	✔️
+End-to-end test	Pending
+Verification submission	Pending
+Public launch	After verification
+
+
+⸻
+
+If you encounter any specific error at any step, send me that error message — I’ll guide you through the exact fix.
+
+You’re on the right path. Let’s get it over the finish line.
