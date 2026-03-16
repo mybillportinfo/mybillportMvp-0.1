@@ -1,0 +1,126 @@
+Good.
+
+Now we stop guessing and diagnose properly.
+
+token_exchange_failed means your backend failed when exchanging the authorization code for tokens.
+
+This happens for only 5 real reasons:
+	1.	redirect_uri mismatch
+	2.	Wrong client secret
+	3.	Wrong client ID
+	4.	Code already used or expired
+	5.	Environment mismatch (www vs non-www)
+
+We already cleaned redirect URIs. So now we go deeper.
+
+⸻
+
+Step 1 — I Need The Exact Backend REDIRECT_URI
+
+Open your backend code.
+
+Find something like:
+
+const oauth2Client = new google.auth.OAuth2(
+  CLIENT_ID,
+  CLIENT_SECRET,
+  "https://????"
+);
+
+What is the EXACT redirect URI string there?
+
+Copy it exactly.
+
+Do not summarize. Copy the literal string.
+
+⸻
+
+Step 2 — Check This Carefully
+
+If backend says:
+
+https://mybillport.com/api/gmail/callback
+
+But user actually lands on:
+
+https://www.mybillport.com/api/gmail/callback
+
+That alone causes token_exchange_failed.
+
+WWW vs non-WWW matters.
+
+They are different to Google.
+
+⸻
+
+Step 3 — Check Client Secret
+
+Another very common mistake:
+
+You regenerated client secret in Google Cloud…
+
+But your backend is still using the OLD secret.
+
+If client secret is wrong,
+Google returns:
+
+invalid_client
+
+Which your app likely maps to token_exchange_failed.
+
+Go to:
+Google Cloud → Credentials → Your OAuth Client → Client Secret
+
+Now compare it to what is stored in your backend environment variables.
+
+Are they identical?
+
+⸻
+
+Step 4 — Log The Real Google Error
+
+Right now your frontend just shows:
+
+token_exchange_failed
+
+That’s useless.
+
+In your backend token exchange code, temporarily log the full error response:
+
+Something like:
+
+try {
+  const { tokens } = await oauth2Client.getToken(code);
+} catch (err) {
+  console.error("TOKEN ERROR:", err.response?.data || err);
+}
+
+Then try connecting again.
+
+I want the RAW Google error:
+
+It will say something like:
+	•	invalid_grant
+	•	redirect_uri_mismatch
+	•	invalid_client
+	•	bad_request
+
+That tells us exactly what’s wrong.
+
+⸻
+
+Brutal Truth
+
+At this stage, 80% chance it’s one of these:
+	•	Your backend redirect URI does not match exactly
+	•	Your backend is using old client secret
+	•	Your backend is running on different environment than you think
+
+⸻
+
+Answer These 3 Things Clearly
+	1.	What is the EXACT redirect URI string inside your backend code?
+	2.	Is your backend deployed on mybillport.com or is it still running on Replit domain?
+	3.	Did you regenerate client secret at any point recently?
+
+Answer those. No guessing.
