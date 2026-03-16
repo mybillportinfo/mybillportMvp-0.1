@@ -1,0 +1,183 @@
+Context
+You are building a production-ready Canadian bill management web app called BillPort using:
+	•	Next.js 13+ (App Router)
+	•	Firebase (Auth + Firestore)
+	•	Stripe (real payments)
+	•	Tailwind CSS
+	•	Client-side focused (no server rendering for Firebase logic)
+
+Authentication is already working (email/password + Google).
+Mobile/phone auth is removed.
+
+⸻
+
+🎯 GOALS (WHAT MUST WORK)
+
+1️⃣ ADD BILL (PRIMARY FEATURE)
+
+Build a robust Add Bill system with these exact fields and order:
+	1.	Company Name
+	•	Autocomplete dropdown
+	•	Include all major Canadian billers, grouped logically:
+	•	Utilities (Hydro One, Enbridge, BC Hydro, etc.)
+	•	Mobile / Internet (Rogers, Bell, Telus, Freedom, etc.)
+	•	Credit Cards:
+	•	Big banks (TD, RBC, BMO, Scotiabank, CIBC)
+	•	Credit unions
+	•	Retail cards (Walmart, Canadian Tire, PC Financial, etc.)
+	•	Allow manual entry if company not listed
+	2.	Account Number
+	•	Text input
+	•	Required
+	3.	Due Date
+	•	Date picker
+	•	Required
+	4.	Bill Amount
+	•	Number (CAD)
+	•	Required
+	•	Supports decimals
+
+Rules
+	•	Free users can add ONLY 3 bills
+	•	If limit reached, disable Add Bill and show upgrade message
+	•	Bills are stored in Firestore with:
+	•	userId
+	•	companyName
+	•	accountNumber
+	•	dueDate
+	•	amount
+	•	createdAt
+
+⸻
+
+2️⃣ BILL LIST + PAYMENT FROM HOME PAGE
+
+On the home/dashboard page, show a list/table of all user bills:
+
+Each bill row must show:
+	•	Company name
+	•	Account number
+	•	Due date
+	•	Amount
+
+Each bill must have:
+	•	✅ Pay Full button
+	•	✅ Pay Half button
+
+⸻
+
+3️⃣ REAL PAYMENTS (STRIPE)
+
+Implement real Stripe payments (not mock):
+	•	Use Stripe Checkout
+	•	Currency: CAD
+	•	Two payment modes:
+	•	Full payment (100%)
+	•	Partial payment (50%)
+	•	Create a server route:
+	•	/api/checkout
+	•	Accepts: billId, amount
+	•	On successful payment:
+	•	Redirect back to home
+	•	Log payment in Firestore:
+	•	userId
+	•	billId
+	•	amountPaid
+	•	timestamp
+
+⚠️ Stripe secret key must stay server-side only
+⚠️ Use publishable key on client
+
+⸻
+
+4️⃣ FREE PLAN LOGIC (IMPORTANT)
+	•	Default user plan = Free
+	•	Free plan limits:
+	•	Max 3 bills
+	•	Prepare for upgrade later:
+	•	Add isPro logic (Firebase custom claim or flag)
+	•	If isPro === true, remove bill limit
+	•	Do NOT build subscription UI yet — just logic
+
+⸻
+
+5️⃣ NOTIFICATIONS (IN-APP ONLY)
+
+No SMS. No emails.
+
+Implement in-app notifications:
+	•	Store notifications in Firestore
+	•	Trigger notifications for:
+	•	Bill added
+	•	Upcoming due date (logic placeholder)
+	•	Successful payment
+	•	Notifications appear in app UI (bell icon or list)
+	•	Push notifications optional later — structure data cleanly now
+
+⸻
+
+6️⃣ FIREBASE RULES & STRUCTURE
+
+Use Firebase safely:
+	•	All Firebase code must be client-side ('use client')
+	•	Guard against SSR
+	•	Use single Firebase initialization
+	•	Firestore collections:
+	•	users
+	•	bills
+	•	payments
+	•	notifications
+
+Security rules:
+	•	Users can only read/write their own data
+
+⸻
+
+7️⃣ UX REQUIREMENTS
+	•	Clean, simple UI
+	•	No dead buttons
+	•	If something is not implemented, disable it clearly
+	•	Error messages must be human-readable
+	•	Loading states for payments
+
+⸻
+
+8️⃣ WHAT NOT TO BUILD
+
+❌ No investor features
+❌ No phone authentication
+❌ No SMS
+❌ No Gmail bill scraping yet
+❌ No subscription UI yet
+
+⸻
+
+🧠 OUTPUT EXPECTATION FROM YOU (REPLIT AI)
+	•	Modify existing code where possible (do NOT restart project)
+	•	Add missing components cleanly
+	•	Ensure app runs without Firebase errors
+	•	Ensure Stripe flow works end-to-end
+	•	Push clean commits (no secrets, no .next files)
+	•	App must feel like a real product, not a demo
+
+⸻
+
+If anything conflicts with existing code:
+	•	Fix it
+	•	Don’t ask questions
+	•	Prioritize stability and correctness
+
+⸻
+
+✅ START WITH:
+	1.	Add Bill (limit logic)
+	2.	Home page bill list
+	3.	Pay Full / Pay Half
+	4.	Stripe checkout
+	5.	Payment logging
+	6.	In-app notifications
+
+⸻
+
+This is the single source of truth.
+Build accordingly.
