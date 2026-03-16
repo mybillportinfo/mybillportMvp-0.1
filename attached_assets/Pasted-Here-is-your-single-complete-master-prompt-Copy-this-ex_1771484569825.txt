@@ -1,0 +1,97 @@
+Here is your single complete master prompt.
+Copy this exactly into Replit AI.
+
+⸻
+
+Build a production-ready Smart Bill Extraction system for a Next.js app deployed on Vercel, using Firebase as backend and Anthropic Claude for AI extraction.
+
+Architecture requirements:
+
+• Frontend hosted on Vercel
+• API route runs on Vercel serverless (Node.js runtime, NOT edge)
+• Firebase handles authentication, Firestore, and storage
+• Anthropic API is used only inside the API route
+• Nothing must depend on Replit in production
+
+Environment setup:
+
+• Read API key from process.env.ANTHROPIC_API_KEY
+• If missing, return error: “AI service not configured”
+• Do not expose API key to frontend
+• Add: export const runtime = “nodejs”;
+
+API Route Requirements:
+
+Create /api/extract-bill route.
+
+• Accept POST request
+• Accept extracted OCR text or raw bill text
+• Validate request body
+• If no body → return 400
+• If API key missing → return 500
+
+Use @anthropic-ai/sdk.
+
+Initialize:
+
+const anthropic = new Anthropic({
+apiKey: process.env.ANTHROPIC_API_KEY
+});
+
+Use model: claude-3-haiku-20240307
+Use temperature: 0
+
+Send a strict instruction to Claude to extract structured bill data.
+
+The AI must return ONLY valid JSON in this exact format:
+
+{
+vendor: string,
+amount: number,
+dueDate: string (ISO 8601),
+accountNumber: string | null,
+category: string,
+confidence: “high” | “medium” | “low”
+}
+
+Extraction rules:
+
+• Detect vendor from header or dominant company name
+• Detect highest value near keywords like “Total”, “Amount Due”
+• Normalize currency to numeric value
+• Normalize date to ISO format (YYYY-MM-DD)
+• If multiple dates exist, prioritize one near “Due Date”
+• If amount not confidently found → set confidence to “low”
+• If date invalid → set confidence to “low”
+• Always return valid JSON
+
+Add robust error handling:
+
+• Catch AI errors
+• Return structured error response
+• Log whether API key exists using:
+console.log(“KEY EXISTS:”, !!process.env.ANTHROPIC_API_KEY);
+
+Security requirements:
+
+• Do not store API key in Firebase
+• Do not store API key in frontend
+• Do not use Edge runtime
+• Limit file size to 10MB (server-side validation)
+• Add basic rate limit protection placeholder
+
+Final result:
+
+The route must:
+	1.	Validate request
+	2.	Verify ANTHROPIC_API_KEY exists
+	3.	Call Claude
+	4.	Parse response safely
+	5.	Return structured JSON
+	6.	Fail gracefully if anything breaks
+
+This must be production-ready for Vercel deployment and integrated with Firebase backend for storing confirmed bills.
+
+⸻
+
+That’s your single clean build instruction.
