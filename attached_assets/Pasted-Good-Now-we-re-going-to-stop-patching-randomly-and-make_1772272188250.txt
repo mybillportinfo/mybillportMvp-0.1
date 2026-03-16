@@ -1,0 +1,218 @@
+Good. Now we’re going to stop patching randomly and make Replit fix everything in one controlled pass.
+
+Below is your MASTER EXECUTION PROMPT.
+Paste this into Replit AI exactly as-is.
+
+Do not modify it. Let it refactor cleanly.
+
+⸻
+
+🔥 MASTER PROMPT FOR REPLIT
+
+You are a senior full-stack engineer.
+We are consolidating Gmail OAuth into ONE Google Cloud project: MyBillport (main project).
+
+The goal is to:
+	1.	Ensure Gmail OAuth uses ONLY the main MyBillport Google Cloud project.
+	2.	Fix environment variables.
+	3.	Ensure refresh tokens are stored.
+	4.	Ensure Firebase token storage works.
+	5.	Ensure production-ready OAuth flow.
+	6.	Add diagnostic logging for failures.
+	7.	Prevent silent failures.
+
+Tech stack:
+	•	Next.js (API routes)
+	•	Firebase (Firestore backend)
+	•	Vercel (deployment)
+	•	Google OAuth 2.0
+	•	Gmail API (gmail.readonly)
+
+⸻
+
+✅ TASK 1 — Fix Gmail Auth Route
+
+Refactor /api/gmail/auth so that it:
+	•	Uses environment variables:
+	•	process.env.GMAIL_CLIENT_ID
+	•	process.env.GMAIL_CLIENT_SECRET
+	•	process.env.GMAIL_REDIRECT_URI
+	•	Generates auth URL with:
+	•	scope: https://www.googleapis.com/auth/gmail.readonly
+	•	access_type: “offline”
+	•	prompt: “consent”
+	•	include_granted_scopes: true
+	•	Logs errors clearly if env vars are missing.
+
+⸻
+
+✅ TASK 2 — Fix Gmail Callback Route
+
+Refactor /api/gmail/callback so that it:
+	1.	Exchanges code for tokens.
+	2.	Verifies tokens exist.
+	3.	Ensures refresh_token is present.
+	4.	Encrypts tokens before storing.
+	5.	Stores tokens in Firestore:
+
+Collection:
+users/{uid}/gmailIntegration
+
+Fields:
+	•	access_token
+	•	refresh_token
+	•	scope
+	•	expiry_date
+	•	connectedAt
+	•	provider: “gmail”
+
+	6.	If token exchange fails:
+	•	Return JSON error
+	•	Log full error details
+	7.	If Firestore fails:
+	•	Log structured error
+	8.	Redirect user back to:
+${process.env.APP_URL}/dashboard?gmail=connected
+
+⸻
+
+✅ TASK 3 — Add Environment Validation
+
+Create /lib/validateEnv.ts
+
+Function:
+validateEnv()
+
+It must check:
+	•	GMAIL_CLIENT_ID
+	•	GMAIL_CLIENT_SECRET
+	•	GMAIL_REDIRECT_URI
+	•	FIREBASE_SERVICE_ACCOUNT_KEY
+	•	APP_URL
+
+If any missing:
+Throw startup error with clear message.
+
+Call validateEnv() at app boot.
+
+⸻
+
+✅ TASK 4 — Add Gmail Status Endpoint
+
+Create /api/gmail/status
+
+It should:
+	•	Check if user has gmailIntegration document.
+	•	Verify refresh_token exists.
+	•	Return:
+{
+connected: true/false,
+hasRefreshToken: true/false
+}
+
+⸻
+
+✅ TASK 5 — Add Manual Scan Endpoint
+
+Create /api/gmail/scan
+
+It must:
+	1.	Load user tokens from Firestore.
+	2.	Refresh access token if expired.
+	3.	Fetch last 20 emails:
+	•	query: category:primary newer_than:30d
+	4.	Extract:
+	•	Sender
+	•	Subject
+	•	Snippet
+	5.	Save potential bills into:
+users/{uid}/pendingBills
+	6.	Return JSON summary:
+{
+scanned: number,
+billsDetected: number
+}
+
+Add structured error logging.
+
+⸻
+
+✅ TASK 6 — Add Token Refresh Logic
+
+If Gmail API returns 401:
+	•	Use refresh_token to get new access token.
+	•	Update Firestore.
+	•	Retry request once.
+
+If refresh fails:
+	•	Mark gmailIntegration as invalid.
+
+⸻
+
+✅ TASK 7 — Add Safe Logging
+
+Add structured logs:
+
+console.error({
+route: “…”,
+step: “…”,
+error: error.message,
+stack: error.stack
+})
+
+Never log raw tokens.
+
+⸻
+
+✅ TASK 8 — Remove Any Old Project References
+
+Search entire codebase for:
+	•	old client IDs
+	•	old redirect URIs
+	•	old project IDs
+
+Replace everything to use ONLY environment variables.
+
+No hardcoded credentials allowed.
+
+⸻
+
+✅ TASK 9 — Production Safety
+
+Add:
+	•	Timeout handling for Gmail API calls.
+	•	Graceful JSON error responses.
+	•	No crashes.
+
+⸻
+
+Final Output
+
+After refactor:
+Provide summary:
+	•	Files modified
+	•	New files added
+	•	Any manual steps required in Vercel
+	•	Any Google Cloud settings to double-check
+
+Do NOT skip validation.
+Do NOT leave TODOs.
+Return complete production-ready code.
+
+⸻
+
+🎯 AFTER YOU RUN THIS
+
+Then in Vercel:
+	1.	Replace GMAIL_CLIENT_ID
+	2.	Replace GMAIL_CLIENT_SECRET
+	3.	Confirm GMAIL_REDIRECT_URI = https://mybillport.com/api/gmail/callback
+	4.	Redeploy without cache
+
+⸻
+
+If this still fails after that, the problem is Google configuration — not your backend.
+
+Run this in Replit now.
+
+When it finishes, paste me the summary it gives you.
