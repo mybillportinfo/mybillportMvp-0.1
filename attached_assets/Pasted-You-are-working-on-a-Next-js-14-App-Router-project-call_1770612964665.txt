@@ -1,0 +1,91 @@
+You are working on a Next.js 14 App Router project called MyBillPort.
+The app already uses Firebase v9 modular SDK with a client-safe firebase.ts file located at app/lib/firebase.ts.
+Email/password authentication is already working.
+
+Your task is to COMPLETE and HARDEN the authentication system.
+
+STRICT REQUIREMENTS:
+- Do NOT break existing email/password login or signup
+- Do NOT move firebase.ts out of app/lib
+- Do NOT initialize Firebase on the server
+- All auth UI must be client components
+- Use Firebase Authentication only (no third-party auth libraries)
+
+FEATURES TO IMPLEMENT:
+
+1. FORGOT PASSWORD (MANDATORY)
+- Add a "Forgot password?" link on the login page
+- Clicking it should navigate to /forgot-password
+- Create a forgot password page with:
+  - Email input
+  - Submit button
+  - Uses Firebase sendPasswordResetEmail
+  - Shows clear success and error messages
+- Must handle invalid email and user-not-found gracefully
+
+2. GOOGLE SIGN-IN (MANDATORY)
+- Enable Google login using Firebase Auth GoogleAuthProvider
+- Add a "Continue with Google" button on login and signup pages
+- Use signInWithPopup (NOT redirect)
+- After successful login:
+  - User must be authenticated
+  - Redirect to dashboard/home
+- Handle popup blocked, cancelled login, and auth errors cleanly
+
+3. APPLE SIGN-IN (PREPARE BUT DISABLE)
+- Add a disabled "Continue with Apple" button in UI
+- Clearly mark it as "Coming Soon"
+- DO NOT enable Apple Auth in Firebase yet
+- No backend configuration required for Apple right now
+
+4. PHONE NUMBER AUTH (MANDATORY)
+- Add "Continue with Phone Number" option
+- Create phone auth flow using Firebase Auth:
+  - Phone number input
+  - reCAPTCHA verifier (invisible)
+  - OTP input
+- Handle OTP verification and errors
+- Ensure this works in browser (not server)
+- Must not break existing auth state listener
+
+5. AUTH CONTEXT CLEANUP
+- Ensure AuthContext correctly:
+  - Subscribes to Firebase auth state
+  - Exposes user, loading, login, logout methods
+  - Works for email, Google, and phone auth
+- No duplicate listeners
+- No memory leaks
+
+6. UI/UX REQUIREMENTS
+- All auth pages must show:
+  - Loading state
+  - Error messages
+  - Success feedback
+- Buttons must be disabled during async actions
+- No blank screens
+- No silent failures
+
+7. FILES YOU MAY EDIT / CREATE
+- app/login/page.tsx
+- app/signup/page.tsx
+- app/forgot-password/page.tsx (NEW)
+- app/contexts/AuthContext.tsx
+- app/lib/firebase.ts (ONLY to add auth helpers if needed)
+
+8. DO NOT:
+- Do not remove existing working code
+- Do not use server actions for auth
+- Do not store secrets in code
+- Do not hardcode Firebase keys
+- Do not use deprecated Firebase APIs
+
+FINAL CHECKS BEFORE YOU FINISH:
+- Email/password login works
+- Password reset email sends successfully
+- Google sign-in works end-to-end
+- Phone number OTP login works
+- Apple button visible but disabled
+- No "Firebase not available" errors
+- No console errors in browser
+
+Implement everything fully and output the final updated code.
