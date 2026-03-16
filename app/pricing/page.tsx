@@ -18,7 +18,7 @@ const proFeatures = [
   { icon: Users, text: "Bill negotiation scripts" },
 ];
 
-const hobbyFeatures = [
+const freeFeatures = [
   "Up to 5 bills",
   "Due date reminders",
   "One-click payment links",
@@ -26,7 +26,7 @@ const hobbyFeatures = [
   "AI chat assistant",
 ];
 
-const enterpriseFeatures = [
+const businessFeatures = [
   "Unlimited seats",
   "SSO / SAML login",
   "Custom biller integrations",
@@ -58,10 +58,10 @@ const faqs = [
   },
   {
     q: "Can I cancel at any time?",
-    a: "Yes — cancel from your account settings in seconds. Your data stays in your account on the Hobby plan. No retention calls, no friction.",
+    a: "Yes — cancel from your account settings in seconds. Your data stays in your account on the Free plan. No retention calls, no friction.",
   },
   {
-    q: "What happens when I hit the 5-bill limit on Hobby?",
+    q: "What happens when I hit the 5-bill limit on Free?",
     a: "You can view and manage your existing 5 bills indefinitely. Adding a 6th will prompt you to upgrade to Pro. Nothing is locked or deleted.",
   },
   {
@@ -69,7 +69,7 @@ const faqs = [
     a: "Yes. If you subscribe annually, that rate is locked for as long as you keep your subscription active.",
   },
   {
-    q: "What does Enterprise pricing look like?",
+    q: "What does Business pricing look like?",
     a: "It depends on your team size, biller integrations needed, and compliance requirements. Email us at mybillportinfo@gmail.com and we'll put together a proposal within 24 hours.",
   },
   {
@@ -111,7 +111,7 @@ export default function PricingPage() {
           <p className="text-slate-400 text-lg leading-relaxed">
             Start free. Upgrade when it makes sense. Cancel anytime — no questions asked.
           </p>
-          <p className="text-xs text-slate-500">No credit card required for Hobby plan</p>
+          <p className="text-xs text-slate-500">No credit card required — Free forever</p>
         </div>
       </section>
 
@@ -120,7 +120,7 @@ export default function PricingPage() {
 
           <div className="bg-[#263244] border border-white/5 rounded-2xl p-7 space-y-6">
             <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Hobby</p>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Free</p>
               <p className="text-5xl font-extrabold text-white">Free</p>
               <p className="text-xs text-slate-500 mt-1.5">Forever · No credit card</p>
             </div>
@@ -128,7 +128,7 @@ export default function PricingPage() {
               Get started free
             </Link>
             <ul className="space-y-3 text-sm text-slate-300">
-              {hobbyFeatures.map((f) => (
+              {freeFeatures.map((f) => (
                 <li key={f} className="flex items-center gap-2.5">
                   <CheckCircle className="w-4 h-4 text-[#6BCB77] flex-shrink-0" />
                   {f}
@@ -142,7 +142,7 @@ export default function PricingPage() {
               Most popular
             </div>
             <div>
-              <p className="text-xs font-bold text-[#4D6A9F] uppercase tracking-widest mb-2">Pro</p>
+              <p className="text-xs font-bold text-[#4D6A9F] uppercase tracking-widest mb-2">Premium</p>
               <div className="flex items-end gap-2">
                 <p className="text-5xl font-extrabold text-white">$7</p>
                 <span className="text-slate-400 text-base mb-1.5">/month</span>
@@ -161,14 +161,14 @@ export default function PricingPage() {
               ))}
               <li className="flex items-center gap-2.5 text-slate-400">
                 <CheckCircle className="w-4 h-4 text-[#6BCB77] flex-shrink-0" />
-                Everything in Hobby
+                Everything in Free
               </li>
             </ul>
           </div>
 
           <div className="bg-[#263244] border border-white/5 rounded-2xl p-7 space-y-6">
             <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Enterprise</p>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Business</p>
               <p className="text-5xl font-extrabold text-white">Custom</p>
               <p className="text-xs text-slate-500 mt-1.5">Tailored to your team</p>
             </div>
@@ -176,7 +176,7 @@ export default function PricingPage() {
               Talk to us
             </a>
             <ul className="space-y-3 text-sm text-slate-300">
-              {enterpriseFeatures.map((f) => (
+              {businessFeatures.map((f) => (
                 <li key={f} className="flex items-center gap-2.5">
                   <Building2 className="w-4 h-4 text-[#FFB347] flex-shrink-0" />
                   {f}
@@ -201,9 +201,9 @@ export default function PricingPage() {
             <thead>
               <tr className="border-b border-white/5">
                 <th className="text-left px-6 py-4 text-slate-400 font-medium w-1/2">Feature</th>
-                <th className="px-4 py-4 text-center text-slate-400 font-medium">Hobby</th>
-                <th className="px-4 py-4 text-center text-[#4D6A9F] font-bold">Pro</th>
-                <th className="px-4 py-4 text-center text-slate-400 font-medium">Enterprise</th>
+                <th className="px-4 py-4 text-center text-slate-400 font-medium">Free</th>
+                <th className="px-4 py-4 text-center text-[#4D6A9F] font-bold">Premium</th>
+                <th className="px-4 py-4 text-center text-slate-400 font-medium">Business</th>
               </tr>
             </thead>
             <tbody>
@@ -255,7 +255,7 @@ export default function PricingPage() {
             Still not sure? Start free.
           </h2>
           <p className="text-slate-400 text-base leading-relaxed max-w-sm mx-auto">
-            Hobby is free forever. No card, no commitment. Upgrade only when you want more.
+            Free plan, forever. No card, no commitment. Upgrade only when you want more.
           </p>
           <Link href="/login" className="inline-flex items-center gap-2 bg-[#4D6A9F] hover:bg-[#3d5a8f] text-white font-bold px-8 py-4 rounded-full transition-colors shadow-lg shadow-[#4D6A9F]/20">
             Create free account <ArrowRight className="w-5 h-5" />
