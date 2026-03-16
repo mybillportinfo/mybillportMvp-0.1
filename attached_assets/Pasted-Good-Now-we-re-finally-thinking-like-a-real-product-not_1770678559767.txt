@@ -1,0 +1,197 @@
+Good. Now we’re finally thinking like a real product, not an MVP toy.
+
+I’ve done two things for you:
+	1.	Generated a clean, structured PDF with all Canadian bill categories
+	2.	Prepared master prompts (per category) you can directly paste into Replit to build features properly
+
+⸻
+
+📄 PDF — Full Canadian Bill Ecosystem
+
+This document covers:
+	•	Utilities (electricity, gas, water)
+	•	Telecom (mobile, internet, TV)
+	•	Housing (rent, mortgage)
+	•	Financial (banks, credit cards, retail cards, credit unions)
+	•	Insurance (car, home, tenant, life)
+	•	Subscriptions
+	•	Government & public bills
+
+👉 Download the PDF here:
+Download MyBillPort Full Bill Ecosystem PDF￼
+
+You can screenshot this, send it to devs, or use it as your internal product bible.
+
+⸻
+
+🔥 MASTER REPLIT PROMPT — CORE APP (NOT MVP)
+
+Copy-paste everything below into Replit.
+
+⸻
+
+🔧 MASTER PROMPT: Add Bill + Categories + Limits + Payments (Canada)
+
+Context:
+We are building MyBillPort as a real consumer app (not MVP).
+Auth is working (Firebase). Firestore is active.
+Now implement full Add Bill, categories, limits, and payment flow.
+
+⸻
+
+1️⃣ Add Bill – Core Logic
+
+Implement Add Bill with the following fields (required):
+	•	billCategory (dropdown)
+	•	companyName (searchable + manual entry)
+	•	accountNumber (string)
+	•	dueDate (date picker)
+	•	billAmount (number)
+	•	paymentStatus (unpaid / partially paid / paid)
+	•	createdAt
+	•	userId
+
+Validation rules:
+	•	Free users can add maximum 3 bills
+	•	Show upgrade prompt when limit reached
+
+⸻
+
+2️⃣ Bill Categories (Canada-Focused)
+
+Create bill categories with sub-types:
+
+Utilities
+	•	Electricity (Hydro One, Toronto Hydro, BC Hydro, etc.)
+	•	Natural Gas (Enbridge, FortisBC)
+	•	Water & Sewer (Municipal)
+
+Telecom
+	•	Mobile Phone (Bell, Rogers, Telus, Freedom)
+	•	Internet / Wi-Fi (Bell, Rogers, Shaw, TekSavvy)
+	•	Cable / TV
+
+Housing
+	•	Rent
+	•	Mortgage (RBC, TD, BMO, CIBC, Scotia, Credit Unions)
+
+Financial
+	•	Bank Credit Cards (Big 5)
+	•	Retail Cards (Walmart, Canadian Tire, PC Financial)
+	•	Credit Union Cards (Meridian, Vancity, local CUs)
+
+Insurance
+	•	Car Insurance
+	•	Home / Tenant Insurance
+	•	Life Insurance
+
+Government & Public
+	•	CRA Taxes
+	•	Property Tax
+	•	Student Loans
+
+Subscriptions
+	•	Streaming
+	•	Software / Cloud
+
+⸻
+
+3️⃣ Home Page – Bill Actions
+
+On each bill card, add buttons:
+	•	Pay Now
+	•	Pay Partial
+
+For now:
+	•	Payments are UI + state only (no real money)
+	•	Store payment intent in Firestore:
+	•	paymentType (full / partial)
+	•	amountPaid
+	•	remainingBalance
+
+⸻
+
+4️⃣ Notifications (In-App Only)
+
+Implement in-app notifications (no SMS):
+
+Triggers:
+	•	Bill due in 7 days
+	•	Bill due tomorrow
+	•	Bill overdue
+	•	Bill added successfully
+	•	Payment marked (partial or full)
+
+Store notifications in Firestore and show:
+	•	Bell icon
+	•	Notification page
+	•	Mark as read
+
+⸻
+
+5️⃣ Settings Page – Fix Broken Items
+
+Make these clickable and functional:
+	•	Notifications (toggle on/off)
+	•	Privacy (open Privacy Policy page)
+	•	Security (basic info page)
+	•	Plan info (Free: 3 bills)
+
+⸻
+
+6️⃣ Payments – Architecture Ready (Not Live)
+
+Prepare structure for future real payments:
+	•	Abstract payments service
+	•	Separate Firestore collection
+	•	Easy swap later for:
+	•	Plaid
+	•	Stripe
+	•	Bank APIs
+
+No real payments now.
+
+⸻
+
+7️⃣ Upgrade Path (Later)
+
+Prepare plan structure:
+	•	Free: 3 bills
+	•	Paid: unlimited bills
+
+No checkout needed yet — just structure.
+
+⸻
+
+Output Requirements
+	•	Clean UI
+	•	No console errors
+	•	Firestore rules respected
+	•	Everything must work on Vercel
+
+⸻
+
+⚠️ Brutal Truth (You Need This)
+
+You’re now past MVP territory.
+
+Your next risks:
+	•	Scope creep
+	•	Trying to integrate real payments too early
+	•	Over-engineering before user feedback
+
+Your correct order now:
+	1.	Add Bill perfect
+	2.	Notifications solid
+	3.	Home page actions clear
+	4.	Category coverage complete
+	5.	THEN payments (later)
+
+⸻
+
+If you want next:
+	•	🔒 Production-grade Firestore rules
+	•	💳 Real payment architecture (Stripe/Plaid)
+	•	🇨🇦 Auto-bill fetch roadmap (email parsing, PDFs, bank sync)
+
+Say the word. ￼
