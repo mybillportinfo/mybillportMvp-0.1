@@ -1,0 +1,110 @@
+You are working on the MyBillPort Next.js + Firebase MVP.
+
+CURRENT STATUS:
+- Email/password login works
+- Google Sign-In works
+- Phone auth removed
+- Settings page exists
+- Firebase configured and stable
+
+TODAY’S GOAL:
+Implement BILL MANAGEMENT + IN-APP NOTIFICATIONS ONLY.
+No SMS. No email sending. No Gmail API.
+
+STRICT TASKS (FOLLOW ORDER):
+
+1️⃣ ADD BILL — CORE FUNCTION
+Create a proper Add Bill flow.
+
+Each bill must include:
+- billName (string)
+- provider (string)
+- amount (number)
+- dueDate (date)
+- category (optional)
+- createdAt (timestamp)
+- userId (logged-in user)
+
+Rules:
+- Bills must be saved under the logged-in user
+- No global/shared bills
+- Validate all required fields
+- Show clear error messages
+
+2️⃣ FREE PLAN LIMIT
+- Maximum 5 bills per user
+- On attempt to add 6th bill:
+  - Block the action
+  - Show message:
+    “Free plan allows up to 5 bills. Upgrade coming soon.”
+
+3️⃣ BILL LIST PAGE
+- Show all bills for logged-in user
+- Display:
+  - Bill name
+  - Amount
+  - Due date
+  - Days remaining
+- Allow delete bill
+- UI must update instantly after add/delete
+
+4️⃣ IN-APP NOTIFICATIONS SYSTEM (IMPORTANT)
+Create an in-app notification system.
+
+A. Notification Logic:
+- A notification is created when:
+  - A bill is added
+  - A bill is due within X days (e.g. 3 days — hardcoded for now)
+
+B. Notification Data Model:
+Each notification should store:
+- userId
+- title
+- message
+- relatedBillId (optional)
+- isRead (boolean)
+- createdAt
+
+C. Notification UI:
+- Add a Notifications screen or panel
+- Show unread vs read notifications
+- Allow user to mark notification as read
+- No push notifications yet — IN-APP ONLY
+
+5️⃣ SETTINGS — NOTIFICATIONS
+- In Settings, add a toggle:
+  “In-app bill reminders”
+- Default: ON
+- Store preference in Firestore
+- Respect this toggle before creating notifications
+
+6️⃣ DO NOT DO
+- Do NOT add SMS
+- Do NOT add email sending
+- Do NOT add payments
+- Do NOT add Gmail API
+- Do NOT change authentication
+
+7️⃣ CODE QUALITY
+- No dead buttons
+- No broken pages
+- No console errors
+- Clean Firebase reads/writes
+- Comment code clearly for future expansion
+
+8️⃣ FUTURE COMMENTS (COMMENTS ONLY)
+Leave TODO comments for:
+- Push notifications
+- Email reminders
+- Gmail bill ingestion
+- Subscription plans
+
+FINAL CHECK:
+- User can add bills
+- User can see bills
+- User gets in-app reminders
+- App feels usable and intentional
+
+WHEN DONE:
+- Confirm what works
+- List what is ready for next phase
