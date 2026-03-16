@@ -1,0 +1,193 @@
+Good. Now we stop trusting assumptions.
+
+If:
+	•	Gmail is connected ✅
+	•	Search logic was expanded ✅
+	•	Duplicate check fixed ✅
+	•	Build issue fixed ✅
+	•	Still zero bills ❌
+
+Then we are no longer in “minor bug” territory.
+
+We are in one of these deeper failure modes:
+	1.	The Gmail query is returning zero candidate messages.
+	2.	The Gmail API is returning messages but body extraction is empty.
+	3.	The extraction pipeline is running but filtering everything out.
+	4.	The deployed environment is still not running the code you think it is.
+
+We stop guessing. We verify each layer.
+
+⸻
+
+Step 1 — Verify Gmail Is Actually Returning Messages
+
+Tell Replit to temporarily add this inside the scan route:
+
+Log:
+	•	Number of messages returned from Gmail search
+	•	First 5 message IDs
+	•	First message subject
+	•	First message snippet
+
+If Gmail search returns 0 → your query is wrong.
+
+If Gmail search returns messages → problem is downstream.
+
+You need hard numbers.
+
+⸻
+
+Step 2 — Force a Raw Debug Mode
+
+Tell Replit to temporarily bypass ALL AI and ALL duplicate filtering.
+
+For one test:
+	•	Fetch last 20 emails
+	•	For each email:
+	•	Extract subject
+	•	Extract from
+	•	Extract plain text body
+	•	Log first 500 characters
+
+Do NOT filter by keywords.
+Do NOT check duplicates.
+Do NOT check bill detection.
+
+Just dump raw extracted data to logs.
+
+If the body is empty or garbled, your MIME parsing is broken.
+
+⸻
+
+Step 3 — Confirm The Enbridge Email Is Being Retrieved
+
+Search Gmail manually:
+
+Use this exact query inside Gmail:
+
+from:enbridge newer_than:90d
+
+Does it return that email?
+
+Now ask Replit:
+
+“What exact Gmail API search query are we sending?”
+
+Because if it is:
+
+subject:(invoice OR bill)
+
+It may not match your real subject.
+
+Many utility emails use:
+	•	“Your eBill is ready”
+	•	“Account update”
+	•	“New statement available”
+
+Your search may still be too narrow.
+
+⸻
+
+Step 4 — Brutal Reality Check
+
+Your screenshot shows:
+
+Hello. Your eBill is ready.
+
+If your search does not include the word “eBill” case-insensitive,
+you will miss it.
+
+If your search is:
+
+subject:(invoice OR receipt OR billing notice)
+
+That Enbridge email will not match.
+
+That alone can explain everything.
+
+⸻
+
+Step 5 — Test Without Search Filter
+
+This is critical.
+
+Tell Replit to temporarily change the search query to:
+
+newer_than:90d
+
+No keywords.
+
+Scan everything.
+
+Then run detection logic on all of it.
+
+If bills appear → your search filter is the problem.
+
+If still zero → parsing logic is broken.
+
+⸻
+
+Step 6 — The Silent Killer
+
+Another very common issue:
+
+You are only reading text/plain.
+
+But many modern emails (including Enbridge) are:
+
+multipart/alternative
+with only text/html meaningful content.
+
+If your logic prefers text/plain and ignores html,
+you might be feeding nearly empty content to AI.
+
+Tell Replit:
+
+“Show me the MIME parsing logic for Gmail message payload. How are we choosing between text/plain and text/html?”
+
+If they are not recursively walking payload.parts,
+it is broken.
+
+⸻
+
+What You Should Send To Replit Now
+
+Send this exactly:
+
+⸻
+
+We need to stop guessing and instrument the pipeline.
+
+Add temporary debug logging to the Gmail sync route:
+	1.	Log number of Gmail messages returned by search.
+	2.	Log the exact Gmail search query being used.
+	3.	Log first 3 message subjects and snippets.
+	4.	Log whether each message has text/plain and/or text/html parts.
+	5.	Log length of extracted plain text before sending to Claude.
+	6.	Temporarily disable duplicate filtering and AI filtering.
+
+Also temporarily change Gmail search query to:
+newer_than:90d
+
+No keyword filtering.
+
+We need to confirm:
+	•	Gmail is returning the Enbridge email
+	•	The email body is actually being extracted
+	•	The text contains “$80.81” and “2026/03/18”
+
+Once verified, we will reintroduce filtering correctly.
+
+⸻
+
+No more “it should work.”
+
+We need raw evidence from logs.
+
+⸻
+
+Now answer one thing clearly:
+
+When you click Scan, what EXACT message shows now?
+
+Copy it word for word.
