@@ -1,0 +1,181 @@
+Map 
+
+Here's the complete GlobalFootprint.tsx component for your React/Next.js app. It uses react-simple-maps and Tailwind CSS to create a professional, interactive world map showing your expansion roadmap.
+
+```tsx
+// components/GlobalFootprint.tsx
+import React, { useState } from 'react';
+import {
+  ComposableMap,
+  Geographies,
+  Geography,
+  Marker,
+} from 'react-simple-maps';
+
+// World map GeoJSON (simplified)
+// You can replace with a more detailed file if needed
+const geoUrl = 'https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-50m.json';
+
+// Define country statuses with ISO A3 codes (three‑letter country codes)
+// For Southeast Asia, we'll highlight a few key countries individually
+type CountryStatus = 'live' | 'weeks' | 'months' | 'exploring';
+
+interface CountryData {
+  name: string;
+  isoA3: string; // three‑letter code for mapping
+  status: CountryStatus;
+  timeline?: string;
+  coordinates?: [number, number]; // for markers if needed
+}
+
+const countries: CountryData[] = [
+  // Tier 1 – Live Now
+  { name: 'Canada', isoA3: 'CAN', status: 'live', timeline: 'Now' },
+  // Tier 2 – Coming in weeks
+  { name: 'Australia', isoA3: 'AUS', status: 'weeks', timeline: 'Weeks' },
+  { name: 'New Zealand', isoA3: 'NZL', status: 'weeks', timeline: 'Weeks' },
+  // Tier 3 – Coming in months
+  { name: 'United Kingdom', isoA3: 'GBR', status: 'months', timeline: 'Months' },
+  { name: 'France', isoA3: 'FRA', status: 'months', timeline: 'Months' },
+  { name: 'Germany', isoA3: 'DEU', status: 'months', timeline: 'Months' },
+  { name: 'India', isoA3: 'IND', status: 'months', timeline: 'Months' },
+  // Tier 4 – Exploring
+  { name: 'South Africa', isoA3: 'ZAF', status: 'exploring', timeline: 'Exploring' },
+  { name: 'Brazil', isoA3: 'BRA', status: 'exploring', timeline: 'Exploring' },
+  { name: 'Mexico', isoA3: 'MEX', status: 'exploring', timeline: 'Exploring' },
+  // Southeast Asia – several countries
+  { name: 'Indonesia', isoA3: 'IDN', status: 'exploring', timeline: 'Exploring' },
+  { name: 'Malaysia', isoA3: 'MYS', status: 'exploring', timeline: 'Exploring' },
+  { name: 'Philippines', isoA3: 'PHL', status: 'exploring', timeline: 'Exploring' },
+  { name: 'Thailand', isoA3: 'THA', status: 'exploring', timeline: 'Exploring' },
+  { name: 'Vietnam', isoA3: 'VNM', status: 'exploring', timeline: 'Exploring' },
+];
+
+// Color mapping based on status
+const statusColors: Record<CountryStatus, { fill: string; stroke: string; dashed?: boolean }> = {
+  live: { fill: '#10b981', stroke: '#10b981' },
+  weeks: { fill: '#fef3c7', stroke: '#f59e0b', dashed: true },
+  months: { fill: '#dbeafe', stroke: '#3b82f6', dashed: true },
+  exploring: { fill: 'transparent', stroke: '#9ca3af', dashed: false },
+};
+
+export default function GlobalFootprint() {
+  const [tooltipContent, setTooltipContent] = useState<string | null>(null);
+  const [tooltipPosition, setTooltipPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+
+  const handleMouseMove = (e: React.MouseEvent, country: CountryData) => {
+    setTooltipContent(`${country.name} – ${country.timeline || country.status}`);
+    setTooltipPosition({ x: e.clientX, y: e.clientY });
+  };
+
+  const handleMouseLeave = () => {
+    setTooltipContent(null);
+  };
+
+  return (
+    <div className="relative w-full max-w-4xl mx-auto p-4">
+      <h2 className="text-2xl font-bold text-center mb-6">Our Global Roadmap</h2>
+      <div className="relative">
+        <ComposableMap
+          projection="geoMercator"
+          projectionConfig={{ scale: 150, center: [0, 20] }}
+          className="w-full h-auto"
+        >
+          <Geographies geography={geoUrl}>
+            {({ geographies }) =>
+              geographies.map((geo) => {
+                const country = countries.find((c) => c.isoA3 === geo.properties.ISO_A3);
+                const style = country ? statusColors[country.status] : { fill: '#f0f0f0', stroke: '#ccc' };
+                const strokeDasharray = style.dashed ? '4,3' : undefined;
+                return (
+                  <Geography
+                    key={geo.rsmKey}
+                    geography={geo}
+                    fill={style.fill}
+                    stroke={style.stroke}
+                    strokeWidth={0.8}
+                    strokeDasharray={strokeDasharray}
+                    style={{
+                      default: { outline: 'none' },
+                      hover: { fill: country ? style.fill : '#e0e0e0', outline: 'none' },
+                      pressed: { outline: 'none' },
+                    }}
+                    onMouseMove={(e) => country && handleMouseMove(e, country)}
+                    onMouseLeave={handleMouseLeave}
+                  />
+                );
+              })
+            }
+          </Geographies>
+          {/* Optional markers for country labels – could be added later */}
+        </ComposableMap>
+
+        {/* Custom tooltip */}
+        {tooltipContent && (
+          <div
+            className="fixed bg-black text-white text-sm px-2 py-1 rounded pointer-events-none z-50"
+            style={{
+              left: tooltipPosition.x + 10,
+              top: tooltipPosition.y - 30,
+              transform: 'translate(-50%, -100%)',
+            }}
+          >
+            {tooltipContent}
+          </div>
+        )}
+      </div>
+
+      {/* Legend */}
+      <div className="flex flex-wrap justify-center gap-6 mt-8 text-sm">
+        <div className="flex items-center gap-2">
+          <span className="w-4 h-4 rounded-full bg-green-500" />
+          <span>Live now – Canada</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="w-4 h-4 border-2 border-yellow-500 bg-yellow-100" />
+          <span>Coming weeks – Australia, NZ</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="w-4 h-4 border-2 border-blue-500 bg-blue-100" />
+          <span>Coming months – UK, France, Germany, India</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="w-4 h-4 border border-gray-400 bg-transparent" />
+          <span>Exploring – South Africa, Brazil, Mexico, SE Asia</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+Installation & Usage
+
+1. Install dependencies (if not already present):
+   ```bash
+   npm install react-simple-maps
+   # or
+   yarn add react-simple-maps
+   ```
+2. Copy the component into your project, e.g., components/GlobalFootprint.tsx.
+3. Import and use it in any page, for example on your landing page:
+   ```tsx
+   import GlobalFootprint from '../components/GlobalFootprint';
+   
+   export default function HomePage() {
+     return (
+       <div>
+         {/* other sections */}
+         <GlobalFootprint />
+       </div>
+     );
+   }
+   ```
+
+Customization
+
+· Add more countries: Update the countries array with ISO A3 codes (three‑letter codes) and status.
+· Adjust colors: Modify the statusColors object.
+· Tooltip: The current tooltip follows the mouse; you can also add fixed markers or labels.
+
+The map is responsive and will scale with its container. The legend uses Tailwind classes for styling.
