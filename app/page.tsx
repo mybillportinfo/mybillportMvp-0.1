@@ -2,7 +2,7 @@ import Link from "next/link";
 import {
   ArrowRight, DollarSign, Mail, CheckCircle,
   Bell, ShieldCheck, TrendingUp, Clock, Eye, Zap,
-  Sparkles, Camera, Globe
+  Sparkles, Camera, Globe, Lock, X
 } from "lucide-react";
 import { LogoFull, LogoIcon } from "./components/Logo";
 import { TrustBadges } from "./components/TrustBadges";
@@ -25,7 +25,8 @@ export default function LandingPage() {
           <nav className="hidden sm:flex items-center gap-7 text-sm text-slate-400">
             <a href="#features" className="hover:text-white transition-colors">Features</a>
             <a href="#how" className="hover:text-white transition-colors">How it works</a>
-            <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
+            <Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link>
+            <a href="#privacy" className="hover:text-white transition-colors">Privacy</a>
             <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
           </nav>
           <Link href="/login" className="bg-[#4D6A9F] hover:bg-[#3d5a8f] text-white font-semibold text-sm px-5 py-2.5 rounded-full transition-colors flex items-center gap-1.5">
@@ -176,6 +177,97 @@ export default function LandingPage() {
           </div>
         </section>
 
+        <section id="privacy" className="scroll-mt-20 space-y-12">
+          <div className="text-center space-y-3 max-w-2xl mx-auto">
+            <div className="inline-flex items-center gap-2 bg-[#6BCB77]/10 border border-[#6BCB77]/20 text-[#6BCB77] text-xs font-semibold px-4 py-1.5 rounded-full">
+              <Lock className="w-3.5 h-3.5" />
+              Privacy-first by design
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold text-white">
+              No Gmail access.<br />No bots. Just your bills.
+            </h2>
+            <p className="text-slate-400 text-base leading-relaxed">
+              Most bill trackers demand your bank login or email password. MyBillPort doesn&apos;t.
+              We built a privacy-first alternative that works without giving us access to anything sensitive.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-3 gap-5">
+            {[
+              {
+                icon: Mail,
+                title: "No Gmail bots",
+                body: "We never ask for your Gmail password or connect to your inbox. Instead, you get a unique forwarding address — forward any invoice email to it and we parse it automatically.",
+                tag: "vs. competitors that use email bots",
+              },
+              {
+                icon: ShieldCheck,
+                title: "No bank login",
+                body: "We never ask for your banking credentials. Bills are added by photo, PDF upload, or email forwarding — all controlled entirely by you.",
+                tag: "vs. Mint, PocketGuard, YNAB",
+              },
+              {
+                icon: Lock,
+                title: "Local AI processing",
+                body: "When you upload a bill image, our AI reads it in memory to extract the details, then discards it. Your document is never stored on our servers.",
+                tag: "BYOK-ready in Enterprise",
+              },
+            ].map((card) => (
+              <div key={card.title} className="bg-[#263244] border border-[#6BCB77]/10 rounded-2xl p-6 space-y-4 hover:border-[#6BCB77]/25 transition-colors">
+                <div className="w-10 h-10 bg-[#6BCB77]/10 rounded-xl flex items-center justify-center">
+                  <card.icon className="w-5 h-5 text-[#6BCB77]" />
+                </div>
+                <h3 className="text-base font-semibold text-white">{card.title}</h3>
+                <p className="text-sm text-slate-400 leading-relaxed">{card.body}</p>
+                <p className="text-xs text-slate-600 italic">{card.tag}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="space-y-5">
+            <h3 className="text-center text-lg font-bold text-white">How we compare</h3>
+            <div className="bg-[#263244] border border-white/5 rounded-2xl overflow-x-auto">
+              <table className="w-full text-sm min-w-[600px]">
+                <thead>
+                  <tr className="border-b border-white/5">
+                    <th className="text-left px-5 py-4 text-slate-400 font-medium">Feature</th>
+                    {["MyBillPort", "Mint*", "PocketGuard", "YNAB", "Copilot"].map((app) => (
+                      <th key={app} className={`px-4 py-4 text-center font-semibold ${app === "MyBillPort" ? "text-[#4D6A9F]" : "text-slate-500"}`}>{app}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { feature: "No bank login required",         vals: [true, false, false, false, false] },
+                    { feature: "No email/Gmail access",          vals: [true, true,  true,  true,  true ] },
+                    { feature: "AI bill scanning (photo/PDF)",   vals: [true, false, false, false, false] },
+                    { feature: "Push notifications",             vals: [true, false, true,  false, true ] },
+                    { feature: "Email forwarding import",        vals: [true, false, false, false, false] },
+                    { feature: "Payment redirect (no data stored)", vals: [true, false, false, false, false] },
+                    { feature: "Available outside the US",       vals: [true, false, false, true,  false] },
+                    { feature: "Free tier",                      vals: [true, "N/A", true,  false, false] },
+                  ].map((row, i) => (
+                    <tr key={row.feature} className={i % 2 === 0 ? "bg-white/[0.01]" : ""}>
+                      <td className="px-5 py-3 text-slate-300 text-sm">{row.feature}</td>
+                      {row.vals.map((v, j) => (
+                        <td key={j} className="px-4 py-3 text-center">
+                          {typeof v === "boolean"
+                            ? v
+                              ? <CheckCircle className="w-4 h-4 text-[#6BCB77] mx-auto" />
+                              : <X className="w-4 h-4 text-slate-600 mx-auto" />
+                            : <span className="text-xs text-slate-500">{v}</span>
+                          }
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="text-xs text-slate-600 text-center">* Mint shut down in January 2024. Comparison based on last known feature set.</p>
+          </div>
+        </section>
+
         <section id="how" className="scroll-mt-20 space-y-12">
           <div className="text-center space-y-3 max-w-2xl mx-auto">
             <p className="text-[#6BCB77] text-sm font-semibold uppercase tracking-wider">How it works</p>
@@ -220,12 +312,12 @@ export default function LandingPage() {
           <div className="grid sm:grid-cols-3 gap-5 items-start">
             <div className="bg-[#263244] border border-white/5 rounded-2xl p-7 space-y-5">
               <div>
-                <p className="text-sm font-semibold text-slate-400 mb-1">Starter</p>
+                <p className="text-sm font-semibold text-slate-400 mb-1">Hobby</p>
                 <p className="text-4xl font-extrabold text-white">Free</p>
                 <p className="text-xs text-slate-500 mt-1">Forever · No credit card</p>
               </div>
               <ul className="space-y-2.5 text-sm text-slate-300">
-                {["Track up to 10 bills", "Due date reminders", "One-click payment links", "120+ billers & growing", "PDF & photo bill upload"].map((i) => (
+                {["Track up to 5 bills", "Due date reminders", "One-click payment links", "AI bill scanning", "PDF & photo upload"].map((i) => (
                   <li key={i} className="flex items-center gap-2.5">
                     <CheckCircle className="w-4 h-4 text-[#6BCB77] flex-shrink-0" />
                     {i}
@@ -244,29 +336,29 @@ export default function LandingPage() {
               <div>
                 <p className="text-sm font-semibold text-[#4D6A9F] mb-1">Pro</p>
                 <p className="text-4xl font-extrabold text-white">$7<span className="text-xl font-medium text-slate-400"> /mo</span></p>
-                <p className="text-xs text-slate-500 mt-1">Coming soon during pilot</p>
+                <p className="text-xs text-[#6BCB77] font-semibold mt-1">or $69/year — save 18%</p>
               </div>
               <ul className="space-y-2.5 text-sm text-slate-300">
-                {["Everything in Starter", "Unlimited bills", "AI bill scanning", "Price spike alerts", "Recurring bill detection", "Priority support"].map((i) => (
+                {["Unlimited bills", "Email forwarding import", "Price spike alerts", "Biometric verification", "Negotiation scripts", "Priority support"].map((i) => (
                   <li key={i} className="flex items-center gap-2.5">
                     <CheckCircle className="w-4 h-4 text-[#6BCB77] flex-shrink-0" />
                     {i}
                   </li>
                 ))}
               </ul>
-              <button disabled className="w-full bg-[#4D6A9F]/30 text-[#4D6A9F] font-semibold py-3 rounded-full text-sm cursor-not-allowed opacity-70">
-                Coming soon
-              </button>
+              <Link href="/login" className="block w-full bg-[#4D6A9F] hover:bg-[#3d5a8f] text-white font-bold py-3 rounded-full transition-colors text-sm text-center">
+                Start Pro
+              </Link>
             </div>
 
             <div className="bg-[#263244] border border-white/5 rounded-2xl p-7 space-y-5">
               <div>
-                <p className="text-sm font-semibold text-slate-400 mb-1">Concierge</p>
-                <p className="text-4xl font-extrabold text-white">$29<span className="text-xl font-medium text-slate-400">+</span></p>
-                <p className="text-xs text-slate-500 mt-1">One-time fee</p>
+                <p className="text-sm font-semibold text-slate-400 mb-1">Enterprise</p>
+                <p className="text-4xl font-extrabold text-white">Custom</p>
+                <p className="text-xs text-slate-500 mt-1">Tailored to your team</p>
               </div>
               <ul className="space-y-2.5 text-sm text-slate-300">
-                {["Personal bill review", "Find overpriced services", "Negotiation scripts included", "Expert recommendations", "Money-back if no savings found"].map((i) => (
+                {["Unlimited seats", "SSO / SAML login", "Custom biller integrations", "Dedicated onboarding", "SLA & compliance docs"].map((i) => (
                   <li key={i} className="flex items-center gap-2.5">
                     <CheckCircle className="w-4 h-4 text-[#6BCB77] flex-shrink-0" />
                     {i}
@@ -274,9 +366,14 @@ export default function LandingPage() {
                 ))}
               </ul>
               <a href="mailto:mybillportinfo@gmail.com" className="block w-full border border-white/10 text-slate-300 hover:bg-white/5 font-semibold py-3 rounded-full transition-colors text-sm text-center">
-                  Contact us
+                  Talk to us
               </a>
             </div>
+          </div>
+          <div className="text-center">
+            <Link href="/pricing" className="inline-flex items-center gap-1.5 text-sm text-[#4D6A9F] hover:text-white transition-colors font-medium">
+              See full plan comparison <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
         </section>
       </div>
