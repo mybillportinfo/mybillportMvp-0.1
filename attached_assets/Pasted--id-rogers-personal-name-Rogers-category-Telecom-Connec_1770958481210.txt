@@ -1,0 +1,212 @@
+[
+  {
+    "id": "rogers_personal",
+    "name": "Rogers",
+    "category": "Telecom & Connectivity",
+    "accountType": "Personal",
+    "paymentUrls": {
+      "webPortal": "https://www.rogers.com/pay-bill",
+      "notes": "Rogers personal account login for bill payments."
+    }
+  },
+  {
+    "id": "rogers_business",
+    "name": "Rogers Business",
+    "category": "Telecom & Connectivity",
+    "accountType": "Business",
+    "paymentUrls": {
+      "webPortal": "https://www.rogers.com/business/bss",
+      "notes": "Business Self Serve portal for Rogers Business bills."
+    }
+  },
+  {
+    "id": "bell_personal",
+    "name": "Bell Canada (Personal)",
+    "category": "Telecom & Connectivity",
+    "accountType": "Personal",
+    "paymentUrls": {
+      "webPortal": "https://www.bell.ca/MyBell",
+      "notes": "Bell personal account login and payment portal."
+    }
+  },
+  {
+    "id": "bell_business",
+    "name": "Bell Business",
+    "category": "Telecom & Connectivity",
+    "accountType": "Business",
+    "paymentUrls": {
+      "webPortal": "https://business.bell.ca/myaccount",
+      "notes": "Bell Business account payment portal."
+    }
+  },
+  {
+    "id": "telus_personal",
+    "name": "TELUS Personal",
+    "category": "Telecom & Connectivity",
+    "accountType": "Personal",
+    "paymentUrls": {
+      "webPortal": "https://www.telus.com/myaccount",
+      "notes": "TELUS personal login to pay bills."
+    }
+  },
+  {
+    "id": "telus_business",
+    "name": "TELUS Business",
+    "category": "Telecom & Connectivity",
+    "accountType": "Business",
+    "paymentUrls": {
+      "webPortal": "https://business.telus.com/myaccount",
+      "notes": "TELUS business login for bill payments."
+    }
+  },
+  {
+    "id": "fido_personal",
+    "name": "Fido",
+    "category": "Telecom & Connectivity",
+    "accountType": "Personal",
+    "paymentUrls": {
+      "webPortal": "https://www.fido.ca/payment",
+      "notes": "Fido personal payment portal."
+    }
+  },
+  {
+    "id": "shaw_personal",
+    "name": "Shaw",
+    "category": "Telecom & Connectivity",
+    "accountType": "Personal",
+    "paymentUrls": {
+      "webPortal": "https://www.shaw.ca/payments",
+      "notes": "Shaw personal portal for payments."
+    }
+  },
+  {
+    "id": "shaw_business",
+    "name": "Shaw Business",
+    "category": "Telecom & Connectivity",
+    "accountType": "Business",
+    "paymentUrls": {
+      "webPortal": "https://business.shaw.ca/payment",
+      "notes": "Shaw business billing portal."
+    }
+  },
+  {
+    "id": "hydro_ottawa_personal",
+    "name": "Hydro Ottawa",
+    "category": "Utilities - Electricity",
+    "accountType": "Personal",
+    "paymentUrls": {
+      "webPortal": "https://www.hydroottawa.com/en/accounts-services/accounts/billing-payment/how-pay-your-bill",
+      "notes": "Hydro Ottawa personal account payment portal."
+    }
+  },
+  {
+    "id": "hydro_ottawa_business",
+    "name": "Hydro Ottawa Business",
+    "category": "Utilities - Electricity",
+    "accountType": "Business",
+    "paymentUrls": {
+      "webPortal": "https://www.hydroottawa.com/en/business",
+      "notes": "Business login for Hydro Ottawa bills."
+    }
+  },
+  {
+    "id": "toronto_hydro_personal",
+    "name": "Toronto Hydro",
+    "category": "Utilities - Electricity",
+    "accountType": "Personal",
+    "paymentUrls": {
+      "webPortal": "https://www.torontohydro.com/for-home/ways-to-pay",
+      "notes": "Toronto Hydro personal bill payment options."
+    }
+  },
+  {
+    "id": "toronto_hydro_business",
+    "name": "Toronto Hydro Business",
+    "category": "Utilities - Electricity",
+    "accountType": "Business",
+    "paymentUrls": {
+      "webPortal": "https://www.torontohydro.com/for-business/ways-to-pay",
+      "notes": "Business payment info for Toronto Hydro."
+    }
+  },
+  {
+    "id": "enbridge_gas_residential",
+    "name": "Enbridge Gas (Residential)",
+    "category": "Utilities - Natural Gas",
+    "accountType": "Personal",
+    "paymentUrls": {
+      "webPortal": "https://www.enbridgegas.com/ontario/my-account/pay-my-bill",
+      "notes": "Pay bill with Enbridge residential account."
+    }
+  },
+  {
+    "id": "enbridge_gas_business",
+    "name": "Enbridge Gas (Business)",
+    "category": "Utilities - Natural Gas",
+    "accountType": "Business",
+    "paymentUrls": {
+      "webPortal": "https://www.enbridgegas.com/ontario/business-industrial/business/pay-my-bill",
+      "notes": "Business payment portal for Enbridge Gas."
+    }
+  },
+  {
+    "id": "hydro_one",
+    "name": "Hydro One",
+    "category": "Utilities - Electricity",
+    "accountType": "Both",
+    "paymentUrls": {
+      "webPortal": "https://www.hydroone.com/rates-and-billing/billing-and-payments",
+      "notes": "Hydro One billing info (login required via provider instructions)."
+    }
+  },
+  {
+    "id": "bc_hydro",
+    "name": "BC Hydro",
+    "category": "Utilities - Electricity",
+    "accountType": "Both",
+    "paymentUrls": {
+      "webPortal": "https://www.bchydro.com/accounts-billing/pay-bill.html",
+      "notes": "BC Hydro pay bill portal."
+    }
+  },
+  {
+    "id": "manitoba_hydro",
+    "name": "Manitoba Hydro",
+    "category": "Utilities - Electricity",
+    "accountType": "Both",
+    "paymentUrls": {
+      "webPortal": "https://www.hydro.mb.ca/support/help/0032-how-to-pay-your-hydro-bill/",
+      "notes": "Manitoba Hydro payment instructions (login/bank pay)."
+    }
+  },
+  {
+    "id": "saskpower",
+    "name": "SaskPower",
+    "category": "Utilities - Electricity",
+    "accountType": "Both",
+    "paymentUrls": {
+      "webPortal": "https://www.saskpower.com/accounts/billing-and-payments",
+      "notes": "SaskPower billing portal."
+    }
+  },
+  {
+    "id": "nb_power",
+    "name": "New Brunswick Power",
+    "category": "Utilities - Electricity",
+    "accountType": "Both",
+    "paymentUrls": {
+      "webPortal": "https://www.nbpower.com/en/home-billing/bill-payment-options/",
+      "notes": "NB Power payment options page."
+    }
+  },
+  {
+    "id": "canada_revenue_agency",
+    "name": "Canada Revenue Agency",
+    "category": "Government - Federal",
+    "accountType": "Both",
+    "paymentUrls": {
+      "webPortal": "https://www.canada.ca/en/revenue-agency/services/payments-cra.html",
+      "notes": "CRA pay portal instructions via “My Payment.”"
+    }
+  }
+]
