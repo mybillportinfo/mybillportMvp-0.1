@@ -1,0 +1,133 @@
+MyBillPort — Add Bill + Pay Full / Pay Half (Production-Ready Foundation)
+
+⸻
+
+You are working on MyBillPort, a Canada-focused personal bill management app.
+
+We are not building MVP hacks.
+We are building a real app foundation, but payments are logical (simulated) for now.
+
+⸻
+
+🎯 OBJECTIVE (DO NOT DEVIATE)
+
+Implement the following four features ONLY:
+	1.	Add Bill (Structured Form)
+	2.	Bill Categories (Canada-focused)
+	3.	Pay Full / Pay Half (logical state update)
+	4.	Free Plan Restriction (3 bills max)
+
+No Gmail parsing.
+No real bank APIs yet.
+No phone auth.
+No distractions.
+
+⸻
+
+1️⃣ ADD BILL — FORM REQUIREMENTS
+
+Create / update the Add Bill flow with these exact fields:
+
+Required Fields (ALL bills)
+	•	Category (dropdown – required)
+	•	Company / Provider Name (text – required)
+	•	Account Number (text – optional but recommended)
+	•	Due Date (date picker – required)
+	•	Amount Due (number – required, CAD)
+	•	Billing Frequency (Monthly / Biweekly / Annual)
+	•	Notes (optional)
+
+Category Dropdown (must exist)
+
+Use these top-level categories only:
+	•	Utilities
+	•	Telecom & Internet
+	•	Credit Cards
+	•	Housing (Rent / Mortgage)
+	•	Insurance
+	•	Subscriptions
+	•	Transportation
+	•	Government
+	•	Education
+	•	Other
+
+Each bill stores:
+	•	status: unpaid | partially_paid | paid
+	•	paidAmount
+	•	remainingAmount
+
+⸻
+
+2️⃣ FREE PLAN LIMIT (STRICT)
+
+Enforce this rule everywhere:
+	•	Free users can add MAX 3 bills
+	•	On attempt to add 4th bill:
+	•	Block action
+	•	Show message:
+“Free plan allows up to 3 bills. Upgrade to add more.”
+
+This must be enforced:
+	•	UI level
+	•	Firestore write guard (client-side)
+
+⸻
+
+3️⃣ PAY FULL / PAY HALF — CORE FEATURE
+
+On Home / Bills list, every unpaid bill must show:
+
+Buttons
+	•	Pay Full
+	•	Pay Half
+
+Logic (IMPORTANT)
+
+This is NOT real payment. It is state tracking.
+
+Pay Full
+	•	paidAmount = amount
+	•	remainingAmount = 0
+	•	status = paid
+	•	Disable buttons
+	•	Show “Paid”
+
+Pay Half
+	•	paidAmount = amount / 2
+	•	remainingAmount = amount / 2
+	•	status = partially_paid
+	•	Button changes to “Pay Remaining”
+
+Pay Remaining
+	•	Clears remaining amount
+	•	Sets status to paid
+
+All updates persist in Firestore.
+
+⸻
+
+4️⃣ HOME PAGE REQUIREMENTS
+
+On Home/Dashboard:
+
+Each bill card must show:
+	•	Company name
+	•	Category
+	•	Due date
+	•	Amount
+	•	Status badge:
+	•	🟡 Unpaid
+	•	🔵 Partially Paid
+	•	🟢 Paid
+	•	Action buttons (Pay Full / Pay Half / Pay Remaining)
+
+Sort order:
+	1.	Overdue
+	2.	Upcoming
+	3.	Paid (bottom)
+
+⸻
+
+5️⃣ DATA MODEL (DO NOT BREAK)
+
+Each bill document must include:
