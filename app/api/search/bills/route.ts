@@ -35,7 +35,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ results: [], explanation: 'You have no bills to search.' });
   }
 
-  const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  // Use Replit AI integration when available (free, text-only), else user's key
+  const replitBase = process.env.AI_INTEGRATIONS_ANTHROPIC_BASE_URL;
+  const replitKey  = process.env.AI_INTEGRATIONS_ANTHROPIC_API_KEY;
+  const useReplit  = !!(replitBase && replitKey);
+  const anthropic = useReplit
+    ? new Anthropic({ apiKey: replitKey!, baseURL: replitBase! })
+    : new Anthropic({ apiKey: (process.env.ANTHROPIC_API_KEY || '').replace(/[\s\r\n\t]/g, '').trim() });
+  const searchModel = useReplit ? 'claude-haiku-4-5' : 'claude-haiku-4-5';
 
   const prompt = `You are a smart bill search engine. The user has the following bills:
 
@@ -43,7 +50,7 @@ ${JSON.stringify(bills, null, 2)}
 
 The user's natural language search query is: "${query.trim()}"
 
-Find all bills that match this query. Consider the biller/vendor name, amount, due date (relative terms like "last month", "this year", "summer" referring to Jun-Aug), status (paid, unpaid, overdue, partial), category, and notes.
+Find all bills that match this query. Be flexible with vendor names — "Roger" matches "Rogers", partial names and typos should match. Consider the biller/vendor name, amount, due date (relative terms like "last month", "this year", "summer" referring to Jun-Aug), status (paid, unpaid, overdue, partial), category, and notes.
 
 Return a JSON object with:
 - "matches": array of objects with { "id": string, "reason": string } — one entry per matching bill
@@ -52,7 +59,7 @@ Return a JSON object with:
 Only return valid JSON. No markdown, no code fences.`;
 
   const response = await anthropic.messages.create({
-    model: 'claude-opus-4-5' as string,
+    model: searchModel,
     max_tokens: 1024,
     messages: [{ role: 'user', content: prompt }],
   });
