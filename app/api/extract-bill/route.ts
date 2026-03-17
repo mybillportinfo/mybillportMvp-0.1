@@ -10,6 +10,7 @@ import {
 import { verifyFirebaseToken, verifyAppCheckToken, isValidMimeType, sanitizeString } from '../../lib/authVerify';
 import { checkServerRateLimit } from '../../lib/serverRateLimit';
 import { tryBillerParsers } from '../../lib/parsers';
+import { getAdminDb } from '../../lib/adminSdk';
 
 export const runtime = "nodejs";
 export const dynamic = 'force-dynamic';
@@ -116,22 +117,36 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Invalid file data format' }, { status: 400 });
     }
 
-    const ipAddress = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 
-                      request.headers.get('x-real-ip') || 
+    const ipAddress = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+                      request.headers.get('x-real-ip') ||
                       'unknown';
 
-    const userRateCheck = checkRateLimit(verifiedUserId);
+    // Determine scan limit by plan: Free = 1/day, Premium = 7/day
+    const FREE_SCAN_LIMIT = 1;
+    const PREMIUM_SCAN_LIMIT = 7;
+    const db = getAdminDb();
+    const profileSnap = await db.collection('userProfiles').doc(verifiedUserId).get();
+    const profileData = profileSnap.exists ? profileSnap.data() : null;
+    const isPremium = profileData?.subscription?.status === 'active' && profileData?.subscription?.plan === 'premium';
+    const scanLimit = isPremium ? PREMIUM_SCAN_LIMIT : FREE_SCAN_LIMIT;
+    const planLabel = isPremium ? 'Premium' : 'Free';
+
+    const userRateCheck = checkRateLimit(verifiedUserId, scanLimit);
     if (!userRateCheck.allowed) {
       const hoursLeft = Math.ceil(userRateCheck.resetsIn / (1000 * 60 * 60));
+      const upgradeMsg = isPremium
+        ? `Try again in ${hoursLeft} hour${hoursLeft > 1 ? 's' : ''}.`
+        : `Upgrade to Premium for 7 scans/day. Try again in ${hoursLeft} hour${hoursLeft > 1 ? 's' : ''}.`;
       return NextResponse.json({
         success: false,
-        error: `You've reached the daily scan limit (10 scans/day). Try again in ${hoursLeft} hour${hoursLeft > 1 ? 's' : ''}.`,
+        error: `You've used your ${planLabel} plan scan limit (${scanLimit} scan${scanLimit > 1 ? 's' : ''}/day). ${upgradeMsg}`,
         rateLimited: true,
+        isPremium,
         resetsIn: userRateCheck.resetsIn,
       }, { status: 429 });
     }
 
-    const ipRateCheck = checkRateLimit(`ip_${ipAddress}`);
+    const ipRateCheck = checkRateLimit(`ip_${ipAddress}`, 20);
     if (!ipRateCheck.allowed) {
       return NextResponse.json({
         success: false,
@@ -140,14 +155,18 @@ export async function POST(request: NextRequest) {
       }, { status: 429 });
     }
 
-    // Server-side durable rate limit (survives cold starts, blocks API-level abuse)
-    const serverRateCheck = await checkServerRateLimit(`extract_${verifiedUserId}`, 10, 60 * 60 * 1000);
+    // Durable server-side rate limit (survives cold starts)
+    const serverRateCheck = await checkServerRateLimit(`extract_${verifiedUserId}`, scanLimit, 24 * 60 * 60 * 1000);
     if (!serverRateCheck.allowed) {
       const hoursLeft = Math.ceil(serverRateCheck.resetsIn / (1000 * 60 * 60));
+      const upgradeMsg = isPremium
+        ? `Try again in ${hoursLeft} hour${hoursLeft > 1 ? 's' : ''}.`
+        : `Upgrade to Premium for 7 scans/day.`;
       return NextResponse.json({
         success: false,
-        error: `You've reached the scan limit (10 scans/hour). Try again in ${hoursLeft} hour${hoursLeft !== 1 ? 's' : ''}.`,
+        error: `You've used your ${planLabel} plan scan limit (${scanLimit} scan${scanLimit > 1 ? 's' : ''}/day). ${upgradeMsg}`,
         rateLimited: true,
+        isPremium,
         resetsIn: serverRateCheck.resetsIn,
       }, { status: 429 });
     }
