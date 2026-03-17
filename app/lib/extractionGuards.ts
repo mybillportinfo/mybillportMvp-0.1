@@ -180,24 +180,23 @@ function tryParseDate(str: string): string | null {
 }
 
 const rateLimitCache: Map<string, { count: number; resetAt: number }> = new Map();
-const RATE_LIMIT_MAX = 10;
 const RATE_LIMIT_WINDOW_MS = 24 * 60 * 60 * 1000;
 
-export function checkRateLimit(userId: string): { allowed: boolean; remaining: number; resetsIn: number } {
+export function checkRateLimit(userId: string, maxAllowed = 10): { allowed: boolean; remaining: number; resetsIn: number } {
   const now = Date.now();
   const entry = rateLimitCache.get(userId);
 
   if (!entry || now >= entry.resetAt) {
     rateLimitCache.set(userId, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-    return { allowed: true, remaining: RATE_LIMIT_MAX - 1, resetsIn: RATE_LIMIT_WINDOW_MS };
+    return { allowed: true, remaining: maxAllowed - 1, resetsIn: RATE_LIMIT_WINDOW_MS };
   }
 
-  if (entry.count >= RATE_LIMIT_MAX) {
+  if (entry.count >= maxAllowed) {
     return { allowed: false, remaining: 0, resetsIn: entry.resetAt - now };
   }
 
   entry.count++;
-  return { allowed: true, remaining: RATE_LIMIT_MAX - entry.count, resetsIn: entry.resetAt - now };
+  return { allowed: true, remaining: maxAllowed - entry.count, resetsIn: entry.resetAt - now };
 }
 
 export function getContentHash(base64Data: string): string {
