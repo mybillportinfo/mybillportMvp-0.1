@@ -14,12 +14,7 @@ import { tryBillerParsers } from '../../lib/parsers';
 export const runtime = "nodejs";
 export const dynamic = 'force-dynamic';
 
-// Prefer Replit-managed AI integration (no user API key billing).
-// Falls back to user's own key if integration vars are absent.
-const USE_REPLIT_AI = !!(process.env.AI_INTEGRATIONS_ANTHROPIC_BASE_URL && process.env.AI_INTEGRATIONS_ANTHROPIC_API_KEY);
-const MODELS = USE_REPLIT_AI
-  ? ["claude-sonnet-4-6", "claude-haiku-4-5"]
-  : ["claude-3-5-sonnet-20241022"];
+// Models resolved inside handler at request time (env vars may differ per environment)
 
 const EXTRACTION_PROMPT = `You are an expert bill/invoice data extractor. Analyze this bill and extract the following information as accurately as possible.
 
@@ -69,15 +64,24 @@ export async function POST(request: NextRequest) {
       console.log(`[extract-bill] app-check: not verified (skipping — token not available)`);
     }
 
+    // Resolve credentials at request time — Replit integration is localhost-only,
+    // Vercel deployments fall back to the user's own ANTHROPIC_API_KEY.
+    const replitBase = process.env.AI_INTEGRATIONS_ANTHROPIC_BASE_URL;
+    const replitKey  = process.env.AI_INTEGRATIONS_ANTHROPIC_API_KEY;
+    const useReplitAI = !!(replitBase && replitKey);
+
     let apiKey: string | null = null;
     let anthropicBaseURL: string | undefined = undefined;
+    let MODELS: string[];
 
-    if (USE_REPLIT_AI) {
-      apiKey = process.env.AI_INTEGRATIONS_ANTHROPIC_API_KEY!;
-      anthropicBaseURL = process.env.AI_INTEGRATIONS_ANTHROPIC_BASE_URL!;
+    if (useReplitAI) {
+      apiKey = replitKey!;
+      anthropicBaseURL = replitBase!;
+      MODELS = ["claude-sonnet-4-6", "claude-haiku-4-5"];
     } else {
       const apiKeyRaw = process.env.ANTHROPIC_API_KEY;
       apiKey = apiKeyRaw ? apiKeyRaw.replace(/[\s\r\n\t]/g, '').trim() : null;
+      MODELS = ["claude-3-5-sonnet-20241022"];
     }
 
     if (!apiKey) {
@@ -158,7 +162,7 @@ export async function POST(request: NextRequest) {
 
     const startTime = Date.now();
     const anthropic = new Anthropic({ apiKey, ...(anthropicBaseURL ? { baseURL: anthropicBaseURL } : {}) });
-    console.log(`[extract-bill] using ${USE_REPLIT_AI ? 'Replit AI integration' : 'user API key'}, models=${MODELS.join(',')}`)
+    console.log(`[extract-bill] using ${useReplitAI ? 'Replit AI integration' : 'user API key'}, models=${MODELS.join(',')}`);
     let extractedJson: any;
     let extractionMethod = 'claude-vision';
     let usedModel = '';
@@ -343,6 +347,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { success: false, error: 'AI model not available. Please try again shortly.' },
         { status: 500 }
+      );
+    }
+    if (errorMsg.includes('credit balance is too low') || errorMsg.includes('insufficient_quota') || errorMsg.includes('billing')) {
+      return NextResponse.json(
+        { success: false, error: 'AI service is temporarily unavailable. Please try again in a few minutes or enter the bill details manually.' },
+        { status: 503 }
       );
     }
     if (errorStatus === 400) {
