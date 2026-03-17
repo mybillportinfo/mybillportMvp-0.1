@@ -81,7 +81,8 @@ export async function POST(request: NextRequest) {
     } else {
       const apiKeyRaw = process.env.ANTHROPIC_API_KEY;
       apiKey = apiKeyRaw ? apiKeyRaw.replace(/[\s\r\n\t]/g, '').trim() : null;
-      MODELS = ["claude-3-5-sonnet-20241022"];
+      // claude-haiku-4-5 is fast and cost-effective; claude-opus-4-5 as fallback
+      MODELS = ["claude-haiku-4-5", "claude-opus-4-5"];
     }
 
     if (!apiKey) {
