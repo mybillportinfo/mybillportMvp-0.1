@@ -14,7 +14,12 @@ import { tryBillerParsers } from '../../lib/parsers';
 export const runtime = "nodejs";
 export const dynamic = 'force-dynamic';
 
-const MODELS = ["claude-sonnet-4-20250514", "claude-3-5-sonnet-20241022"];
+// Prefer Replit-managed AI integration (no user API key billing).
+// Falls back to user's own key if integration vars are absent.
+const USE_REPLIT_AI = !!(process.env.AI_INTEGRATIONS_ANTHROPIC_BASE_URL && process.env.AI_INTEGRATIONS_ANTHROPIC_API_KEY);
+const MODELS = USE_REPLIT_AI
+  ? ["claude-sonnet-4-6", "claude-haiku-4-5"]
+  : ["claude-3-5-sonnet-20241022"];
 
 const EXTRACTION_PROMPT = `You are an expert bill/invoice data extractor. Analyze this bill and extract the following information as accurately as possible.
 
@@ -64,8 +69,16 @@ export async function POST(request: NextRequest) {
       console.log(`[extract-bill] app-check: not verified (skipping — token not available)`);
     }
 
-    const apiKeyRaw = process.env.ANTHROPIC_API_KEY;
-    const apiKey = apiKeyRaw ? apiKeyRaw.replace(/[\s\r\n\t]/g, '').trim() : null;
+    let apiKey: string | null = null;
+    let anthropicBaseURL: string | undefined = undefined;
+
+    if (USE_REPLIT_AI) {
+      apiKey = process.env.AI_INTEGRATIONS_ANTHROPIC_API_KEY!;
+      anthropicBaseURL = process.env.AI_INTEGRATIONS_ANTHROPIC_BASE_URL!;
+    } else {
+      const apiKeyRaw = process.env.ANTHROPIC_API_KEY;
+      apiKey = apiKeyRaw ? apiKeyRaw.replace(/[\s\r\n\t]/g, '').trim() : null;
+    }
 
     if (!apiKey) {
       return NextResponse.json({ success: false, error: 'AI service not configured' }, { status: 500 });
@@ -144,7 +157,8 @@ export async function POST(request: NextRequest) {
     }
 
     const startTime = Date.now();
-    const anthropic = new Anthropic({ apiKey });
+    const anthropic = new Anthropic({ apiKey, ...(anthropicBaseURL ? { baseURL: anthropicBaseURL } : {}) });
+    console.log(`[extract-bill] using ${USE_REPLIT_AI ? 'Replit AI integration' : 'user API key'}, models=${MODELS.join(',')}`)
     let extractedJson: any;
     let extractionMethod = 'claude-vision';
     let usedModel = '';
