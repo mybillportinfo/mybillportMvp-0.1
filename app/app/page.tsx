@@ -13,7 +13,6 @@ import { trackBillPaid, trackBillDeleted, trackBillEdited, trackPaymentRedirect 
 import { detectSpike, calculateAnnualProjections, calculateSavingsScore, SpikeInfo, AnnualProjection, SavingsScore } from '../lib/billAnalytics';
 import { findSavingsOpportunities } from '../lib/providerOffers';
 import AIChatWidget from '../components/AIChatWidget';
-import BillSearch from '../components/BillSearch';
 
 const FREE_PLAN_LIMIT = 5;
 const BILLS_PER_PAGE = 10;
@@ -69,8 +68,6 @@ export default function Dashboard() {
   } | null>(null);
   const [editLoading, setEditLoading] = useState(false);
   const [visibleCount, setVisibleCount] = useState(BILLS_PER_PAGE);
-  const [searchResultIds, setSearchResultIds] = useState<string[] | null>(null);
-  const [searchSummary, setSearchSummary] = useState('');
   const [showProjectionDetail, setShowProjectionDetail] = useState(false);
   const [showInsights, setShowInsights] = useState(false);
   const [insightsModal, setInsightsModal] = useState<{ bill: Bill; loading: boolean; data: any | null; error: string | null } | null>(null);
@@ -369,12 +366,7 @@ export default function Dashboard() {
     );
   }
 
-  const filteredBills = (() => {
-    let result = categoryFilter === 'all' ? bills : bills.filter(b => b.category === categoryFilter);
-    const ids = searchResultIds;
-    if (ids !== null) result = result.filter(b => b.id != null && ids.includes(b.id));
-    return result;
-  })();
+  const filteredBills = categoryFilter === 'all' ? bills : bills.filter(b => b.category === categoryFilter);
   const visibleBills = filteredBills.slice(0, visibleCount);
   const hasMore = visibleCount < filteredBills.length;
   const unpaidBills = bills.filter(b => b.status !== 'paid');
@@ -671,22 +663,11 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Semantic bill search */}
-      <div className="px-4 pb-1">
-        <BillSearch
-          onResults={(ids, summary) => {
-            setSearchResultIds(ids);
-            setSearchSummary(summary);
-            setVisibleCount(BILLS_PER_PAGE);
-          }}
-        />
-      </div>
-
       {/* Bills list */}
       <div className="px-4 space-y-3">
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-white font-semibold">
-            {searchResultIds !== null ? 'Search Results' : 'Your Bills'}
+            Your Bills
           </h2>
           {!loading && (
             <span className="text-xs text-slate-500">
