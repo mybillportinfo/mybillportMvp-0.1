@@ -470,7 +470,7 @@ export default function Dashboard() {
                       </p>
                     </div>
                     <Link
-                      href={`/payment?biller=${encodeURIComponent(bill.companyName)}&amount=${(bill.totalAmount - (bill.paidAmount || 0)).toFixed(2)}`}
+                      href={`/payment?biller=${encodeURIComponent(bill.companyName)}&amount=${(bill.totalAmount - (bill.paidAmount || 0)).toFixed(2)}&billId=${bill.id || ''}&dueDate=${encodeURIComponent(bill.dueDate ? new Date(bill.dueDate).toISOString().split('T')[0] : '')}`}
                       onClick={() => trackPaymentRedirect(bill.companyName, true)}
                       className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-red-500 text-white rounded-lg text-xs font-semibold hover:bg-red-600 transition-colors"
                     >
@@ -771,7 +771,7 @@ export default function Dashboard() {
                   <div className="mt-3 pt-3 border-t border-slate-100">
                     <div className="flex items-center gap-2">
                       <Link
-                        href={`/payment?biller=${encodeURIComponent(bill.companyName)}&amount=${remaining.toFixed(2)}`}
+                        href={`/payment?biller=${encodeURIComponent(bill.companyName)}&amount=${remaining.toFixed(2)}&billId=${bill.id || ''}&dueDate=${encodeURIComponent(bill.dueDate ? new Date(bill.dueDate).toISOString().split('T')[0] : '')}`}
                         onClick={() => trackPaymentRedirect(bill.companyName, true)}
                         className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-semibold rounded-lg bg-[#4D6A9F] text-white hover:bg-[#3d5a8f] transition-colors"
                       >
