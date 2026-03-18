@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
-import { Home, Plus, Settings, CalendarDays, Loader2, Trash2, AlertTriangle, Bell, BellOff, DollarSign, CheckCircle, ExternalLink, Check, X, Clock, ChevronDown, ChevronUp, Pencil, Receipt, TrendingUp, TrendingDown, Minus, Sparkles, BarChart3, Target, ArrowUpRight, ArrowDownRight, Smartphone, MessageCircle, Zap, Copy, CheckCheck, Inbox } from "lucide-react";
+import { Home, Plus, Settings, CalendarDays, Loader2, Trash2, AlertTriangle, Bell, BellOff, DollarSign, CheckCircle, ExternalLink, Check, X, Clock, ChevronDown, ChevronUp, Pencil, Receipt, TrendingUp, TrendingDown, Minus, Sparkles, BarChart3, Target, ArrowUpRight, ArrowDownRight, Smartphone, Zap, Copy, CheckCheck, Inbox } from "lucide-react";
 import { usePushNotifications } from '../hooks/usePushNotifications';
 import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
@@ -71,7 +71,6 @@ export default function Dashboard() {
   const [showProjectionDetail, setShowProjectionDetail] = useState(false);
   const [showInsights, setShowInsights] = useState(false);
   const [insightsModal, setInsightsModal] = useState<{ bill: Bill; loading: boolean; data: any | null; error: string | null } | null>(null);
-  const [negotiateModal, setNegotiateModal] = useState<{ bill: Bill; loading: boolean; script: string | null; error: string | null; copied: boolean } | null>(null);
   const [dismissedOfferIds, setDismissedOfferIds] = useState<Set<string>>(new Set());
   const { supported: pushSupported, permission: pushPermission, isSubscribed: pushSubscribed, subscribe: subscribePush } = usePushNotifications(user?.uid || null);
 
@@ -93,26 +92,6 @@ export default function Dashboard() {
     }
   }, [successMessage]);
 
-  const handleNegotiate = async (bill: Bill) => {
-    if (!user || !bill.id) return;
-    setNegotiateModal({ bill, loading: true, script: null, error: null, copied: false });
-    try {
-      const token = await user.getIdToken();
-      const res = await fetch('/api/negotiate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ billId: bill.id }),
-      });
-      const data = await res.json();
-      if (data.script) {
-        setNegotiateModal(prev => prev ? { ...prev, loading: false, script: data.script } : null);
-      } else {
-        setNegotiateModal(prev => prev ? { ...prev, loading: false, error: data.error || 'Failed to generate script' } : null);
-      }
-    } catch {
-      setNegotiateModal(prev => prev ? { ...prev, loading: false, error: 'Network error. Please try again.' } : null);
-    }
-  };
 
   const fetchInsights = async (bill: Bill) => {
     setInsightsModal({ bill, loading: true, data: null, error: null });
@@ -825,14 +804,6 @@ export default function Dashboard() {
                       </button>
 
                       <button
-                        onClick={() => handleNegotiate(bill)}
-                        className="p-2 transition-colors rounded-lg flex-shrink-0 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50"
-                        title="Negotiate Lower Rate"
-                      >
-                        <MessageCircle className="w-4 h-4" />
-                      </button>
-
-                      <button
                         onClick={() => bill.id && togglePaymentHistory(bill.id)}
                         className={`p-2 transition-colors rounded-lg flex-shrink-0 ${showingHistory ? 'text-[#4D6A9F] bg-[#4D6A9F]/10' : 'text-slate-400 hover:text-[#4D6A9F]'}`}
                         title="Payment History"
@@ -1386,61 +1357,6 @@ export default function Dashboard() {
                     </div>
                   )}
                 </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Negotiate Modal */}
-      {negotiateModal && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setNegotiateModal(null)}>
-          <div className="bg-white rounded-2xl w-full max-w-md max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-emerald-100 rounded-xl flex items-center justify-center">
-                  <MessageCircle className="w-5 h-5 text-emerald-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-slate-800">Negotiation Script</h3>
-                  <p className="text-xs text-slate-400">{negotiateModal.bill.companyName}</p>
-                </div>
-              </div>
-              <button onClick={() => setNegotiateModal(null)} className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
-                <X className="w-5 h-5 text-slate-400" />
-              </button>
-            </div>
-            <div className="p-5 space-y-4">
-              {negotiateModal.loading && (
-                <div className="flex flex-col items-center gap-3 py-8">
-                  <Loader2 className="w-8 h-8 text-emerald-500 animate-spin" />
-                  <p className="text-slate-500 text-sm">Generating your script…</p>
-                </div>
-              )}
-              {negotiateModal.error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-                  {negotiateModal.error}
-                </div>
-              )}
-              {negotiateModal.script && (
-                <>
-                  <p className="text-xs text-slate-500 bg-slate-50 rounded-lg px-3 py-2">
-                    Use this script when calling or emailing {negotiateModal.bill.companyName} to negotiate a lower rate.
-                  </p>
-                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
-                    <p className="text-slate-700 text-sm leading-relaxed whitespace-pre-wrap">{negotiateModal.script}</p>
-                  </div>
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(negotiateModal.script || '').catch(() => {});
-                      setNegotiateModal(prev => prev ? { ...prev, copied: true } : null);
-                      setTimeout(() => setNegotiateModal(prev => prev ? { ...prev, copied: false } : null), 2000);
-                    }}
-                    className="w-full py-3 bg-emerald-600 text-white rounded-xl font-semibold text-sm hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2"
-                  >
-                    {negotiateModal.copied ? <><CheckCheck className="w-4 h-4" />Copied!</> : <><Copy className="w-4 h-4" />Copy Script</>}
-                  </button>
-                </>
               )}
             </div>
           </div>
