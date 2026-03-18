@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, ExternalLink, Search, Loader2, AlertCircle, Fingerprint, ShieldCheck, CreditCard, Mail } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Search, Loader2, AlertCircle, Fingerprint, ShieldCheck, CreditCard, Mail, Copy, Check, Lock, AlertTriangle } from 'lucide-react';
 import { getPaymentUrl, getGoogleSearchUrl, paymentUrls } from '../lib/paymentUrls';
 import { useAuth } from '../contexts/AuthContext';
 import { useBiometricPayment } from '../hooks/useBiometricPayment';
@@ -19,6 +19,15 @@ function PaymentContent() {
   const [biometricVerified, setBiometricVerified] = useState(false);
   const [stripeLoading, setStripeLoading] = useState(false);
   const [stripeError, setStripeError] = useState('');
+
+  const [interacCopied, setInteracCopied] = useState(false);
+
+  const dueDateParam = searchParams.get('dueDate') || '';
+  const daysUntilDue = dueDateParam
+    ? Math.ceil((new Date(dueDateParam).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+    : null;
+  const isDueSoon = daysUntilDue !== null && daysUntilDue <= 3 && daysUntilDue >= 0;
+  const isOverdue = daysUntilDue !== null && daysUntilDue < 0;
 
   const [selectedBiller, setSelectedBiller] = useState(billerParam);
   const [searchInput, setSearchInput] = useState('');
@@ -81,9 +90,18 @@ function PaymentContent() {
     if (!amountParam || !selectedBiller) return;
     const subject = encodeURIComponent(`Bill Payment — ${selectedBiller}`);
     const body = encodeURIComponent(
-      `Hi,\n\nPlease find my Interac e-Transfer payment of $${parseFloat(amountParam).toFixed(2)} CAD for my ${selectedBiller} bill.\n\nThank you!`
+      `Hi,\n\nPlease find my Interac e-Transfer payment of $${parseFloat(amountParam).toFixed(2)} CAD for my ${selectedBiller} bill.${dueDateParam ? `\nDue date: ${dueDateParam}` : ''}\n\nThank you!`
     );
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
+  };
+
+  const handleCopyInteracDetails = () => {
+    if (!amountParam || !selectedBiller) return;
+    const ref = `${selectedBiller.replace(/\s+/g, '-').toUpperCase()}-${Date.now().toString().slice(-6)}`;
+    const details = `Bill: ${selectedBiller}\nAmount: $${parseFloat(amountParam).toFixed(2)} CAD${dueDateParam ? `\nDue: ${dueDateParam}` : ''}\nReference: ${ref}`;
+    navigator.clipboard.writeText(details).catch(() => {});
+    setInteracCopied(true);
+    setTimeout(() => setInteracCopied(false), 2500);
   };
 
   const handleStripePayment = async () => {
@@ -135,8 +153,29 @@ function PaymentContent() {
               </div>
               <h2 className="text-xl font-bold text-slate-800 mb-1">{selectedBiller}</h2>
               {amountParam && (
-                <p className="text-slate-500 text-sm mb-6">${parseFloat(amountParam).toFixed(2)} CAD</p>
+                <p className="text-slate-500 text-sm mb-3">${parseFloat(amountParam).toFixed(2)} CAD</p>
               )}
+
+              {/* Urgency message */}
+              {amountParam && (isDueSoon || isOverdue) && (
+                <div className={`flex items-start gap-2 px-3 py-2.5 rounded-lg mb-3 text-left ${isOverdue ? 'bg-red-50 border border-red-200' : 'bg-orange-50 border border-orange-200'}`}>
+                  <AlertTriangle className={`w-4 h-4 flex-shrink-0 mt-0.5 ${isOverdue ? 'text-red-500' : 'text-orange-500'}`} />
+                  <div>
+                    <p className={`text-xs font-semibold ${isOverdue ? 'text-red-700' : 'text-orange-700'}`}>
+                      {isOverdue ? 'Bill overdue — pay now to avoid late fees' : `Due in ${daysUntilDue} day${daysUntilDue !== 1 ? 's' : ''} — pay now to stay on track`}
+                    </p>
+                    <p className={`text-xs mt-0.5 ${isOverdue ? 'text-red-500' : 'text-orange-500'}`}>
+                      ${parseFloat(amountParam).toFixed(2)} CAD{dueDateParam ? ` · Due ${dueDateParam}` : ''}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Trust signals */}
+              <div className="flex items-center justify-center gap-3 mb-4 px-3 py-2 bg-slate-50 rounded-lg">
+                <Lock className="w-3.5 h-3.5 text-slate-400" />
+                <span className="text-xs text-slate-500">Secure payments · Powered by Stripe · PCI Compliant</span>
+              </div>
 
               {biometricRequired && (
                 <div className={`flex items-center gap-2 mt-4 mb-2 p-3 rounded-lg text-sm ${biometricVerified ? 'bg-green-50 text-green-700' : 'bg-slate-50 text-slate-600'}`}>
@@ -232,20 +271,28 @@ function PaymentContent() {
                   )}
                 </button>
 
-                <button
-                  onClick={handleInterac}
-                  className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 text-sm"
-                >
-                  <Mail className="w-4 h-4" />
-                  Pay with Interac e-Transfer
-                </button>
+                <div className="space-y-1.5">
+                  <button
+                    onClick={handleInterac}
+                    className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 text-sm"
+                  >
+                    <Mail className="w-4 h-4" />
+                    Pay with Interac e-Transfer
+                  </button>
+                  <button
+                    onClick={handleCopyInteracDetails}
+                    className="w-full py-2 px-4 border border-slate-200 hover:bg-slate-50 text-slate-600 font-medium rounded-xl transition-colors flex items-center justify-center gap-2 text-xs"
+                  >
+                    {interacCopied ? <><Check className="w-3.5 h-3.5 text-emerald-600" />Copied!</> : <><Copy className="w-3.5 h-3.5" />Copy Payment Details</>}
+                  </button>
+                  <p className="text-xs text-slate-400 text-center pt-0.5">
+                    Send via your banking app · Funds arrive within 30 min–24h
+                  </p>
+                </div>
 
                 {stripeError && (
                   <p className="text-xs text-red-500 text-center">{stripeError}</p>
                 )}
-                <p className="text-xs text-slate-400 text-center">
-                  Card payments are processed securely via Stripe. Interac opens your email app.
-                </p>
               </div>
             )}
 
