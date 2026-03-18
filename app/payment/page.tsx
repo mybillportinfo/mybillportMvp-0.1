@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, ExternalLink, Search, Loader2, AlertCircle, Fingerprint, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Search, Loader2, AlertCircle, Fingerprint, ShieldCheck, CreditCard, Mail } from 'lucide-react';
 import { getPaymentUrl, getGoogleSearchUrl, paymentUrls } from '../lib/paymentUrls';
 import { useAuth } from '../contexts/AuthContext';
 import { useBiometricPayment } from '../hooks/useBiometricPayment';
@@ -17,6 +17,8 @@ function PaymentContent() {
   const { profile } = useData();
   const { authenticate, verifying, error: biometricError } = useBiometricPayment();
   const [biometricVerified, setBiometricVerified] = useState(false);
+  const [stripeLoading, setStripeLoading] = useState(false);
+  const [stripeError, setStripeError] = useState('');
 
   const [selectedBiller, setSelectedBiller] = useState(billerParam);
   const [searchInput, setSearchInput] = useState('');
@@ -73,6 +75,40 @@ function PaymentContent() {
     }
     const url = getGoogleSearchUrl(selectedBiller);
     window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleInterac = () => {
+    if (!amountParam || !selectedBiller) return;
+    const subject = encodeURIComponent(`Bill Payment — ${selectedBiller}`);
+    const body = encodeURIComponent(
+      `Hi,\n\nPlease find my Interac e-Transfer payment of $${parseFloat(amountParam).toFixed(2)} CAD for my ${selectedBiller} bill.\n\nThank you!`
+    );
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+  };
+
+  const handleStripePayment = async () => {
+    if (!amountParam || !selectedBiller || !user) return;
+    setStripeLoading(true);
+    setStripeError('');
+    try {
+      const token = await user.getIdToken();
+      const billId = searchParams.get('billId') || '';
+      const res = await fetch('/api/create-payment-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ amount: amountParam, billerName: selectedBiller, billId }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        setStripeError(data.error || 'Failed to start payment. Please try again.');
+      }
+    } catch {
+      setStripeError('Network error. Please try again.');
+    } finally {
+      setStripeLoading(false);
+    }
   };
 
   return (
@@ -179,7 +215,41 @@ function PaymentContent() {
                 </div>
               )}
 
-            </div>
+            {/* Additional payment options — shown when amount is available */}
+            {amountParam && (
+              <div className="mt-5 pt-4 border-t border-slate-100 space-y-2">
+                <p className="text-xs text-slate-400 uppercase font-medium mb-3">More Ways to Pay</p>
+
+                <button
+                  onClick={handleStripePayment}
+                  disabled={stripeLoading || !user}
+                  className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 text-sm"
+                >
+                  {stripeLoading ? (
+                    <><Loader2 className="w-4 h-4 animate-spin" />Processing…</>
+                  ) : (
+                    <><CreditCard className="w-4 h-4" />Pay ${parseFloat(amountParam).toFixed(2)} with Card</>
+                  )}
+                </button>
+
+                <button
+                  onClick={handleInterac}
+                  className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 text-sm"
+                >
+                  <Mail className="w-4 h-4" />
+                  Pay with Interac e-Transfer
+                </button>
+
+                {stripeError && (
+                  <p className="text-xs text-red-500 text-center">{stripeError}</p>
+                )}
+                <p className="text-xs text-slate-400 text-center">
+                  Card payments are processed securely via Stripe. Interac opens your email app.
+                </p>
+              </div>
+            )}
+
+          </div>
           ) : (
             <div>
               <p className="text-slate-500 text-sm mb-4">Select your biller to go to their payment page:</p>
