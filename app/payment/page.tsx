@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, ExternalLink, Search, Loader2, AlertCircle, Fingerprint, ShieldCheck, CreditCard, Mail, Copy, Check, Lock, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Search, Loader2, AlertCircle, Fingerprint, ShieldCheck, CreditCard, Mail, Copy, Check, Lock, AlertTriangle, X } from 'lucide-react';
 import { getPaymentUrl, getGoogleSearchUrl, paymentUrls } from '../lib/paymentUrls';
 import { useAuth } from '../contexts/AuthContext';
 import { useBiometricPayment } from '../hooks/useBiometricPayment';
@@ -21,6 +21,8 @@ function PaymentContent() {
   const [stripeError, setStripeError] = useState('');
 
   const [interacCopied, setInteracCopied] = useState(false);
+  const [showInteracSheet, setShowInteracSheet] = useState(false);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
 
   const dueDateParam = searchParams.get('dueDate') || '';
   const daysUntilDue = dueDateParam
@@ -86,19 +88,21 @@ function PaymentContent() {
     window.open(url, '_blank', 'noopener,noreferrer');
   };
 
+  const interacRef = `${selectedBiller.replace(/\s+/g, '-').toUpperCase().slice(0, 10)}-${Date.now().toString().slice(-6)}`;
+
+  const copyField = (text: string, field: string) => {
+    navigator.clipboard.writeText(text).catch(() => {});
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 2000);
+  };
+
   const handleInterac = () => {
-    if (!amountParam || !selectedBiller) return;
-    const subject = encodeURIComponent(`Bill Payment — ${selectedBiller}`);
-    const body = encodeURIComponent(
-      `Hi,\n\nPlease find my Interac e-Transfer payment of $${parseFloat(amountParam).toFixed(2)} CAD for my ${selectedBiller} bill.${dueDateParam ? `\nDue date: ${dueDateParam}` : ''}\n\nThank you!`
-    );
-    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+    setShowInteracSheet(true);
   };
 
   const handleCopyInteracDetails = () => {
     if (!amountParam || !selectedBiller) return;
-    const ref = `${selectedBiller.replace(/\s+/g, '-').toUpperCase()}-${Date.now().toString().slice(-6)}`;
-    const details = `Bill: ${selectedBiller}\nAmount: $${parseFloat(amountParam).toFixed(2)} CAD${dueDateParam ? `\nDue: ${dueDateParam}` : ''}\nReference: ${ref}`;
+    const details = `Bill: ${selectedBiller}\nAmount: $${parseFloat(amountParam).toFixed(2)} CAD${dueDateParam ? `\nDue: ${dueDateParam}` : ''}\nReference: ${interacRef}`;
     navigator.clipboard.writeText(details).catch(() => {});
     setInteracCopied(true);
     setTimeout(() => setInteracCopied(false), 2500);
@@ -367,6 +371,93 @@ function PaymentContent() {
           </p>
         </div>
       </div>
+
+      {/* Interac e-Transfer bottom sheet */}
+      {showInteracSheet && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShowInteracSheet(false)}>
+          <div className="absolute inset-0 bg-black/50" />
+          <div
+            className="relative bg-white w-full max-w-md rounded-t-2xl p-6 pb-10 shadow-2xl"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Handle */}
+            <div className="w-10 h-1 bg-slate-300 rounded-full mx-auto mb-5" />
+
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-lg font-bold text-slate-800">Interac e-Transfer</h3>
+              <button onClick={() => setShowInteracSheet(false)} className="p-1 text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Payment details */}
+            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-5">
+              <p className="text-xs text-emerald-600 font-semibold uppercase mb-3">Payment Details</p>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-500">Biller</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-slate-800">{selectedBiller}</span>
+                    <button onClick={() => copyField(selectedBiller, 'biller')} className="p-1 text-emerald-600 hover:text-emerald-800">
+                      {copiedField === 'biller' ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-500">Amount</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold text-emerald-700">${parseFloat(amountParam).toFixed(2)} CAD</span>
+                    <button onClick={() => copyField(parseFloat(amountParam).toFixed(2), 'amount')} className="p-1 text-emerald-600 hover:text-emerald-800">
+                      {copiedField === 'amount' ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+                </div>
+                {dueDateParam && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-slate-500">Due Date</span>
+                    <span className="text-sm text-slate-700">{dueDateParam}</span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-500">Reference</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-mono text-slate-700">{interacRef}</span>
+                    <button onClick={() => copyField(interacRef, 'ref')} className="p-1 text-emerald-600 hover:text-emerald-800">
+                      {copiedField === 'ref' ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Steps */}
+            <p className="text-xs font-semibold text-slate-500 uppercase mb-3">How to Send</p>
+            <ol className="space-y-3 mb-6">
+              {[
+                'Open your banking app (RBC, TD, Scotiabank, BMO, CIBC, etc.)',
+                `Send an Interac e-Transfer to ${selectedBiller}'s payment email`,
+                `Enter $${parseFloat(amountParam).toFixed(2)} CAD as the amount`,
+                `Use "${interacRef}" as the message/reference`,
+                'Submit — funds arrive in 30 min to 24 hours',
+              ].map((step, i) => (
+                <li key={i} className="flex items-start gap-3">
+                  <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
+                    {i + 1}
+                  </span>
+                  <span className="text-sm text-slate-600">{step}</span>
+                </li>
+              ))}
+            </ol>
+
+            <button
+              onClick={handleCopyInteracDetails}
+              className="w-full py-3 px-4 border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 text-sm"
+            >
+              {interacCopied ? <><Check className="w-4 h-4" /> All Details Copied!</> : <><Copy className="w-4 h-4" /> Copy All Payment Details</>}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
