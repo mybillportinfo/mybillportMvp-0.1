@@ -216,3 +216,61 @@ body {
 }
 
 .grecaptcha-badge { visibility: hidden !important; }
+
+/* ── Mobile-first touch optimizations ── */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Minimum touch targets */
+button, a, [role="button"] {
+  min-height: 44px;
+  touch-action: manipulation;
+}
+
+/* Bill card fade-in animation */
+@keyframes billFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.bill-card {
+  animation: billFadeIn 0.25s ease-out both;
+}
+
+/* Pull-to-refresh indicator */
+.pull-indicator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  transition: height 0.15s ease;
+}
+
+/* Bottom nav safe area for notched phones */
+.bottom-nav-safe {
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+}
+
+/* Nav item proper touch target */
+.nav-item {
+  min-height: 48px;
+  min-width: 56px;
+  justify-content: center;
+  padding: 4px 8px;
+}
+
+/* Skeleton pulse override for dark theme */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Scrollbar hide utility */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
