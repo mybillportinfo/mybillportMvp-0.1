@@ -13,6 +13,9 @@ import { trackBillPaid, trackBillDeleted, trackBillEdited, trackPaymentRedirect 
 import { detectSpike, calculateAnnualProjections, calculateSavingsScore, SpikeInfo, AnnualProjection, SavingsScore } from '../lib/billAnalytics';
 import { findSavingsOpportunities } from '../lib/providerOffers';
 import AIChatWidget from '../components/AIChatWidget';
+import { BillListSkeleton } from '../components/BillCardSkeleton';
+import { usePullToRefresh } from '../hooks/usePullToRefresh';
+import { haptics } from '../lib/haptics';
 
 const FREE_PLAN_LIMIT = 5;
 const BILLS_PER_PAGE = 10;
@@ -73,6 +76,7 @@ export default function Dashboard() {
   const [insightsModal, setInsightsModal] = useState<{ bill: Bill; loading: boolean; data: any | null; error: string | null } | null>(null);
   const [dismissedOfferIds, setDismissedOfferIds] = useState<Set<string>>(new Set());
   const { supported: pushSupported, permission: pushPermission, isSubscribed: pushSubscribed, subscribe: subscribePush } = usePushNotifications(user?.uid || null);
+  const { containerRef, pullDistance, refreshing } = usePullToRefresh(async () => { await refreshBills(); });
 
   // Auto-subscribe on first load — push notifications are ON by default
   useEffect(() => {
@@ -382,7 +386,21 @@ export default function Dashboard() {
   ).filter(op => !dismissedOfferIds.has(op.offer.id)).slice(0, 2);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 pb-24">
+    <div ref={containerRef} className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 pb-24 overflow-y-auto">
+      {/* Pull-to-refresh indicator */}
+      <div
+        className="pull-indicator"
+        style={{ height: pullDistance > 0 ? `${pullDistance}px` : 0 }}
+      >
+        {(pullDistance > 0 || refreshing) && (
+          <div className="flex items-center gap-2 text-slate-400 text-xs">
+            {refreshing
+              ? <><div className="w-4 h-4 border-2 border-[#6BCB77] border-t-transparent rounded-full animate-spin" /> Refreshing…</>
+              : <><div className="w-4 h-4 border-2 border-slate-500 border-t-transparent rounded-full" style={{ transform: `rotate(${pullDistance * 3.6}deg)` }} /> Pull to refresh</>
+            }
+          </div>
+        )}
+      </div>
       {/* Header */}
       <div className="px-5 pt-12 pb-6">
         <div className="flex items-center justify-between mb-4">
@@ -658,9 +676,7 @@ export default function Dashboard() {
         </div>
 
         {loading ? (
-          <div className="flex justify-center py-8">
-            <Loader2 className="w-6 h-6 text-[#4D6A9F] animate-spin" />
-          </div>
+          <BillListSkeleton count={4} />
         ) : bills.length === 0 ? (
           <div className="bg-slate-800/50 rounded-xl p-8 text-center border border-slate-700">
             <p className="text-slate-400 mb-4">No bills yet</p>
@@ -683,7 +699,7 @@ export default function Dashboard() {
             const billSubcategory = bill.category && bill.subcategory ? getSubcategory(bill.category, bill.subcategory) : null;
             const showingHistory = paymentHistoryBillId === bill.id;
             return (
-              <div key={bill.id} className="bg-white rounded-xl p-4">
+              <div key={bill.id} className="bg-white rounded-xl p-4 bill-card">
                 <div className="flex items-start gap-3">
                   <div className="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0 text-xl">
                     {billCategory?.icon || <DollarSign className="w-5 h-5 text-slate-600" />}
@@ -772,16 +788,16 @@ export default function Dashboard() {
                     <div className="flex items-center gap-2">
                       <Link
                         href={`/payment?biller=${encodeURIComponent(bill.companyName)}&amount=${remaining.toFixed(2)}&billId=${bill.id || ''}&dueDate=${encodeURIComponent(bill.dueDate ? new Date(bill.dueDate).toISOString().split('T')[0] : '')}`}
-                        onClick={() => trackPaymentRedirect(bill.companyName, true)}
-                        className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-semibold rounded-lg bg-[#4D6A9F] text-white hover:bg-[#3d5a8f] transition-colors"
+                        onClick={() => { haptics.medium(); trackPaymentRedirect(bill.companyName, true); }}
+                        className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-semibold rounded-lg bg-[#4D6A9F] text-white hover:bg-[#3d5a8f] transition-colors min-h-[44px]"
                       >
                         <ExternalLink className="w-4 h-4" />
                         Pay ${remaining.toFixed(2)}
                       </Link>
 
                       <button
-                        onClick={() => openMarkPaidModal(bill)}
-                        className="flex items-center justify-center gap-1.5 px-3 py-2.5 text-sm font-semibold rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors"
+                        onClick={() => { haptics.success(); openMarkPaidModal(bill); }}
+                        className="flex items-center justify-center gap-1.5 px-3 py-2.5 text-sm font-semibold rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors min-h-[44px]"
                       >
                         <Check className="w-4 h-4" />
                         Mark Paid
@@ -815,8 +831,8 @@ export default function Dashboard() {
                         <Loader2 className="w-4 h-4 text-slate-400 animate-spin" />
                       ) : (
                         <button
-                          onClick={() => setConfirmDeleteId(isConfirming ? null : bill.id!)}
-                          className={`p-2 transition-colors rounded-lg flex-shrink-0 ${isConfirming ? 'text-red-500 bg-red-50' : 'text-slate-400 hover:text-red-500'}`}
+                          onClick={() => { haptics.light(); setConfirmDeleteId(isConfirming ? null : bill.id!); }}
+                          className={`p-2 transition-colors rounded-lg flex-shrink-0 min-h-[44px] min-w-[44px] ${isConfirming ? 'text-red-500 bg-red-50' : 'text-slate-400 hover:text-red-500'}`}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -1366,21 +1382,21 @@ export default function Dashboard() {
       <AIChatWidget />
 
       {/* Bottom nav */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur border-t border-slate-700 py-3 px-4">
+      <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur border-t border-slate-700 pt-1 px-4 bottom-nav-safe">
         <div className="max-w-md mx-auto flex justify-around">
-          <Link href="/app" className="nav-item nav-item-active">
+          <Link href="/app" className="nav-item nav-item-active" onClick={() => haptics.light()}>
             <Home className="w-6 h-6" />
             <span className="text-xs">Home</span>
           </Link>
-          <Link href="/calendar" className="nav-item">
+          <Link href="/calendar" className="nav-item" onClick={() => haptics.light()}>
             <CalendarDays className="w-6 h-6" />
             <span className="text-xs">Calendar</span>
           </Link>
-          <Link href="/add-bill" className="nav-item">
+          <Link href="/add-bill" className="nav-item" onClick={() => haptics.light()}>
             <Plus className="w-6 h-6" />
             <span className="text-xs">Add Bill</span>
           </Link>
-          <Link href="/settings" className="nav-item">
+          <Link href="/settings" className="nav-item" onClick={() => haptics.light()}>
             <Settings className="w-6 h-6" />
             <span className="text-xs">Settings</span>
           </Link>
