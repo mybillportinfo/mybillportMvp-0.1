@@ -8,7 +8,7 @@ import { verifyFirebaseToken } from '../../lib/authVerify';
 function getStripe(): Stripe | null {
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) return null;
-  return new Stripe(key, { apiVersion: '2024-06-20' });
+  return new Stripe(key, { apiVersion: '2026-01-28.clover' });
 }
 
 export async function POST(req: NextRequest) {
