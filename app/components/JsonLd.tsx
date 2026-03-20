@@ -53,13 +53,23 @@ export function SoftwareApplicationJsonLd() {
     name: 'MyBillPort',
     applicationCategory: 'FinanceApplication',
     operatingSystem: 'Web, iOS, Android (PWA)',
-    offers: {
-      '@type': 'Offer',
-      price: '0',
-      priceCurrency: 'USD',
-      description: 'Free plan includes up to 10 bills with reminders',
-    },
-    description: 'MyBillPort is a bill management app that helps you track due dates, get reminders, and pay bills with one click. Supports 120+ billers worldwide.',
+    offers: [
+      {
+        '@type': 'Offer',
+        price: '0',
+        priceCurrency: 'CAD',
+        name: 'Free Plan',
+        description: 'Free plan — track up to 5 bills with reminders and AI scanning',
+      },
+      {
+        '@type': 'Offer',
+        price: '7.00',
+        priceCurrency: 'CAD',
+        name: 'Premium Plan',
+        description: 'Premium plan — unlimited bills, all features',
+      },
+    ],
+    description: 'MyBillPort is Canada\'s bill management app. Track every bill — hydro, internet, phone, insurance — get AI-powered reminders, and pay 120+ Canadian billers with one tap.',
   };
 
   return (
