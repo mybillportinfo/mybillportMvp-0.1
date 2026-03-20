@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { Providers } from './providers';
 import { InstallBanner } from './components/InstallBanner';
+import { CookieBanner } from './components/CookieBanner';
 import { OrganizationJsonLd, WebsiteJsonLd } from './components/JsonLd';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -103,6 +104,7 @@ export default function RootLayout({
         <Providers>
           {children}
           <InstallBanner />
+          <CookieBanner />
         </Providers>
       </body>
     </html>
