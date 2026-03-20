@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import {
   ArrowRight, DollarSign, Mail, CheckCircle,
@@ -13,6 +14,42 @@ import { FAQ } from "./components/FAQ";
 import { GlobalFootprint } from "./components/GlobalFootprint";
 import { FAQJsonLd, SoftwareApplicationJsonLd } from "./components/JsonLd";
 import { WaitlistForm } from "./components/WaitlistForm";
+
+export const metadata: Metadata = {
+  title: "MyBillPort — Free Bill Management App for Canadians | Track & Pay Bills Online",
+  description: "Track, manage, and pay all your bills in one place. MyBillPort is Canada's bill management app with AI scanning, smart reminders, and one-click payments for 120+ billers. Free to start — no bank login required.",
+  keywords: [
+    "bill management app Canada",
+    "bill tracker Canada",
+    "pay bills online Canada",
+    "bill payment app",
+    "track bills online",
+    "bill reminder app Canada",
+    "utility bill tracker",
+    "never miss a bill",
+    "bill organizer Canada",
+    "hydro bill tracker",
+    "Rogers Bell TELUS bill",
+    "Canadian bill payment",
+    "manage bills online",
+    "bill due date reminder",
+    "AI bill scanner",
+  ],
+  alternates: { canonical: "https://mybillport.com" },
+  openGraph: {
+    title: "MyBillPort — Never Miss a Bill Again | Free Bill Management App",
+    description: "Canada's bill management app. Track every bill, get AI-powered reminders, and pay with one tap. Supports Rogers, Bell, TELUS, Hydro One, Enbridge, and 120+ billers.",
+    url: "https://mybillport.com",
+    type: "website",
+    images: [{ url: "https://mybillport.com/icon-512.png", width: 512, height: 512, alt: "MyBillPort — Bill Management App" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "MyBillPort — Never Miss a Bill Again",
+    description: "Canada's bill management app. Track every bill, get AI-powered reminders, and pay with one tap. 120+ billers supported.",
+    images: ["https://mybillport.com/icon-512.png"],
+  },
+};
 
 function PhoneMockup({ children, shadow = "0 32px 64px rgba(0,0,0,0.4)" }: { children: ReactNode; shadow?: string }) {
   return (
@@ -237,7 +274,7 @@ export default function LandingPage() {
                 </span>
               </h1>
               <p className="text-lg text-slate-400 leading-relaxed max-w-lg mx-auto lg:mx-0">
-                Stop juggling due dates and hunting for invoices. MyBillPort keeps every bill organised, visible, and paid on time — with AI scanning and smart reminders.
+                Canada&apos;s bill management app. Track every bill — hydro, internet, phone, insurance — in one dashboard. AI-powered scanning, smart reminders, and one-tap payment to 120+ Canadian billers. Never pay a late fee again.
               </p>
               <div className="flex flex-wrap justify-center lg:justify-start gap-3 pt-1">
                 <Link href="/login" className="bg-[#4D6A9F] hover:bg-[#3d5a8f] text-white font-bold px-8 py-4 rounded-full transition-colors flex items-center gap-2 text-base shadow-lg shadow-[#4D6A9F]/20">
