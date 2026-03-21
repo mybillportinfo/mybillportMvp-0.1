@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
 import { Home, Plus, Settings, CalendarDays, Loader2, Trash2, AlertTriangle, Bell, BellOff, DollarSign, CheckCircle, ExternalLink, Check, X, Clock, ChevronDown, ChevronUp, Pencil, Receipt, TrendingUp, TrendingDown, Minus, Sparkles, BarChart3, Target, ArrowUpRight, ArrowDownRight, Smartphone, Zap, Copy, CheckCheck, Inbox } from "lucide-react";
@@ -12,10 +13,11 @@ import { CATEGORIES, getCategoryByValue, getSubcategory } from '../lib/categorie
 import { trackBillPaid, trackBillDeleted, trackBillEdited, trackPaymentRedirect } from '../lib/analyticsService';
 import { detectSpike, calculateAnnualProjections, calculateSavingsScore, SpikeInfo, AnnualProjection, SavingsScore } from '../lib/billAnalytics';
 import { findSavingsOpportunities } from '../lib/providerOffers';
-import AIChatWidget from '../components/AIChatWidget';
 import { BillListSkeleton } from '../components/BillCardSkeleton';
 import { usePullToRefresh } from '../hooks/usePullToRefresh';
 import { haptics } from '../lib/haptics';
+
+const AIChatWidget = dynamic(() => import('../components/AIChatWidget'), { ssr: false, loading: () => null });
 
 const FREE_PLAN_LIMIT = 5;
 const BILLS_PER_PAGE = 10;
