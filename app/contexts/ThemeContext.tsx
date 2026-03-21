@@ -18,23 +18,20 @@ const ThemeContext = createContext<ThemeContextType>({
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>('dark');
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem('billport-theme') as Theme | null;
     const initial = saved === 'light' ? 'light' : 'dark';
     setThemeState(initial);
     document.documentElement.setAttribute('data-theme', initial);
-    setMounted(true);
   }, []);
 
-  const setTheme = (newTheme: Theme) => {
-    setThemeState(newTheme);
-    localStorage.setItem('billport-theme', newTheme);
-    document.documentElement.setAttribute('data-theme', newTheme);
-  };
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('billport-theme', theme);
+  }, [theme]);
 
-  if (!mounted) return null;
+  const setTheme = (newTheme: Theme) => setThemeState(newTheme);
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme, isDark: theme === 'dark' }}>
