@@ -17,7 +17,7 @@ import { WaitlistForm } from "./components/WaitlistForm";
 
 export const metadata: Metadata = {
   title: "MyBillPort — Free Bill Management App for Canadians | Track & Pay Bills Online",
-  description: "Track, manage, and pay all your bills in one place. MyBillPort is Canada's bill management app with AI scanning, smart reminders, and one-click payments for 120+ billers. Free to start — no bank login required.",
+  description: "Canada's bill management app. Track every bill, get AI reminders, pay 120+ Canadian billers with one tap. Free to start — no bank login.",
   keywords: [
     "bill management app Canada",
     "bill tracker Canada",
