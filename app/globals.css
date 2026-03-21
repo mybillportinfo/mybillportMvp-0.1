@@ -3,45 +3,44 @@
 @tailwind utilities;
 
 :root {
-  --background: hsl(213, 28%, 17%);
-  --foreground: hsl(210, 20%, 98%);
-  --muted: hsl(213, 24%, 22%);
-  --muted-foreground: hsl(215, 12%, 58%);
-  --popover: hsl(213, 28%, 17%);
-  --popover-foreground: hsl(210, 20%, 98%);
-  --card: hsl(0, 0%, 99%);
-  --card-foreground: hsl(213, 28%, 17%);
-  --border: hsl(213, 20%, 26%);
-  --input: hsl(213, 24%, 22%);
+  --background: hsl(210, 40%, 98%);
+  --foreground: hsl(222, 47%, 11%);
+  --muted: hsl(210, 40%, 96%);
+  --muted-foreground: hsl(215, 16%, 47%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(222, 47%, 11%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(222, 47%, 11%);
+  --border: hsl(214, 32%, 91%);
+  --input: hsl(214, 32%, 91%);
 
-  --primary: hsl(128, 46%, 60%);
+  --primary: hsl(239, 76%, 62%);
   --primary-foreground: hsl(0, 0%, 100%);
 
-  --secondary: hsl(216, 34%, 46%);
+  --secondary: hsl(239, 76%, 70%);
   --secondary-foreground: hsl(0, 0%, 100%);
 
-  --accent: hsl(216, 34%, 46%);
+  --accent: hsl(239, 76%, 62%);
   --accent-foreground: hsl(0, 0%, 100%);
 
-  --destructive: hsl(0, 65%, 55%);
+  --destructive: hsl(0, 72%, 51%);
   --destructive-foreground: hsl(0, 0%, 100%);
-  --ring: hsl(128, 46%, 60%);
+  --ring: hsl(239, 76%, 62%);
   --radius: 0.625rem;
 
-  --success: hsl(36, 100%, 64%);
-  --success-light: hsl(36, 100%, 90%);
-  --warning: hsl(36, 80%, 54%);
-  --warning-light: hsl(36, 80%, 92%);
-  --danger: hsl(0, 65%, 55%);
-  --danger-light: hsl(0, 65%, 94%);
+  --success: hsl(160, 84%, 39%);
+  --success-light: hsl(160, 84%, 94%);
+  --warning: hsl(38, 92%, 50%);
+  --warning-light: hsl(38, 92%, 94%);
+  --danger: hsl(0, 72%, 51%);
+  --danger-light: hsl(0, 72%, 95%);
 
-  --navy: hsl(213, 30%, 18%);
-  --navy-deep: hsl(213, 32%, 13%);
-  --slate: hsl(213, 20%, 32%);
-  --slate-light: hsl(213, 16%, 44%);
-  --mint: hsl(128, 46%, 60%);
-  --navy-btn: hsl(216, 34%, 46%);
-  --peach: hsl(36, 100%, 64%);
+  --indigo: hsl(239, 76%, 62%);
+  --indigo-deep: hsl(239, 76%, 50%);
+  --indigo-light: hsl(239, 76%, 97%);
+  --mint: hsl(160, 84%, 39%);
+  --navy-btn: hsl(239, 76%, 62%);
+  --peach: hsl(38, 92%, 50%);
 }
 
 * {
@@ -56,7 +55,7 @@ body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: linear-gradient(180deg, var(--navy-deep) 0%, var(--navy) 100%);
+  background: #F8FAFC;
   min-height: 100vh;
   color: var(--foreground);
 }
@@ -65,34 +64,33 @@ body {
   background-color: white;
   border-radius: 0.75rem;
   border: 0;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
 }
 
 .card-dark {
   border-radius: 0.75rem;
   border-width: 1px;
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  background: rgba(30, 42, 58, 0.6);
-  border-color: rgba(71, 85, 105, 0.4);
+  background: #FFFFFF;
+  border-color: #E2E8F0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
 }
 
 .status-upcoming {
-  background: hsl(36, 100%, 90%);
-  color: hsl(36, 80%, 30%);
-  border: 1px solid hsl(36, 80%, 75%);
+  background: hsl(38, 92%, 94%);
+  color: hsl(38, 92%, 28%);
+  border: 1px solid hsl(38, 92%, 75%);
 }
 
 .status-due-soon {
-  background: hsl(128, 46%, 90%);
-  color: hsl(128, 46%, 28%);
-  border: 1px solid hsl(128, 46%, 76%);
+  background: hsl(239, 76%, 95%);
+  color: hsl(239, 76%, 38%);
+  border: 1px solid hsl(239, 76%, 82%);
 }
 
 .status-overdue {
-  background: hsl(0, 65%, 94%);
-  color: hsl(0, 65%, 42%);
-  border: 1px solid hsl(0, 60%, 85%);
+  background: hsl(0, 72%, 95%);
+  color: hsl(0, 72%, 42%);
+  border: 1px solid hsl(0, 72%, 85%);
 }
 
 .btn-primary {
@@ -103,7 +101,7 @@ body {
   transition: all 0.2s;
 }
 .btn-primary:hover {
-  background: hsl(216, 34%, 38%);
+  background: hsl(239, 76%, 54%);
 }
 
 .btn-secondary {
@@ -114,26 +112,27 @@ body {
   transition: all 0.2s;
 }
 .btn-secondary:hover {
-  background: hsl(128, 46%, 50%);
+  background: hsl(160, 84%, 32%);
 }
 
 .btn-accent {
-  background: var(--peach);
-  color: hsl(213, 28%, 17%);
+  background: #5B5BE6;
+  color: white;
   font-weight: 600;
   border-radius: 0.5rem;
   transition: all 0.2s;
 }
 .btn-accent:hover {
-  background: hsl(36, 100%, 56%);
+  background: #4646CC;
 }
 
 .summary-card {
   border-radius: 0.75rem;
   padding: 1.25rem;
   border-width: 1px;
-  background: rgba(30, 42, 58, 0.5);
-  border-color: rgba(71, 85, 105, 0.35);
+  background: #FFFFFF;
+  border-color: #E2E8F0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
 }
 
 .nav-item {
@@ -142,46 +141,46 @@ body {
   align-items: center;
   gap: 0.25rem;
   transition: color 0.15s;
-  color: hsl(215, 10%, 55%);
+  color: #94A3B8;
 }
 .nav-item:hover {
-  color: hsl(215, 10%, 75%);
+  color: #64748B;
 }
 
 .nav-item-active {
-  color: var(--mint);
+  color: #5B5BE6;
 }
 
 .glass-effect {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.9);
 }
 
 .gradient-accent {
-  background: linear-gradient(135deg, var(--mint) 0%, var(--navy-btn) 100%);
+  background: linear-gradient(135deg, #5B5BE6 0%, #7C3AED 100%);
 }
 
 .gradient-navy {
-  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-deep) 100%);
+  background: linear-gradient(135deg, #5B5BE6 0%, #4646CC 100%);
 }
 
 .text-gradient {
-  background: linear-gradient(135deg, var(--mint) 0%, var(--navy-btn) 50%, var(--peach) 100%);
+  background: linear-gradient(135deg, #5B5BE6 0%, #7C3AED 50%, #DB2777 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .text-heading {
-  color: var(--foreground);
+  color: #0F172A;
   font-weight: 600;
   letter-spacing: -0.01em;
 }
 
 .text-body {
-  color: var(--muted-foreground);
+  color: #64748B;
   line-height: 1.6;
 }
 
@@ -265,7 +264,7 @@ button, a, [role="button"] {
   padding: 4px 8px;
 }
 
-/* Skeleton pulse override for dark theme */
+/* Skeleton pulse override */
 @keyframes shimmer {
   0%   { background-position: -200% 0; }
   100% { background-position: 200% 0; }
