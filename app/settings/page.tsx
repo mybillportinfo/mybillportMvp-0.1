@@ -374,6 +374,83 @@ export default function SettingsPage() {
       </div>
 
       <div className="px-4 space-y-3">
+
+        {/* App Settings — Colour Scheme */}
+        <div className="rounded-2xl p-4 space-y-3" style={{ background: isDark ? '#263244' : '#FFFFFF', border: isDark ? '1px solid rgba(77,106,159,0.3)' : '1px solid #E2E8F0' }}>
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #5B5BE6, #4646CC)' }}>
+              {isDark ? <Moon className="w-3.5 h-3.5 text-white" /> : <Sun className="w-3.5 h-3.5 text-white" />}
+            </div>
+            <p className="text-sm font-semibold text-white">App Settings</p>
+          </div>
+          <p className="text-xs text-slate-400 -mt-1 mb-2">Choose your preferred colour scheme</p>
+          <div className="grid grid-cols-2 gap-3">
+            {/* Dark mode tile */}
+            <button
+              onClick={() => setTheme('dark')}
+              className="relative rounded-xl overflow-hidden transition-all active:scale-95"
+              style={{
+                border: isDark ? '2px solid #5B5BE6' : '2px solid rgba(77,106,159,0.25)',
+                boxShadow: isDark ? '0 0 0 1px rgba(91,91,230,0.3), 0 4px 12px rgba(0,0,0,0.3)' : 'none',
+              }}
+            >
+              <div className="p-3" style={{ background: 'linear-gradient(135deg, #1E2A3A 0%, #263244 100%)' }}>
+                <div className="space-y-1.5 mb-2">
+                  <div className="h-1.5 rounded-full w-3/4" style={{ background: 'rgba(255,255,255,0.25)' }} />
+                  <div className="h-1.5 rounded-full w-1/2" style={{ background: 'rgba(255,255,255,0.15)' }} />
+                </div>
+                <div className="flex gap-1">
+                  <div className="flex-1 h-5 rounded-md" style={{ background: 'rgba(77,106,159,0.4)' }} />
+                  <div className="flex-1 h-5 rounded-md" style={{ background: 'rgba(107,203,119,0.25)' }} />
+                </div>
+              </div>
+              <div className="py-2 px-3 flex items-center justify-between" style={{ background: isDark ? '#1a2334' : '#111827' }}>
+                <div className="flex items-center gap-1.5">
+                  <Moon className="w-3 h-3 text-slate-400" />
+                  <span className="text-xs font-medium text-slate-300">Dark</span>
+                </div>
+                {isDark && (
+                  <div className="w-4 h-4 rounded-full flex items-center justify-center" style={{ background: '#5B5BE6' }}>
+                    <Check className="w-2.5 h-2.5 text-white" />
+                  </div>
+                )}
+              </div>
+            </button>
+
+            {/* Light mode tile */}
+            <button
+              onClick={() => setTheme('light')}
+              className="relative rounded-xl overflow-hidden transition-all active:scale-95"
+              style={{
+                border: !isDark ? '2px solid #5B5BE6' : '2px solid rgba(77,106,159,0.25)',
+                boxShadow: !isDark ? '0 0 0 1px rgba(91,91,230,0.3), 0 4px 12px rgba(0,0,0,0.15)' : 'none',
+              }}
+            >
+              <div className="p-3" style={{ background: 'linear-gradient(135deg, #F8FAFC 0%, #EEF2FF 100%)' }}>
+                <div className="space-y-1.5 mb-2">
+                  <div className="h-1.5 rounded-full w-3/4" style={{ background: 'rgba(15,23,42,0.2)' }} />
+                  <div className="h-1.5 rounded-full w-1/2" style={{ background: 'rgba(15,23,42,0.12)' }} />
+                </div>
+                <div className="flex gap-1">
+                  <div className="flex-1 h-5 rounded-md" style={{ background: 'rgba(91,91,230,0.2)' }} />
+                  <div className="flex-1 h-5 rounded-md" style={{ background: 'rgba(91,91,230,0.1)' }} />
+                </div>
+              </div>
+              <div className="py-2 px-3 flex items-center justify-between" style={{ background: isDark ? '#f8fafc' : '#FFFFFF' }}>
+                <div className="flex items-center gap-1.5">
+                  <Sun className="w-3 h-3 text-slate-500" />
+                  <span className="text-xs font-medium text-slate-600">Light</span>
+                </div>
+                {!isDark && (
+                  <div className="w-4 h-4 rounded-full flex items-center justify-center" style={{ background: '#5B5BE6' }}>
+                    <Check className="w-2.5 h-2.5 text-white" />
+                  </div>
+                )}
+              </div>
+            </button>
+          </div>
+        </div>
+
         {/* Profile card */}
         <button
           onClick={() => { setActiveModal('profile'); setProfileError(null); setProfileSaved(false); setShowDeleteConfirm(false); }}
@@ -493,26 +570,6 @@ export default function SettingsPage() {
             <span className="flex-1 text-left text-white font-medium">Security</span>
             <ChevronRight className="w-4 h-4 text-slate-500" />
           </button>
-          <div className="w-full p-4 flex items-center gap-4">
-            <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: isDark ? 'linear-gradient(135deg, #4D6A9F, #3d5a8f)' : 'linear-gradient(135deg, #5B5BE6, #4646CC)' }}>
-              {isDark ? <Moon className="w-5 h-5 text-white" /> : <Sun className="w-5 h-5 text-white" />}
-            </div>
-            <div className="flex-1 text-left">
-              <span className="text-white font-medium">Appearance</span>
-              <p className="text-xs text-slate-400 mt-0.5">{isDark ? 'Dark mode' : 'Light mode'}</p>
-            </div>
-            <button
-              onClick={() => setTheme(isDark ? 'light' : 'dark')}
-              className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none flex-shrink-0"
-              style={{ background: isDark ? '#4D6A9F' : '#5B5BE6' }}
-              aria-label="Toggle theme"
-            >
-              <span
-                className="inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition-transform duration-200"
-                style={{ transform: isDark ? 'translateX(4px)' : 'translateX(24px)' }}
-              />
-            </button>
-          </div>
         </div>
 
         {/* Support links */}
