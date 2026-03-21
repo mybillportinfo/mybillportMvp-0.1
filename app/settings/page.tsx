@@ -340,8 +340,8 @@ export default function SettingsPage() {
 
   if (loading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(160deg, #1E2A3A 0%, #263244 100%)' }}>
-        <Loader2 className="w-8 h-8 text-[#6BCB77] animate-spin" />
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#F8FAFC' }}>
+        <Loader2 className="w-8 h-8 text-[#5B5BE6] animate-spin" />
       </div>
     );
   }
@@ -349,22 +349,22 @@ export default function SettingsPage() {
   const photoURL = profile?.photoURL || user.photoURL;
 
   return (
-    <div className="min-h-screen pb-24" style={{ background: 'linear-gradient(160deg, #1E2A3A 0%, #263244 100%)' }}>
+    <div className="min-h-screen pb-24" style={{ background: '#F8FAFC' }}>
       {/* Branded header */}
       <div className="relative overflow-hidden px-5 pt-12 pb-7">
         <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 80% 50%, rgba(77,106,159,0.15) 0%, transparent 60%)' }} />
-        <Link href="/app" className="flex items-center text-slate-400 hover:text-white mb-5 transition-colors relative">
+        <Link href="/app" className="flex items-center text-[#64748B] hover:text-[#0F172A] mb-5 transition-colors relative">
           <ArrowLeft className="w-5 h-5 mr-2" />
           Back to Dashboard
         </Link>
         <div className="flex items-center gap-3 relative">
-          <div className="w-11 h-11 rounded-xl flex items-center justify-center shadow-lg" style={{ background: 'linear-gradient(135deg, #4D6A9F, #3d5a8f)' }}>
+          <div className="w-11 h-11 rounded-xl flex items-center justify-center shadow-lg" style={{ background: 'linear-gradient(135deg, #5B5BE6, #4646CC)' }}>
             <Settings className="text-white w-6 h-6" />
           </div>
           <div>
-            <span className="text-white font-bold text-xl tracking-tight">Settings</span>
+            <span className="text-[#0F172A] font-bold text-xl tracking-tight">Settings</span>
             <div className="flex items-center gap-1.5 mt-0.5">
-              <div className="w-1.5 h-1.5 rounded-full bg-[#4D6A9F]" />
+              <div className="w-1.5 h-1.5 rounded-full bg-[#5B5BE6]" />
               <p className="text-xs text-slate-400">Preferences & account</p>
             </div>
           </div>
@@ -380,18 +380,18 @@ export default function SettingsPage() {
         >
           <div className="p-4 flex items-center gap-4">
             {photoURL ? (
-              <img src={photoURL} alt="Profile" className="w-14 h-14 rounded-full object-cover" style={{ border: '2.5px solid #6BCB77' }} />
+              <img src={photoURL} alt="Profile" className="w-14 h-14 rounded-full object-cover" style={{ border: '2.5px solid #5B5BE6' }} />
             ) : (
-              <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #6BCB77, #4DA85A)' }}>
+              <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #5B5BE6, #4DA85A)' }}>
                 <User className="w-7 h-7 text-white" />
               </div>
             )}
             <div className="flex-1 text-left">
-              <p className="font-semibold text-white">{username || user.displayName || 'MyBillPort User'}</p>
+              <p className="font-semibold text-[#0F172A]">{username || user.displayName || 'MyBillPort User'}</p>
               <p className="text-sm text-slate-400">{user.email}</p>
             </div>
             <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(107,203,119,0.15)' }}>
-              <ChevronRight className="w-4 h-4 text-[#6BCB77]" />
+              <ChevronRight className="w-4 h-4 text-[#5B5BE6]" />
             </div>
           </div>
         </button>
@@ -404,7 +404,7 @@ export default function SettingsPage() {
                 <CreditCard className="w-5 h-5 text-white" />
               </div>
               <div>
-                <p className="font-semibold text-white">{isPremium ? 'Premium Plan' : 'Free Plan'}</p>
+                <p className="font-semibold text-[#0F172A]">{isPremium ? 'Premium Plan' : 'Free Plan'}</p>
                 <p className="text-xs text-slate-400">
                   {isPremium
                     ? subscription.currentPeriodEnd
@@ -427,14 +427,14 @@ export default function SettingsPage() {
         {/* Email Forwarding */}
         <div className="rounded-2xl p-4 space-y-3" style={{ background: 'rgba(77,106,159,0.12)', border: '1px solid rgba(77,106,159,0.3)' }}>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #4D6A9F, #3d5a8f)' }}>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #5B5BE6, #4646CC)' }}>
               <Forward className="w-5 h-5 text-white" />
             </div>
             <div className="flex-1">
-              <p className="font-semibold text-white">Bill Forwarding Email</p>
+              <p className="font-semibold text-[#0F172A]">Bill Forwarding Email</p>
               <p className="text-xs text-slate-400">Forward bills for auto-detection</p>
             </div>
-            <Link href="/pending-bills" className="text-xs text-[#6BCB77] font-semibold hover:underline flex items-center gap-1">
+            <Link href="/pending-bills" className="text-xs text-[#5B5BE6] font-semibold hover:underline flex items-center gap-1">
               <Inbox className="w-3.5 h-3.5" />
               Inbox
             </Link>
@@ -442,15 +442,15 @@ export default function SettingsPage() {
           {emailAlias ? (
             <div className="space-y-2">
               <div className="flex items-center gap-2 rounded-xl px-3 py-2.5" style={{ background: 'rgba(30,42,58,0.6)', border: '1px solid rgba(77,106,159,0.4)' }}>
-                <span className="flex-1 text-sm text-slate-300 font-mono truncate">bills+{emailAlias}@mybillport.com</span>
-                <button onClick={handleCopyAlias} className="text-[#6BCB77] transition-colors flex-shrink-0">
+                <span className="flex-1 text-sm text-[#475569] font-mono truncate">bills+{emailAlias}@mybillport.com</span>
+                <button onClick={handleCopyAlias} className="text-[#5B5BE6] transition-colors flex-shrink-0">
                   {aliasCopied ? <CheckCheck className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                 </button>
               </div>
               <p className="text-xs text-slate-500">Forward bills here from Gmail / Outlook — they appear in your inbox for review.</p>
             </div>
           ) : (
-            <div className="h-8 flex items-center"><Loader2 className="w-4 h-4 text-[#4D6A9F] animate-spin" /></div>
+            <div className="h-8 flex items-center"><Loader2 className="w-4 h-4 text-[#5B5BE6] animate-spin" /></div>
           )}
         </div>
 
@@ -461,7 +461,7 @@ export default function SettingsPage() {
               <Gift className="w-4.5 h-4.5 w-5 h-5 text-white" />
             </div>
             <div className="flex-1 text-left">
-              <span className="text-white font-medium">Refer a Friend</span>
+              <span className="text-[#0F172A] font-medium">Refer a Friend</span>
               {(ctxProfile?.referralCount ?? 0) > 0 && (
                 <span className="ml-2 text-xs px-2 py-0.5 rounded-full font-semibold" style={{ background: 'rgba(255,179,71,0.2)', color: '#FFB347' }}>
                   {ctxProfile?.referralCount} referred
@@ -471,24 +471,24 @@ export default function SettingsPage() {
             <ChevronRight className="w-4 h-4 text-slate-500" />
           </button>
           <button onClick={() => setActiveModal('notifications')} className="w-full p-4 flex items-center gap-4 hover:bg-white/5 transition-colors">
-            <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #6BCB77, #4DA85A)' }}>
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #5B5BE6, #4DA85A)' }}>
               <Bell className="w-5 h-5 text-white" />
             </div>
-            <span className="flex-1 text-left text-white font-medium">Notifications</span>
+            <span className="flex-1 text-left text-[#0F172A] font-medium">Notifications</span>
             <ChevronRight className="w-4 h-4 text-slate-500" />
           </button>
           <button onClick={() => setActiveModal('privacy')} className="w-full p-4 flex items-center gap-4 hover:bg-white/5 transition-colors">
-            <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #4D6A9F, #3d5a8f)' }}>
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #5B5BE6, #4646CC)' }}>
               <Shield className="w-5 h-5 text-white" />
             </div>
-            <span className="flex-1 text-left text-white font-medium">Privacy</span>
+            <span className="flex-1 text-left text-[#0F172A] font-medium">Privacy</span>
             <ChevronRight className="w-4 h-4 text-slate-500" />
           </button>
           <button onClick={() => setActiveModal('security')} className="w-full p-4 flex items-center gap-4 hover:bg-white/5 transition-colors">
             <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: 'rgba(255,179,71,0.2)', border: '1px solid rgba(255,179,71,0.3)' }}>
               <Lock className="w-5 h-5 text-[#FFB347]" />
             </div>
-            <span className="flex-1 text-left text-white font-medium">Security</span>
+            <span className="flex-1 text-left text-[#0F172A] font-medium">Security</span>
             <ChevronRight className="w-4 h-4 text-slate-500" />
           </button>
         </div>
@@ -497,9 +497,9 @@ export default function SettingsPage() {
         <div className="rounded-2xl overflow-hidden divide-y" style={{ background: '#263244', border: '1px solid rgba(71,85,105,0.25)' }}>
           <Link href="/feedback" className="flex p-4 items-center gap-4 hover:bg-white/5 transition-colors">
             <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: 'rgba(107,203,119,0.15)' }}>
-              <MessageSquare className="w-5 h-5 text-[#6BCB77]" />
+              <MessageSquare className="w-5 h-5 text-[#5B5BE6]" />
             </div>
-            <span className="flex-1 text-white font-medium">Send Feedback</span>
+            <span className="flex-1 text-[#0F172A] font-medium">Send Feedback</span>
             <ChevronRight className="w-4 h-4 text-slate-500" />
           </Link>
           <Link href="/privacy" className="flex p-4 items-center hover:bg-white/5 transition-colors">
@@ -526,7 +526,7 @@ export default function SettingsPage() {
         <p className="text-center text-slate-600 text-xs pt-1 pb-2">MyBillPort v1.0 Production</p>
       </div>
 
-      <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur border-t border-slate-700 py-3 px-4">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur border-t border-[#E2E8F0] py-3 px-4">
         <div className="max-w-md mx-auto flex justify-around">
           <Link href="/app" className="nav-item">
             <Home className="w-6 h-6" />
@@ -558,8 +558,8 @@ export default function SettingsPage() {
               <div>
                 <div className="flex items-center justify-between p-5 border-b border-slate-100">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-[#4D6A9F]/15 rounded-lg flex items-center justify-center">
-                      <User className="w-5 h-5 text-[#4D6A9F]" />
+                    <div className="w-10 h-10 bg-[#5B5BE6]/15 rounded-lg flex items-center justify-center">
+                      <User className="w-5 h-5 text-[#5B5BE6]" />
                     </div>
                     <h2 className="text-lg font-semibold text-slate-800">Profile</h2>
                   </div>
@@ -571,15 +571,15 @@ export default function SettingsPage() {
                   <div className="flex flex-col items-center gap-3">
                     <div className="relative">
                       {photoURL ? (
-                        <img src={photoURL} alt="Profile" className="w-20 h-20 rounded-full object-cover border-2 border-[#4D6A9F]/30" />
+                        <img src={photoURL} alt="Profile" className="w-20 h-20 rounded-full object-cover border-2 border-[#5B5BE6]/30" />
                       ) : (
-                        <div className="w-20 h-20 bg-[#4D6A9F]/15 rounded-full flex items-center justify-center">
-                          <User className="w-10 h-10 text-[#4D6A9F]" />
+                        <div className="w-20 h-20 bg-[#5B5BE6]/15 rounded-full flex items-center justify-center">
+                          <User className="w-10 h-10 text-[#5B5BE6]" />
                         </div>
                       )}
                       <button
                         onClick={() => photoInputRef.current?.click()}
-                        className="absolute -bottom-1 -right-1 w-8 h-8 bg-[#4D6A9F] rounded-full flex items-center justify-center shadow-lg hover:bg-[#4D6A9F] transition-colors"
+                        className="absolute -bottom-1 -right-1 w-8 h-8 bg-[#5B5BE6] rounded-full flex items-center justify-center shadow-lg hover:bg-[#5B5BE6] transition-colors"
                       >
                         <Camera className="w-4 h-4 text-white" />
                       </button>
@@ -605,7 +605,7 @@ export default function SettingsPage() {
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
                       placeholder="Enter your username"
-                      className="w-full px-4 py-3 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#4D6A9F] focus:border-transparent"
+                      className="w-full px-4 py-3 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#5B5BE6] focus:border-transparent"
                     />
                   </div>
 
@@ -615,7 +615,7 @@ export default function SettingsPage() {
                       type="email"
                       value={newEmail}
                       onChange={(e) => setNewEmail(e.target.value)}
-                      className="w-full px-4 py-3 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#4D6A9F] focus:border-transparent"
+                      className="w-full px-4 py-3 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#5B5BE6] focus:border-transparent"
                     />
                     <p className="text-xs text-slate-500 mt-1">Changing email requires recent sign-in</p>
                   </div>
@@ -640,7 +640,7 @@ export default function SettingsPage() {
                   )}
 
                   {profileSaved && (
-                    <div className="bg-[#4D6A9F]/10 border border-[#4D6A9F]/30 text-[#3d5a8f] px-4 py-2 rounded-lg text-sm text-center flex items-center justify-center gap-2">
+                    <div className="bg-[#5B5BE6]/10 border border-[#5B5BE6]/30 text-[#4646CC] px-4 py-2 rounded-lg text-sm text-center flex items-center justify-center gap-2">
                       <Check className="w-4 h-4" />
                       Profile saved!
                     </div>
@@ -701,8 +701,8 @@ export default function SettingsPage() {
               <div>
                 <div className="flex items-center justify-between p-5 border-b border-slate-100">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-[#4D6A9F]/15 rounded-lg flex items-center justify-center">
-                      <Gift className="w-5 h-5 text-[#4D6A9F]" />
+                    <div className="w-10 h-10 bg-[#5B5BE6]/15 rounded-lg flex items-center justify-center">
+                      <Gift className="w-5 h-5 text-[#5B5BE6]" />
                     </div>
                     <div>
                       <h2 className="text-lg font-semibold text-slate-800">Refer a Friend</h2>
@@ -715,13 +715,13 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="p-5 space-y-5">
-                  <div className="bg-gradient-to-br from-[#4D6A9F]/10 to-slate-50 border border-[#4D6A9F]/30 rounded-xl p-4 space-y-3">
+                  <div className="bg-gradient-to-br from-[#5B5BE6]/10 to-slate-50 border border-[#5B5BE6]/30 rounded-xl p-4 space-y-3">
                     <p className="text-sm font-medium text-slate-700">Your referral code</p>
                     {referralCode ? (
                       <>
                         <div className="flex items-center gap-2">
-                          <div className="flex-1 bg-white border-2 border-[#4D6A9F]/40 rounded-lg px-4 py-3 text-center">
-                            <span className="text-2xl font-bold text-[#3d5a8f] tracking-[0.3em]">{referralCode}</span>
+                          <div className="flex-1 bg-white border-2 border-[#5B5BE6]/40 rounded-lg px-4 py-3 text-center">
+                            <span className="text-2xl font-bold text-[#4646CC] tracking-[0.3em]">{referralCode}</span>
                           </div>
                           <button
                             onClick={() => {
@@ -729,7 +729,7 @@ export default function SettingsPage() {
                               setReferralCopied(true);
                               setTimeout(() => setReferralCopied(false), 2000);
                             }}
-                            className="p-3 bg-[#4D6A9F] text-white rounded-lg hover:bg-[#4D6A9F] transition-colors"
+                            className="p-3 bg-[#5B5BE6] text-white rounded-lg hover:bg-[#5B5BE6] transition-colors"
                           >
                             {referralCopied ? <CheckCheck className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
                           </button>
@@ -741,7 +741,7 @@ export default function SettingsPage() {
                             setReferralCopied(true);
                             setTimeout(() => setReferralCopied(false), 2000);
                           }}
-                          className="w-full text-sm text-[#4D6A9F] hover:text-[#3d5a8f] flex items-center justify-center gap-1.5 py-1"
+                          className="w-full text-sm text-[#5B5BE6] hover:text-[#4646CC] flex items-center justify-center gap-1.5 py-1"
                         >
                           <Copy className="w-3.5 h-3.5" />
                           {referralCopied ? 'Copied!' : 'Copy invite link'}
@@ -749,7 +749,7 @@ export default function SettingsPage() {
                       </>
                     ) : (
                       <div className="flex items-center justify-center py-6">
-                        <Loader2 className="w-6 h-6 animate-spin text-[#4D6A9F]" />
+                        <Loader2 className="w-6 h-6 animate-spin text-[#5B5BE6]" />
                         <span className="ml-2 text-sm text-slate-500">Generating your code...</span>
                       </div>
                     )}
@@ -757,12 +757,12 @@ export default function SettingsPage() {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="bg-slate-50 rounded-xl p-4 text-center">
-                      <Users className="w-6 h-6 text-[#4D6A9F] mx-auto mb-1" />
+                      <Users className="w-6 h-6 text-[#5B5BE6] mx-auto mb-1" />
                       <p className="text-2xl font-bold text-slate-800">{ctxProfile?.referralCount ?? 0}</p>
                       <p className="text-xs text-slate-500">Friends joined</p>
                     </div>
                     <div className="bg-slate-50 rounded-xl p-4 text-center">
-                      <Gift className="w-6 h-6 text-[#4D6A9F] mx-auto mb-1" />
+                      <Gift className="w-6 h-6 text-[#5B5BE6] mx-auto mb-1" />
                       <p className="text-2xl font-bold text-slate-800">{ctxProfile?.referralFreeMonths ?? 0}</p>
                       <p className="text-xs text-slate-500">Free months earned</p>
                     </div>
@@ -772,24 +772,24 @@ export default function SettingsPage() {
                     <p className="text-sm font-semibold text-slate-700">How it works</p>
                     <div className="space-y-2.5">
                       <div className="flex items-start gap-3">
-                        <span className="w-6 h-6 rounded-full bg-[#4D6A9F] text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
+                        <span className="w-6 h-6 rounded-full bg-[#5B5BE6] text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
                         <p className="text-sm text-slate-600">Share your referral code or invite link with a friend</p>
                       </div>
                       <div className="flex items-start gap-3">
-                        <span className="w-6 h-6 rounded-full bg-[#4D6A9F] text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
+                        <span className="w-6 h-6 rounded-full bg-[#5B5BE6] text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
                         <p className="text-sm text-slate-600">They enter your code when signing up for MyBillPort</p>
                       </div>
                       <div className="flex items-start gap-3">
-                        <span className="w-6 h-6 rounded-full bg-[#4D6A9F] text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">3</span>
+                        <span className="w-6 h-6 rounded-full bg-[#5B5BE6] text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">3</span>
                         <p className="text-sm text-slate-600">When they subscribe to Premium, you get <strong>1 month free</strong>. More referrals = more free months, one per friend.</p>
                       </div>
                     </div>
                   </div>
 
                   {(ctxProfile?.referralFreeMonths ?? 0) > 0 && (
-                    <div className="bg-[#4D6A9F]/10 border border-[#4D6A9F]/30 rounded-xl p-4 flex items-center gap-3">
-                      <Gift className="w-5 h-5 text-[#4D6A9F] flex-shrink-0" />
-                      <p className="text-sm text-[#3d5a8f]">
+                    <div className="bg-[#5B5BE6]/10 border border-[#5B5BE6]/30 rounded-xl p-4 flex items-center gap-3">
+                      <Gift className="w-5 h-5 text-[#5B5BE6] flex-shrink-0" />
+                      <p className="text-sm text-[#4646CC]">
                         You have <strong>{ctxProfile?.referralFreeMonths} free month{(ctxProfile?.referralFreeMonths ?? 0) > 1 ? 's' : ''}</strong> waiting — applied automatically to your next Premium renewal.
                       </p>
                     </div>
@@ -802,8 +802,8 @@ export default function SettingsPage() {
               <div>
                 <div className="flex items-center justify-between p-5 border-b border-slate-100">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-[#4D6A9F]/15 rounded-lg flex items-center justify-center">
-                      <Bell className="w-5 h-5 text-[#4D6A9F]" />
+                    <div className="w-10 h-10 bg-[#5B5BE6]/15 rounded-lg flex items-center justify-center">
+                      <Bell className="w-5 h-5 text-[#5B5BE6]" />
                     </div>
                     <h2 className="text-lg font-semibold text-slate-800">Notifications</h2>
                   </div>
@@ -814,7 +814,7 @@ export default function SettingsPage() {
                 <div className="p-5 space-y-5">
                   {loadingPrefs ? (
                     <div className="flex justify-center py-4">
-                      <Loader2 className="w-6 h-6 text-[#4D6A9F] animate-spin" />
+                      <Loader2 className="w-6 h-6 text-[#5B5BE6] animate-spin" />
                     </div>
                   ) : (
                     <>
@@ -828,7 +828,7 @@ export default function SettingsPage() {
                         </div>
                         <button
                           onClick={() => setInAppReminders(!inAppReminders)}
-                          className={`w-12 h-7 rounded-full transition-colors relative ${inAppReminders ? 'bg-[#4D6A9F]' : 'bg-slate-300'}`}
+                          className={`w-12 h-7 rounded-full transition-colors relative ${inAppReminders ? 'bg-[#5B5BE6]' : 'bg-slate-300'}`}
                         >
                           <span className={`absolute top-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${inAppReminders ? 'left-[22px]' : 'left-0.5'}`} />
                         </button>
@@ -847,7 +847,7 @@ export default function SettingsPage() {
                               <div
                                 onClick={() => toggleNotifyDay(day)}
                                 className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors cursor-pointer ${
-                                  notifyDays.includes(day) ? 'bg-[#4D6A9F] border-[#4D6A9F]' : 'border-slate-300 bg-white'
+                                  notifyDays.includes(day) ? 'bg-[#5B5BE6] border-[#5B5BE6]' : 'border-slate-300 bg-white'
                                 }`}
                               >
                                 {notifyDays.includes(day) && <Check className="w-3 h-3 text-white" />}
@@ -880,14 +880,14 @@ export default function SettingsPage() {
                             <button
                               onClick={pushSubscribed ? unsubscribePush : subscribePush}
                               disabled={pushLoading}
-                              className={`w-12 h-7 rounded-full transition-colors relative disabled:opacity-50 ${pushSubscribed ? 'bg-[#4D6A9F]' : 'bg-slate-300'}`}
+                              className={`w-12 h-7 rounded-full transition-colors relative disabled:opacity-50 ${pushSubscribed ? 'bg-[#5B5BE6]' : 'bg-slate-300'}`}
                             >
                               <span className={`absolute top-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${pushSubscribed ? 'left-[22px]' : 'left-0.5'}`} />
                             </button>
                           )}
                         </div>
                         {pushSubscribed && (
-                          <p className="text-xs text-[#4D6A9F] mt-2 ml-8">
+                          <p className="text-xs text-[#5B5BE6] mt-2 ml-8">
                             You&apos;ll receive push alerts for overdue bills, due-today reminders, and more.
                           </p>
                         )}
@@ -897,7 +897,7 @@ export default function SettingsPage() {
                       </div>
 
                       {prefsSaved && (
-                        <div className="bg-[#4D6A9F]/10 border border-[#4D6A9F]/30 text-[#3d5a8f] px-4 py-2 rounded-lg text-sm text-center">
+                        <div className="bg-[#5B5BE6]/10 border border-[#5B5BE6]/30 text-[#4646CC] px-4 py-2 rounded-lg text-sm text-center">
                           Preferences saved!
                         </div>
                       )}
@@ -954,9 +954,9 @@ export default function SettingsPage() {
                   <div className="bg-slate-50 rounded-lg p-4 space-y-3">
                     <h3 className="font-medium text-slate-800">Your Data Rights</h3>
                     <ul className="text-sm text-slate-600 space-y-2">
-                      <li className="flex items-start gap-2"><span className="text-[#4D6A9F] mt-0.5">&#10003;</span>All your data is encrypted and stored securely</li>
-                      <li className="flex items-start gap-2"><span className="text-[#4D6A9F] mt-0.5">&#10003;</span>We never sell or share your personal information</li>
-                      <li className="flex items-start gap-2"><span className="text-[#4D6A9F] mt-0.5">&#10003;</span>You can request data deletion at any time</li>
+                      <li className="flex items-start gap-2"><span className="text-[#5B5BE6] mt-0.5">&#10003;</span>All your data is encrypted and stored securely</li>
+                      <li className="flex items-start gap-2"><span className="text-[#5B5BE6] mt-0.5">&#10003;</span>We never sell or share your personal information</li>
+                      <li className="flex items-start gap-2"><span className="text-[#5B5BE6] mt-0.5">&#10003;</span>You can request data deletion at any time</li>
                     </ul>
                   </div>
 
@@ -1026,7 +1026,7 @@ export default function SettingsPage() {
                       <button
                         onClick={handleBiometricToggle}
                         disabled={biometricLoading}
-                        className={`relative w-12 h-7 rounded-full transition-colors ${biometricEnabled ? 'bg-[#4D6A9F]' : 'bg-slate-300'} ${biometricLoading ? 'opacity-50' : ''}`}
+                        className={`relative w-12 h-7 rounded-full transition-colors ${biometricEnabled ? 'bg-[#5B5BE6]' : 'bg-slate-300'} ${biometricLoading ? 'opacity-50' : ''}`}
                       >
                         {biometricLoading ? (
                           <Loader2 className="w-4 h-4 text-white animate-spin absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" />
@@ -1040,9 +1040,9 @@ export default function SettingsPage() {
                   <div className="bg-slate-50 rounded-lg p-4 space-y-3">
                     <h3 className="font-medium text-slate-800">Account Security</h3>
                     <ul className="text-sm text-slate-600 space-y-2">
-                      <li className="flex items-start gap-2"><span className="text-[#4D6A9F] mt-0.5">&#10003;</span>Your password is securely hashed</li>
-                      <li className="flex items-start gap-2"><span className="text-[#4D6A9F] mt-0.5">&#10003;</span>Sessions expire automatically for safety</li>
-                      <li className="flex items-start gap-2"><span className="text-[#4D6A9F] mt-0.5">&#10003;</span>All connections use HTTPS encryption</li>
+                      <li className="flex items-start gap-2"><span className="text-[#5B5BE6] mt-0.5">&#10003;</span>Your password is securely hashed</li>
+                      <li className="flex items-start gap-2"><span className="text-[#5B5BE6] mt-0.5">&#10003;</span>Sessions expire automatically for safety</li>
+                      <li className="flex items-start gap-2"><span className="text-[#5B5BE6] mt-0.5">&#10003;</span>All connections use HTTPS encryption</li>
                     </ul>
                   </div>
 
