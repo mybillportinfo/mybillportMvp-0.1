@@ -376,7 +376,7 @@ export default function SettingsPage() {
         <button
           onClick={() => { setActiveModal('profile'); setProfileError(null); setProfileSaved(false); setShowDeleteConfirm(false); }}
           className="w-full rounded-2xl overflow-hidden transition-all hover:scale-[1.01] active:scale-[0.99]"
-          style={{ background: 'linear-gradient(135deg, #263244, #2d3d55)', border: '1px solid rgba(107,203,119,0.25)' }}
+          style={{ background: '#FFFFFF', border: '1px solid #E2E8F0' }}
         >
           <div className="p-4 flex items-center gap-4">
             {photoURL ? (
@@ -441,7 +441,7 @@ export default function SettingsPage() {
           </div>
           {emailAlias ? (
             <div className="space-y-2">
-              <div className="flex items-center gap-2 rounded-xl px-3 py-2.5" style={{ background: 'rgba(30,42,58,0.6)', border: '1px solid rgba(77,106,159,0.4)' }}>
+              <div className="flex items-center gap-2 rounded-xl px-3 py-2.5" style={{ background: '#F1F5F9', border: '1px solid #E2E8F0' }}>
                 <span className="flex-1 text-sm text-[#475569] font-mono truncate">bills+{emailAlias}@mybillport.com</span>
                 <button onClick={handleCopyAlias} className="text-[#5B5BE6] transition-colors flex-shrink-0">
                   {aliasCopied ? <CheckCheck className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
@@ -455,8 +455,8 @@ export default function SettingsPage() {
         </div>
 
         {/* Main settings rows */}
-        <div className="rounded-2xl overflow-hidden divide-y" style={{ background: '#263244', borderColor: 'rgba(71,85,105,0.3)', border: '1px solid rgba(71,85,105,0.25)' }}>
-          <button onClick={() => setActiveModal('referral')} className="w-full p-4 flex items-center gap-4 hover:bg-white/5 transition-colors">
+        <div className="rounded-2xl overflow-hidden divide-y divide-[#E2E8F0]" style={{ background: '#FFFFFF', border: '1px solid #E2E8F0' }}>
+          <button onClick={() => setActiveModal('referral')} className="w-full p-4 flex items-center gap-4 hover:bg-slate-50 transition-colors">
             <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #FFB347, #f09020)' }}>
               <Gift className="w-4.5 h-4.5 w-5 h-5 text-white" />
             </div>
@@ -470,21 +470,21 @@ export default function SettingsPage() {
             </div>
             <ChevronRight className="w-4 h-4 text-slate-500" />
           </button>
-          <button onClick={() => setActiveModal('notifications')} className="w-full p-4 flex items-center gap-4 hover:bg-white/5 transition-colors">
+          <button onClick={() => setActiveModal('notifications')} className="w-full p-4 flex items-center gap-4 hover:bg-slate-50 transition-colors">
             <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #5B5BE6, #4DA85A)' }}>
               <Bell className="w-5 h-5 text-white" />
             </div>
             <span className="flex-1 text-left text-[#0F172A] font-medium">Notifications</span>
             <ChevronRight className="w-4 h-4 text-slate-500" />
           </button>
-          <button onClick={() => setActiveModal('privacy')} className="w-full p-4 flex items-center gap-4 hover:bg-white/5 transition-colors">
+          <button onClick={() => setActiveModal('privacy')} className="w-full p-4 flex items-center gap-4 hover:bg-slate-50 transition-colors">
             <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #5B5BE6, #4646CC)' }}>
               <Shield className="w-5 h-5 text-white" />
             </div>
             <span className="flex-1 text-left text-[#0F172A] font-medium">Privacy</span>
             <ChevronRight className="w-4 h-4 text-slate-500" />
           </button>
-          <button onClick={() => setActiveModal('security')} className="w-full p-4 flex items-center gap-4 hover:bg-white/5 transition-colors">
+          <button onClick={() => setActiveModal('security')} className="w-full p-4 flex items-center gap-4 hover:bg-slate-50 transition-colors">
             <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: 'rgba(255,179,71,0.2)', border: '1px solid rgba(255,179,71,0.3)' }}>
               <Lock className="w-5 h-5 text-[#FFB347]" />
             </div>
@@ -494,19 +494,19 @@ export default function SettingsPage() {
         </div>
 
         {/* Support links */}
-        <div className="rounded-2xl overflow-hidden divide-y" style={{ background: '#263244', border: '1px solid rgba(71,85,105,0.25)' }}>
-          <Link href="/feedback" className="flex p-4 items-center gap-4 hover:bg-white/5 transition-colors">
+        <div className="rounded-2xl overflow-hidden divide-y divide-[#E2E8F0]" style={{ background: '#FFFFFF', border: '1px solid #E2E8F0' }}>
+          <Link href="/feedback" className="flex p-4 items-center gap-4 hover:bg-slate-50 transition-colors">
             <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: 'rgba(107,203,119,0.15)' }}>
               <MessageSquare className="w-5 h-5 text-[#5B5BE6]" />
             </div>
             <span className="flex-1 text-[#0F172A] font-medium">Send Feedback</span>
             <ChevronRight className="w-4 h-4 text-slate-500" />
           </Link>
-          <Link href="/privacy" className="flex p-4 items-center hover:bg-white/5 transition-colors">
+          <Link href="/privacy" className="flex p-4 items-center hover:bg-slate-50 transition-colors">
             <span className="flex-1 text-slate-400 text-sm">Privacy Policy</span>
             <ChevronRight className="w-4 h-4 text-slate-600" />
           </Link>
-          <Link href="/terms" className="flex p-4 items-center hover:bg-white/5 transition-colors">
+          <Link href="/terms" className="flex p-4 items-center hover:bg-slate-50 transition-colors">
             <span className="flex-1 text-slate-400 text-sm">Terms of Service</span>
             <ChevronRight className="w-4 h-4 text-slate-600" />
           </Link>
