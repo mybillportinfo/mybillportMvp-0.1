@@ -292,7 +292,7 @@ export default function Dashboard() {
     const daysUntil = getDaysUntilDue(bill.dueDate);
     if (daysUntil < 0) return "text-red-500";
     if (daysUntil <= 3) return "text-amber-500";
-    return "text-[#4D6A9F]";
+    return "text-[#5B5BE6]";
   };
 
   const formatDueDate = (date: Date) => {
@@ -343,8 +343,8 @@ export default function Dashboard() {
 
   if (authLoading || (!user && !authLoading)) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-[#4D6A9F] animate-spin" />
+      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-[#5B5BE6] animate-spin" />
       </div>
     );
   }
@@ -386,7 +386,7 @@ export default function Dashboard() {
   ).filter(op => !dismissedOfferIds.has(op.offer.id)).slice(0, 2);
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 pb-24 overflow-y-auto">
+    <div ref={containerRef} className="min-h-screen bg-[#F8FAFC] pb-24 overflow-y-auto">
       {/* Pull-to-refresh indicator */}
       <div
         className="pull-indicator"
@@ -395,7 +395,7 @@ export default function Dashboard() {
         {(pullDistance > 0 || refreshing) && (
           <div className="flex items-center gap-2 text-slate-400 text-xs">
             {refreshing
-              ? <><div className="w-4 h-4 border-2 border-[#6BCB77] border-t-transparent rounded-full animate-spin" /> Refreshing…</>
+              ? <><div className="w-4 h-4 border-2 border-[#5B5BE6] border-t-transparent rounded-full animate-spin" /> Refreshing…</>
               : <><div className="w-4 h-4 border-2 border-slate-500 border-t-transparent rounded-full" style={{ transform: `rotate(${pullDistance * 3.6}deg)` }} /> Pull to refresh</>
             }
           </div>
@@ -405,31 +405,31 @@ export default function Dashboard() {
       <div className="px-5 pt-12 pb-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#4D6A9F] rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(77,106,159,0.3)]">
+            <div className="w-10 h-10 bg-[#5B5BE6] rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(77,106,159,0.3)]">
               <div className="relative">
                 <Receipt className="text-white w-6 h-6" />
-                <div className="absolute -bottom-1 -right-1 bg-slate-900 rounded-full p-0.5 border border-[#4D6A9F]/30">
-                  <DollarSign className="text-[#4D6A9F] w-3 h-3" />
+                <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5 border border-[#5B5BE6]/30">
+                  <DollarSign className="text-[#5B5BE6] w-3 h-3" />
                 </div>
               </div>
             </div>
-            <span className="text-white font-bold text-xl tracking-tighter">My<span className="text-[#4D6A9F]">BillPort</span></span>
+            <span className="text-[#0F172A] font-bold text-xl tracking-tighter">My<span className="text-[#5B5BE6]">BillPort</span></span>
           </div>
           <div className="flex items-center gap-1">
-            <Link href="/notifications" className="relative p-2 hover:bg-slate-800 rounded-lg transition-colors">
-              <Bell className="w-6 h-6 text-slate-300" />
+            <Link href="/notifications" className="relative p-2 hover:bg-slate-100 rounded-lg transition-colors">
+              <Bell className="w-6 h-6 text-[#64748B]" />
               {unreadNotifCount > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
                   {unreadNotifCount > 9 ? '9+' : unreadNotifCount}
                 </span>
               )}
             </Link>
-            <Link href="/settings" className="p-1 hover:bg-slate-800 rounded-lg transition-colors">
+            <Link href="/settings" className="p-1 hover:bg-slate-100 rounded-lg transition-colors">
               {profilePhoto ? (
-                <img src={profilePhoto} alt="Profile" className="w-8 h-8 rounded-full object-cover border border-slate-600" />
+                <img src={profilePhoto} alt="Profile" className="w-8 h-8 rounded-full object-cover border border-[#E2E8F0]" />
               ) : (
-                <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center border border-slate-600">
-                  <span className="text-slate-300 text-xs font-semibold">
+                <div className="w-8 h-8 rounded-full bg-[#EEF2FF] flex items-center justify-center border border-[#C7D2FE]">
+                  <span className="text-[#5B5BE6] text-xs font-semibold">
                     {(user?.displayName?.[0] || user?.email?.[0] || '?').toUpperCase()}
                   </span>
                 </div>
@@ -437,21 +437,21 @@ export default function Dashboard() {
             </Link>
           </div>
         </div>
-        <p className="text-slate-400">{greeting()}</p>
+        <p className="text-[#64748B]">{greeting()}</p>
         {loading ? (
-          <p className="text-white text-2xl font-semibold">Loading your bills…</p>
+          <p className="text-[#0F172A] text-2xl font-semibold">Loading your bills…</p>
         ) : attentionBills.length > 0 ? (
-          <p className="text-red-400 text-2xl font-semibold">
+          <p className="text-red-500 text-2xl font-semibold">
             {attentionBills.length} bill{attentionBills.length !== 1 ? 's' : ''} need{attentionBills.length === 1 ? 's' : ''} attention
           </p>
         ) : dueTomorrowBills.length > 0 ? (
-          <p className="text-amber-400 text-2xl font-semibold">
+          <p className="text-amber-500 text-2xl font-semibold">
             {dueTomorrowBills.length} bill{dueTomorrowBills.length !== 1 ? 's' : ''} due tomorrow
           </p>
         ) : bills.length === 0 ? (
-          <p className="text-white text-2xl font-semibold">Add your first bill</p>
+          <p className="text-[#0F172A] text-2xl font-semibold">Add your first bill</p>
         ) : (
-          <p className="text-[#4D6A9F] text-2xl font-semibold">You&apos;re all caught up ✓</p>
+          <p className="text-[#5B5BE6] text-2xl font-semibold">You&apos;re all caught up ✓</p>
         )}
       </div>
 
@@ -482,7 +482,7 @@ export default function Dashboard() {
                 return (
                   <div key={bill.id} className="px-4 py-3 flex items-center justify-between gap-3">
                     <div className="min-w-0 flex-1">
-                      <p className="text-white font-medium text-sm truncate">{bill.companyName}</p>
+                      <p className="text-[#0F172A] font-medium text-sm truncate">{bill.companyName}</p>
                       <p className={`text-xs mt-0.5 ${isOverdue ? 'text-red-400' : 'text-orange-400'}`}>
                         {isOverdue ? `${daysOverdue} day${daysOverdue !== 1 ? 's' : ''} overdue` : 'Due today'} · ${(bill.totalAmount - (bill.paidAmount || 0)).toFixed(2)}
                       </p>
@@ -527,18 +527,18 @@ export default function Dashboard() {
         <div className="px-4 mb-4">
           <div className="summary-card flex items-center justify-around text-center">
             <div>
-              <p className="text-xl font-bold text-white">{billsThisMonth.length}</p>
-              <p className="text-[11px] text-slate-400">Bills this month</p>
+              <p className="text-xl font-bold text-[#0F172A]">{billsThisMonth.length}</p>
+              <p className="text-[11px] text-[#94A3B8]">Bills this month</p>
             </div>
-            <div className="w-px h-8 bg-slate-700" />
+            <div className="w-px h-8 bg-[#E2E8F0]" />
             <div>
-              <p className="text-xl font-bold text-[#4D6A9F]">{paidThisMonth.length}</p>
-              <p className="text-[11px] text-slate-400">Paid this month</p>
+              <p className="text-xl font-bold text-[#5B5BE6]">{paidThisMonth.length}</p>
+              <p className="text-[11px] text-[#94A3B8]">Paid this month</p>
             </div>
-            <div className="w-px h-8 bg-slate-700" />
+            <div className="w-px h-8 bg-[#E2E8F0]" />
             <div>
-              <p className="text-xl font-bold text-white">${totalOwing.toFixed(2)}</p>
-              <p className="text-[11px] text-slate-400">Still owing</p>
+              <p className="text-xl font-bold text-[#0F172A]">${totalOwing.toFixed(2)}</p>
+              <p className="text-[11px] text-[#94A3B8]">Still owing</p>
             </div>
           </div>
         </div>
@@ -552,10 +552,10 @@ export default function Dashboard() {
         return (
           <div className="px-4 mb-4">
             <div className="summary-card flex items-center gap-3">
-              <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center text-lg">🔄</div>
+              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center text-lg">🔄</div>
               <div>
-                <p className="text-white font-semibold">{recurringBills.length} Recurring Bill{recurringBills.length !== 1 ? 's' : ''}</p>
-                <p className="text-xs text-slate-400">${recurringTotal.toFixed(2)} upcoming recurring</p>
+                <p className="text-[#0F172A] font-semibold">{recurringBills.length} Recurring Bill{recurringBills.length !== 1 ? 's' : ''}</p>
+                <p className="text-xs text-[#94A3B8]">${recurringTotal.toFixed(2)} upcoming recurring</p>
               </div>
             </div>
           </div>
@@ -565,13 +565,13 @@ export default function Dashboard() {
       {/* Pending bills notification */}
       {pendingBillCount > 0 && (
         <div className="px-4 mb-4">
-          <Link href="/pending-bills" className="flex items-center gap-3 bg-[#4D6A9F]/10 border border-[#4D6A9F]/30 rounded-xl px-4 py-3 hover:bg-[#4D6A9F]/15 transition-colors">
-            <Inbox className="w-4 h-4 text-[#4D6A9F] flex-shrink-0" />
+          <Link href="/pending-bills" className="flex items-center gap-3 bg-[#5B5BE6]/10 border border-[#5B5BE6]/30 rounded-xl px-4 py-3 hover:bg-[#5B5BE6]/15 transition-colors">
+            <Inbox className="w-4 h-4 text-[#5B5BE6] flex-shrink-0" />
             <div className="flex-1">
-              <span className="text-[#4D6A9F] font-semibold text-sm">{pendingBillCount} bill{pendingBillCount !== 1 ? 's' : ''} waiting for review</span>
-              <p className="text-[#4D6A9F]/70 text-xs">Detected from your forwarding email</p>
+              <span className="text-[#5B5BE6] font-semibold text-sm">{pendingBillCount} bill{pendingBillCount !== 1 ? 's' : ''} waiting for review</span>
+              <p className="text-[#5B5BE6]/70 text-xs">Detected from your forwarding email</p>
             </div>
-            <span className="w-5 h-5 bg-[#4D6A9F] rounded-full flex items-center justify-center text-xs text-white font-bold">{pendingBillCount}</span>
+            <span className="w-5 h-5 bg-[#5B5BE6] rounded-full flex items-center justify-center text-xs text-white font-bold">{pendingBillCount}</span>
           </Link>
         </div>
       )}
@@ -587,7 +587,7 @@ export default function Dashboard() {
                   <Zap className="w-4 h-4 text-emerald-400" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-white font-semibold text-sm">Save ${monthlySavings.toFixed(0)}/month on {bill.companyName}</p>
+                  <p className="text-[#0F172A] font-semibold text-sm">Save ${monthlySavings.toFixed(0)}/month on {bill.companyName}</p>
                   <p className="text-emerald-300/80 text-xs mt-0.5">Switch to {offer.providerName} {offer.planName} at ${offer.monthlyPrice}/mo</p>
                   {offer.badge && (
                     <span className="inline-block mt-1 text-[10px] px-1.5 py-0.5 bg-emerald-500/20 text-emerald-300 rounded font-medium">{offer.badge}</span>
@@ -633,8 +633,8 @@ export default function Dashboard() {
               onClick={() => setCategoryFilter('all')}
               className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
                 categoryFilter === 'all'
-                  ? 'bg-[#4D6A9F] text-white'
-                  : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                  ? 'bg-[#5B5BE6] text-white'
+                  : 'bg-slate-700 text-slate-300 hover:bg-slate-200'
               }`}
             >
               All ({bills.length})
@@ -648,8 +648,8 @@ export default function Dashboard() {
                   onClick={() => setCategoryFilter(catVal)}
                   className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
                     categoryFilter === catVal
-                      ? 'bg-[#4D6A9F] text-white'
-                      : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                      ? 'bg-[#5B5BE6] text-white'
+                      : 'bg-slate-700 text-slate-300 hover:bg-slate-200'
                   }`}
                 >
                   {cat?.icon || ''} {cat?.label || catVal} ({count})
@@ -663,7 +663,7 @@ export default function Dashboard() {
       {/* Bills list */}
       <div className="px-4 space-y-3">
         <div className="flex items-center justify-between mb-2">
-          <h2 className="text-white font-semibold">
+          <h2 className="text-[#0F172A] font-semibold">
             Your Bills
           </h2>
           {!loading && (
@@ -678,16 +678,16 @@ export default function Dashboard() {
         {loading ? (
           <BillListSkeleton count={4} />
         ) : bills.length === 0 ? (
-          <div className="bg-slate-800/50 rounded-xl p-8 text-center border border-slate-700">
-            <p className="text-slate-400 mb-4">No bills yet</p>
+          <div className="bg-white rounded-xl p-8 text-center border border-[#E2E8F0] shadow-sm">
+            <p className="text-[#94A3B8] mb-4">No bills yet</p>
             <Link href="/add-bill" className="btn-accent px-6 py-2 rounded-lg inline-block">
               Add Your First Bill
             </Link>
           </div>
         ) : filteredBills.length === 0 ? (
-          <div className="bg-slate-800/50 rounded-xl p-6 text-center border border-slate-700">
-            <p className="text-slate-400 mb-2">No bills in this category</p>
-            <button onClick={() => setCategoryFilter('all')} className="text-[#4D6A9F] text-sm underline hover:no-underline">Show all bills</button>
+          <div className="bg-white rounded-xl p-6 text-center border border-[#E2E8F0] shadow-sm">
+            <p className="text-[#94A3B8] mb-2">No bills in this category</p>
+            <button onClick={() => setCategoryFilter('all')} className="text-[#5B5BE6] text-sm underline hover:no-underline">Show all bills</button>
           </div>
         ) : (
           visibleBills.map((bill) => {
@@ -742,7 +742,7 @@ export default function Dashboard() {
                     </div>
                     {!isFullyPaid && remaining > 0 && (
                       <p className="text-xs font-medium text-slate-600 mt-0.5">
-                        Amount due: <span className="text-[#4D6A9F]">${remaining.toFixed(2)}</span>
+                        Amount due: <span className="text-[#5B5BE6]">${remaining.toFixed(2)}</span>
                       </p>
                     )}
                   </div>
@@ -789,7 +789,7 @@ export default function Dashboard() {
                       <Link
                         href={`/payment?biller=${encodeURIComponent(bill.companyName)}&amount=${remaining.toFixed(2)}&billId=${bill.id || ''}&dueDate=${encodeURIComponent(bill.dueDate ? new Date(bill.dueDate).toISOString().split('T')[0] : '')}`}
                         onClick={() => { haptics.medium(); trackPaymentRedirect(bill.companyName, true); }}
-                        className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-semibold rounded-lg bg-[#4D6A9F] text-white hover:bg-[#3d5a8f] transition-colors min-h-[44px]"
+                        className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-semibold rounded-lg bg-[#5B5BE6] text-white hover:bg-[#4646CC] transition-colors min-h-[44px]"
                       >
                         <ExternalLink className="w-4 h-4" />
                         Pay ${remaining.toFixed(2)}
@@ -821,7 +821,7 @@ export default function Dashboard() {
 
                       <button
                         onClick={() => bill.id && togglePaymentHistory(bill.id)}
-                        className={`p-2 transition-colors rounded-lg flex-shrink-0 ${showingHistory ? 'text-[#4D6A9F] bg-[#4D6A9F]/10' : 'text-slate-400 hover:text-[#4D6A9F]'}`}
+                        className={`p-2 transition-colors rounded-lg flex-shrink-0 ${showingHistory ? 'text-[#5B5BE6] bg-[#5B5BE6]/10' : 'text-slate-400 hover:text-[#5B5BE6]'}`}
                         title="Payment History"
                       >
                         <Clock className="w-4 h-4" />
@@ -844,7 +844,7 @@ export default function Dashboard() {
                       <div className="mt-3 pt-3 border-t border-slate-100">
                         {historyLoading ? (
                           <div className="flex items-center justify-center py-3">
-                            <Loader2 className="w-4 h-4 text-[#4D6A9F] animate-spin" />
+                            <Loader2 className="w-4 h-4 text-[#5B5BE6] animate-spin" />
                             <span className="ml-2 text-xs text-slate-400">Loading history...</span>
                           </div>
                         ) : paymentHistory.length === 0 ? (
@@ -901,7 +901,7 @@ export default function Dashboard() {
                         </button>
                         <button
                           onClick={() => bill.id && togglePaymentHistory(bill.id)}
-                          className="flex items-center gap-1 px-2.5 py-1.5 text-xs text-slate-500 hover:text-[#4D6A9F] hover:bg-slate-50 rounded-lg transition-colors"
+                          className="flex items-center gap-1 px-2.5 py-1.5 text-xs text-slate-500 hover:text-[#5B5BE6] hover:bg-slate-50 rounded-lg transition-colors"
                         >
                           <Clock className="w-3.5 h-3.5" />
                           History
@@ -925,7 +925,7 @@ export default function Dashboard() {
                       <div className="mt-3 pt-3 border-t border-slate-100">
                         {historyLoading ? (
                           <div className="flex items-center justify-center py-3">
-                            <Loader2 className="w-4 h-4 text-[#4D6A9F] animate-spin" />
+                            <Loader2 className="w-4 h-4 text-[#5B5BE6] animate-spin" />
                             <span className="ml-2 text-xs text-slate-400">Loading history...</span>
                           </div>
                         ) : paymentHistory.length === 0 ? (
@@ -987,7 +987,7 @@ export default function Dashboard() {
         <div className="px-4 mt-3">
           <button
             onClick={() => setVisibleCount(prev => prev + BILLS_PER_PAGE)}
-            className="w-full py-3 rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-800 transition-colors text-sm font-medium"
+            className="w-full py-3 rounded-lg border border-[#E2E8F0] text-[#64748B] hover:bg-slate-50 bg-white shadow-sm transition-colors text-sm font-medium"
           >
             Load More ({filteredBills.length - visibleCount} remaining)
           </button>
@@ -1010,15 +1010,15 @@ export default function Dashboard() {
         <div className="px-4 mt-4 mb-2">
           <button
             onClick={() => setShowInsights(v => !v)}
-            className="w-full flex items-center justify-between py-3 px-4 bg-slate-800 border border-slate-700 rounded-xl hover:border-[#4D6A9F]/30 transition-all"
+            className="w-full flex items-center justify-between py-3 px-4 bg-white border border-[#E2E8F0] rounded-xl hover:border-[#5B5BE6]/30 transition-all"
           >
             <div className="flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-[#4D6A9F]" />
-              <span className="text-slate-300 text-sm font-medium">Smart Insights</span>
+              <BarChart3 className="w-4 h-4 text-[#5B5BE6]" />
+              <span className="text-[#0F172A] text-sm font-medium">Smart Insights</span>
               {savingsScore && (
                 <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
                   savingsScore.score >= 80 ? 'bg-green-500/15 text-green-400' :
-                  savingsScore.score >= 60 ? 'bg-[#4D6A9F]/15 text-[#4D6A9F]' :
+                  savingsScore.score >= 60 ? 'bg-[#5B5BE6]/15 text-[#5B5BE6]' :
                   savingsScore.score >= 40 ? 'bg-amber-500/15 text-amber-400' :
                   'bg-red-500/15 text-red-400'
                 }`}>Score: {savingsScore.score}/100</span>
@@ -1028,13 +1028,13 @@ export default function Dashboard() {
           </button>
 
           {showInsights && (
-            <div className="mt-2 bg-slate-800 border border-slate-700 rounded-xl overflow-hidden">
+            <div className="mt-2 bg-white border border-[#E2E8F0] rounded-xl overflow-hidden">
               {/* Savings score header */}
-              <div className="px-4 py-3 border-b border-slate-700 flex items-center justify-between">
+              <div className="px-4 py-3 border-b border-[#E2E8F0] flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <Target className="w-4 h-4 text-[#4D6A9F]" />
+                  <Target className="w-4 h-4 text-[#5B5BE6]" />
                   <div>
-                    <p className="text-white font-semibold text-sm">Savings Score</p>
+                    <p className="text-[#0F172A] font-semibold text-sm">Savings Score</p>
                     <p className={`text-xs font-medium ${savingsScore.color}`}>{savingsScore.label}</p>
                   </div>
                 </div>
@@ -1046,12 +1046,12 @@ export default function Dashboard() {
 
               {/* Score factors */}
               {savingsScore.factors.length > 0 && (
-                <div className="px-4 py-3 border-b border-slate-700 flex flex-wrap gap-1.5">
+                <div className="px-4 py-3 border-b border-[#E2E8F0] flex flex-wrap gap-1.5">
                   {savingsScore.factors.slice(0, 4).map((f, i) => (
                     <span key={i} className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium ${
                       f.impact === 'positive' ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
                       f.impact === 'negative' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
-                      'bg-slate-700 text-slate-400 border border-slate-600'
+                      'bg-slate-700 text-slate-400 border border-[#E2E8F0]'
                     }`}>
                       {f.impact === 'positive' ? '✓' : f.impact === 'negative' ? '!' : '•'} {f.label}
                     </span>
@@ -1060,29 +1060,29 @@ export default function Dashboard() {
               )}
 
               {/* Annual projection */}
-              <div className="px-4 py-3 border-b border-slate-700 flex items-center justify-between">
+              <div className="px-4 py-3 border-b border-[#E2E8F0] flex items-center justify-between">
                 <div>
-                  <p className="text-white font-semibold text-sm">Annual Projection</p>
+                  <p className="text-[#0F172A] font-semibold text-sm">Annual Projection</p>
                   <p className="text-xs text-slate-400">{annualProjection.perBiller.length} biller{annualProjection.perBiller.length !== 1 ? 's' : ''} tracked</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-lg font-bold text-[#4D6A9F]">${annualProjection.totalAnnual.toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                  <p className="text-lg font-bold text-[#5B5BE6]">${annualProjection.totalAnnual.toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   <p className="text-[10px] text-slate-500">estimated / year</p>
                 </div>
               </div>
 
               {/* Per-biller breakdown */}
-              <div className="divide-y divide-slate-700/50 max-h-52 overflow-y-auto">
+              <div className="divide-y divide-slate-100 max-h-52 overflow-y-auto">
                 {annualProjection.perBiller.map((p, i) => (
                   <div key={i} className="px-4 py-2.5 flex items-center justify-between">
                     <div className="flex items-center gap-2 min-w-0 flex-1">
-                      <span className="text-sm text-white truncate">{p.billerName}</span>
+                      <span className="text-sm text-[#0F172A] truncate">{p.billerName}</span>
                       {p.trend === 'rising' && <ArrowUpRight className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />}
                       {p.trend === 'falling' && <ArrowDownRight className="w-3.5 h-3.5 text-green-400 flex-shrink-0" />}
                       {p.trend === 'stable' && <Minus className="w-3 h-3 text-slate-500 flex-shrink-0" />}
                     </div>
                     <div className="text-right flex-shrink-0 ml-2">
-                      <p className="text-sm font-medium text-[#4D6A9F]">${p.annualEstimate.toLocaleString('en-CA', { minimumFractionDigits: 2 })}</p>
+                      <p className="text-sm font-medium text-[#5B5BE6]">${p.annualEstimate.toLocaleString('en-CA', { minimumFractionDigits: 2 })}</p>
                       <p className="text-[10px] text-slate-500">${p.monthlyAvg.toFixed(2)}/bill</p>
                     </div>
                   </div>
@@ -1101,7 +1101,7 @@ export default function Dashboard() {
               <div>
                 <h3 className="text-lg font-semibold text-slate-800">Mark as Paid</h3>
                 <p className="text-sm text-slate-500">{markPaidModal.bill.companyName}</p>
-                <p className="text-sm text-[#4D6A9F] font-medium">
+                <p className="text-sm text-[#5B5BE6] font-medium">
                   ${(markPaidModal.bill.totalAmount - markPaidModal.bill.paidAmount).toFixed(2)} due
                   {' \u2022 '}{formatDueDate(markPaidModal.bill.dueDate)}
                 </p>
@@ -1121,7 +1121,7 @@ export default function Dashboard() {
                       onClick={() => setMarkPaidModal(prev => prev ? { ...prev, method: val } : null)}
                       className={`px-3 py-2 text-sm rounded-lg border transition-colors ${
                         markPaidModal.method === val
-                          ? 'border-[#4D6A9F] bg-[#4D6A9F]/10 text-[#3d5a8f] font-medium'
+                          ? 'border-[#5B5BE6] bg-[#5B5BE6]/10 text-[#4646CC] font-medium'
                           : 'border-slate-200 text-slate-600 hover:bg-slate-50'
                       }`}
                     >
@@ -1138,7 +1138,7 @@ export default function Dashboard() {
                   value={markPaidModal.confirmationCode}
                   onChange={(e) => setMarkPaidModal(prev => prev ? { ...prev, confirmationCode: e.target.value } : null)}
                   placeholder="e.g. REF-123456"
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4D6A9F] text-slate-800 text-sm"
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5B5BE6] text-slate-800 text-sm"
                 />
               </div>
 
@@ -1149,7 +1149,7 @@ export default function Dashboard() {
                   value={markPaidModal.notes}
                   onChange={(e) => setMarkPaidModal(prev => prev ? { ...prev, notes: e.target.value } : null)}
                   placeholder="e.g. Paid via bank app"
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4D6A9F] text-slate-800 text-sm"
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5B5BE6] text-slate-800 text-sm"
                 />
               </div>
 
@@ -1204,7 +1204,7 @@ export default function Dashboard() {
                   type="text"
                   value={editModal.companyName}
                   onChange={(e) => setEditModal(prev => prev ? { ...prev, companyName: e.target.value } : null)}
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4D6A9F] text-slate-800 text-sm"
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5B5BE6] text-slate-800 text-sm"
                 />
               </div>
 
@@ -1214,7 +1214,7 @@ export default function Dashboard() {
                   type="text"
                   value={editModal.accountNumber}
                   onChange={(e) => setEditModal(prev => prev ? { ...prev, accountNumber: e.target.value } : null)}
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4D6A9F] text-slate-800 text-sm"
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5B5BE6] text-slate-800 text-sm"
                 />
               </div>
 
@@ -1229,7 +1229,7 @@ export default function Dashboard() {
                     value={editModal.totalAmount}
                     onChange={(e) => setEditModal(prev => prev ? { ...prev, totalAmount: e.target.value } : null)}
                     onKeyDown={(e) => { if (['-', 'e', 'E', '+'].includes(e.key)) e.preventDefault(); }}
-                    className="w-full pl-7 pr-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4D6A9F] text-slate-800 text-sm"
+                    className="w-full pl-7 pr-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5B5BE6] text-slate-800 text-sm"
                   />
                 </div>
               </div>
@@ -1240,7 +1240,7 @@ export default function Dashboard() {
                   type="date"
                   value={editModal.dueDate}
                   onChange={(e) => setEditModal(prev => prev ? { ...prev, dueDate: e.target.value } : null)}
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4D6A9F] text-slate-800 text-sm"
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5B5BE6] text-slate-800 text-sm"
                 />
               </div>
 
@@ -1251,7 +1251,7 @@ export default function Dashboard() {
                   value={editModal.notes}
                   onChange={(e) => setEditModal(prev => prev ? { ...prev, notes: e.target.value } : null)}
                   placeholder="e.g. Updated from Enbridge website"
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4D6A9F] text-slate-800 text-sm"
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5B5BE6] text-slate-800 text-sm"
                 />
               </div>
 
@@ -1265,7 +1265,7 @@ export default function Dashboard() {
                 <button
                   onClick={handleEditBill}
                   disabled={editLoading}
-                  className="flex-1 py-3 px-4 rounded-lg bg-[#4D6A9F] text-white font-semibold hover:bg-[#3d5a8f] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 py-3 px-4 rounded-lg bg-[#5B5BE6] text-white font-semibold hover:bg-[#4646CC] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {editLoading ? (
                     <>
@@ -1365,7 +1365,7 @@ export default function Dashboard() {
                       <div className="space-y-2">
                         {insightsModal.data.tips.map((tip: string, i: number) => (
                           <div key={i} className="flex items-start gap-2 text-sm text-slate-600">
-                            <span className="text-[#4D6A9F] mt-0.5 flex-shrink-0">•</span>
+                            <span className="text-[#5B5BE6] mt-0.5 flex-shrink-0">•</span>
                             <span>{tip}</span>
                           </div>
                         ))}
@@ -1382,7 +1382,7 @@ export default function Dashboard() {
       <AIChatWidget />
 
       {/* Bottom nav */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur border-t border-slate-700 pt-1 px-4 bottom-nav-safe">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur border-t border-[#E2E8F0] pt-1 px-4 bottom-nav-safe">
         <div className="max-w-md mx-auto flex justify-around">
           <Link href="/app" className="nav-item nav-item-active" onClick={() => haptics.light()}>
             <Home className="w-6 h-6" />
