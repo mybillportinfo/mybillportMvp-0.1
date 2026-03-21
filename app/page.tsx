@@ -16,8 +16,8 @@ import { FAQJsonLd, SoftwareApplicationJsonLd } from "./components/JsonLd";
 import { WaitlistForm } from "./components/WaitlistForm";
 
 export const metadata: Metadata = {
-  title: "MyBillPort — Free Bill Management App for Canadians | Track & Pay Bills Online",
-  description: "Canada's bill management app. Track every bill, get AI reminders, pay 120+ Canadian billers with one tap. Free to start — no bank login.",
+  title: "MyBillPort — Bill Management App for Canadians | Free",
+  description: "Canada's bill management app. Track every bill, get AI reminders, pay 120+ Canadian billers with one tap. Free — no bank login.",
   keywords: [
     "bill management app Canada",
     "bill tracker Canada",
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "https://mybillport.com" },
   openGraph: {
     title: "MyBillPort — Never Miss a Bill Again | Free Bill Management App",
-    description: "Canada's bill management app. Track every bill, get AI-powered reminders, and pay with one tap. Supports Rogers, Bell, TELUS, Hydro One, Enbridge, and 120+ billers.",
+    description: "Canada's bill management app. Track every bill, AI-powered reminders, pay with one tap. Supports Rogers, Bell, TELUS & 120+ Canadian billers.",
     url: "https://mybillport.com",
     type: "website",
     images: [{ url: "https://mybillport.com/icon-512.png", width: 512, height: 512, alt: "MyBillPort — Bill Management App" }],
