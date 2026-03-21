@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     default: 'MyBillPort — Never Miss a Bill Again | Bill Management App',
     template: '%s | MyBillPort',
   },
-  description: 'MyBillPort helps you track, manage, and pay all your bills in one place. AI-powered bill scanning, smart reminders, and one-click payments for 120+ billers. Free to start.',
+  description: 'Track, manage & pay all your bills in one place. AI scanning, smart reminders, 120+ billers supported. Free to start — no bank login needed.',
   keywords: [
     'bill management app',
     'bill tracker',
