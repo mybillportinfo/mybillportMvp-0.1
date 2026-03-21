@@ -273,3 +273,113 @@ button, a, [role="button"] {
 /* Scrollbar hide utility */
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ================================================
+   LIGHT MODE OVERRIDES — applied via data-theme="light" on <html>
+   ================================================ */
+
+[data-theme="light"] .bg-slate-950,
+[data-theme="light"] .bg-slate-900 {
+  background-color: #F8FAFC !important;
+}
+[data-theme="light"] .from-slate-900 {
+  --tw-gradient-from: #F8FAFC !important;
+}
+[data-theme="light"] .via-slate-900 {
+  --tw-gradient-via: #F4F6F8 !important;
+}
+[data-theme="light"] .to-slate-800 {
+  --tw-gradient-to: #EEF2FF !important;
+}
+[data-theme="light"] .bg-gradient-to-b {
+  background-image: none !important;
+  background-color: #F8FAFC !important;
+}
+[data-theme="light"] .bg-slate-800,
+[data-theme="light"] .bg-slate-800\/50,
+[data-theme="light"] .bg-slate-800\/80 {
+  background-color: #FFFFFF !important;
+}
+[data-theme="light"] .bg-slate-700,
+[data-theme="light"] .bg-slate-700\/60,
+[data-theme="light"] .bg-slate-700\/50,
+[data-theme="light"] .bg-slate-700\/40 {
+  background-color: #F1F5F9 !important;
+}
+[data-theme="light"] .bg-slate-600 {
+  background-color: #CBD5E1 !important;
+}
+[data-theme="light"] .bg-slate-900\/95,
+[data-theme="light"] .bg-slate-900\/90 {
+  background-color: rgba(248,250,252,0.97) !important;
+}
+
+/* Text overrides */
+[data-theme="light"] .text-white {
+  color: #0F172A !important;
+}
+[data-theme="light"] .text-slate-100,
+[data-theme="light"] .text-slate-200 {
+  color: #1E293B !important;
+}
+[data-theme="light"] .text-slate-300 {
+  color: #475569 !important;
+}
+[data-theme="light"] .text-slate-400 {
+  color: #64748B !important;
+}
+[data-theme="light"] .text-slate-500 {
+  color: #94A3B8 !important;
+}
+
+/* Border overrides */
+[data-theme="light"] .border-slate-700,
+[data-theme="light"] .border-slate-600 {
+  border-color: #E2E8F0 !important;
+}
+[data-theme="light"] .divide-slate-700 > * + *,
+[data-theme="light"] .divide-slate-800 > * + * {
+  border-color: #E2E8F0 !important;
+}
+
+/* Hover overrides */
+[data-theme="light"] .hover\:bg-slate-700:hover,
+[data-theme="light"] .hover\:bg-slate-800:hover {
+  background-color: #F1F5F9 !important;
+}
+[data-theme="light"] .hover\:bg-white\/5:hover {
+  background-color: #F1F5F9 !important;
+}
+
+/* Ring/focus overrides */
+[data-theme="light"] .ring-slate-700 {
+  --tw-ring-color: #E2E8F0 !important;
+}
+
+/* Input / form field backgrounds */
+[data-theme="light"] input.bg-slate-700,
+[data-theme="light"] textarea.bg-slate-700,
+[data-theme="light"] select.bg-slate-700 {
+  background-color: #F8FAFC !important;
+  color: #0F172A !important;
+  border-color: #E2E8F0 !important;
+}
+
+/* Placeholder text */
+[data-theme="light"] .placeholder-slate-400::placeholder,
+[data-theme="light"] .placeholder-slate-500::placeholder {
+  color: #94A3B8 !important;
+}
+
+/* Inline bg overrides — handled by pages via useTheme, but add fallback */
+[data-theme="light"] .theme-page-bg {
+  background: #F8FAFC !important;
+}
+[data-theme="light"] .theme-card-bg {
+  background: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+}
+[data-theme="light"] .theme-secondary-card {
+  background: #F1F5F9 !important;
+  border-color: #E2E8F0 !important;
+}
