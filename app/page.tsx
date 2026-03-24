@@ -517,6 +517,48 @@ export default function LandingPage() {
           </div>
         </section>
 
+        <section id="demo" className="scroll-mt-20 space-y-8">
+          <div className="text-center space-y-3 max-w-2xl mx-auto">
+            <p className="text-[#6BCB77] text-sm font-semibold uppercase tracking-wider">See it in action</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-white">Watch how MyBillPort works</h2>
+            <p className="text-slate-400 text-base">From adding your first bill to hitting "Pay" — under 90 seconds.</p>
+          </div>
+          <div className="relative bg-[#1a2535] border border-white/5 rounded-3xl overflow-hidden aspect-video max-w-3xl mx-auto group cursor-pointer">
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-5">
+              <div className="w-20 h-20 bg-[#4D6A9F] group-hover:bg-[#3d5a8f] rounded-full flex items-center justify-center transition-all group-hover:scale-110 shadow-lg shadow-[#4D6A9F]/30">
+                <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                </svg>
+              </div>
+              <div className="text-center space-y-1 px-6">
+                <p className="text-white font-semibold text-lg">Demo video coming soon</p>
+                <p className="text-slate-400 text-sm">Record a quick walkthrough with Loom or QuickTime and drop the link here</p>
+              </div>
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-br from-[#4D6A9F]/5 to-[#6BCB77]/5 pointer-events-none" />
+          </div>
+          <div className="flex flex-wrap justify-center gap-4 text-sm">
+            <a
+              href="https://www.loom.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-slate-300 hover:text-white transition-colors"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" opacity="0.2"/><circle cx="12" cy="12" r="4"/></svg>
+              Record with Loom
+            </a>
+            <a
+              href="https://youtube.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-slate-300 hover:text-white transition-colors"
+            >
+              <svg className="w-4 h-4 text-red-500" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 00.5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.75 15.5v-7l6.5 3.5-6.5 3.5z"/></svg>
+              Upload to YouTube
+            </a>
+          </div>
+        </section>
+
         <section id="pricing" className="scroll-mt-20 space-y-12">
           <div className="text-center space-y-3 max-w-2xl mx-auto">
             <p className="text-[#4D6A9F] text-sm font-semibold uppercase tracking-wider">Pricing</p>
@@ -643,8 +685,8 @@ export default function LandingPage() {
             <div>
               <p className="text-sm font-semibold text-white mb-3">Support</p>
               <ul className="space-y-2 text-sm text-slate-500">
+                <li><Link href="/support" className="hover:text-white transition-colors">Help Centre</Link></li>
                 <li><a href="mailto:mybillportinfo@gmail.com" className="hover:text-white transition-colors">Contact Us</a></li>
-                <li><a href="#faq" className="hover:text-white transition-colors">Help Centre</a></li>
               </ul>
             </div>
           </div>
