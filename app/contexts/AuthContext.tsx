@@ -99,6 +99,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
       } catch {}
       try {
+        fetch('/api/automation/new-user', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email,
+            displayName: newUser.displayName || '',
+            uid: newUser.uid,
+            signupDate: new Date().toISOString(),
+          }),
+        }).catch(() => {});
+      } catch {}
+      try {
         await createReferralCode(newUser.uid);
         if (referralCode) {
           const referrerUid = await lookupReferralCode(referralCode.trim().toUpperCase());
