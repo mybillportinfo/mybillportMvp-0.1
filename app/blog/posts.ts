@@ -1,0 +1,216 @@
+export interface BlogPost {
+  slug: string;
+  title: string;
+  metaDescription: string;
+  publishedDate: string;
+  readTime: string;
+  excerpt: string;
+  keyword: string;
+  relatedPage: { label: string; href: string };
+  content: Section[];
+}
+
+export interface Section {
+  type: 'p' | 'h2' | 'h3' | 'ul' | 'ol' | 'tip';
+  text?: string;
+  items?: string[];
+}
+
+export const BLOG_POSTS: BlogPost[] = [
+  {
+    slug: 'how-to-remember-bill-payments',
+    title: 'How to Remember Bill Payments (Without Spreadsheets or Sticky Notes)',
+    metaDescription: 'Practical tips on how to remember bill payments every month. From reminders to apps — find the system that works for you.',
+    publishedDate: 'March 2026',
+    readTime: '5 min read',
+    keyword: 'how to remember bill payments',
+    excerpt: 'Tired of forgetting bills and paying late fees? These practical strategies — including push notifications and a bill tracker — will make missed payments a thing of the past.',
+    relatedPage: { label: 'How to track bills in one place', href: '/how-to-track-bills' },
+    content: [
+      { type: 'p', text: "Forgetting to pay a bill isn't a character flaw — it's a systems problem. When you have 10+ bills with different due dates, different amounts, and different payment methods, it's genuinely hard to keep track. The solution isn't more willpower; it's a better system." },
+      { type: 'h2', text: 'Why We Forget Bill Payments' },
+      { type: 'p', text: "Most bills don't come with a memorable alert. They arrive by email, get buried in your inbox, and the due date passes before you notice. Others arrive by mail and sit in a pile. The problem is that our brains weren't designed to track 14 recurring obligations with varying amounts and dates — that's what systems are for." },
+      { type: 'h2', text: '6 Practical Ways to Remember Bill Payments' },
+      { type: 'h3', text: '1. Use Push Notifications From a Bill Tracker App' },
+      { type: 'p', text: "The most reliable way to remember bill payments is to delegate the remembering to an app. A dedicated bill reminder app like MyBillPort sends a push notification to your phone before every bill is due. You add each bill once, and from then on the app tracks the due dates and alerts you automatically — even for bills with variable due dates." },
+      { type: 'tip', text: "Set your reminder to 5–7 days before the due date, not the day before. This gives you time to move funds if needed." },
+      { type: 'h3', text: '2. Create a Recurring Calendar Block' },
+      { type: 'p', text: "Set a recurring 20-minute appointment in your calendar once a week — call it 'Bill Check'. During this block, review any bills due in the next 7 days, confirm payments went through, and mark anything as paid. This ritual keeps your finances front of mind without requiring you to think about bills the rest of the week." },
+      { type: 'h3', text: '3. Set Up Auto-Pay for Fixed Bills' },
+      { type: 'p', text: "For bills with a fixed monthly amount — streaming subscriptions, gym memberships, insurance — set up auto-pay and forget about them. Just make sure your payment method stays current. A single expired card can cause multiple auto-pay failures at once." },
+      { type: 'tip', text: "Review all your auto-pay bills once per quarter to make sure none have changed unexpectedly." },
+      { type: 'h3', text: '4. Batch Your Due Dates Together' },
+      { type: 'p', text: "Call your providers and request that your billing cycle be moved to the 1st or 15th of the month. Most providers will accommodate this change. When all your bills land within a few days of each other, you only need to pay attention twice a month instead of constantly." },
+      { type: 'h3', text: '5. Use a Visible Bill Board' },
+      { type: 'p', text: "Some people pay better attention to physical reminders. A small whiteboard on your fridge with upcoming bills and due dates — updated each month — can work surprisingly well. It's low-tech but highly visible." },
+      { type: 'h3', text: '6. Set Up Email Filters for Bill Notifications' },
+      { type: 'p', text: "Create a dedicated folder in your email app for bills. Set up filters to automatically move any email from Rogers, Enbridge, your bank, or other billers into that folder. Check it once a week during your Bill Check block." },
+      { type: 'h2', text: 'The Best Long-Term Solution' },
+      { type: 'p', text: "The most sustainable approach is a combination of a bill tracker app (for reminders and history) and auto-pay for fixed bills. This way, variable bills get tracked and flagged, and fixed bills pay themselves. You spend maybe 5 minutes a week staying on top of your finances — and you never pay another late fee." },
+    ],
+  },
+  {
+    slug: 'best-way-to-organize-monthly-bills',
+    title: 'The Best Way to Organize Monthly Bills in 2026',
+    metaDescription: 'Comparing spreadsheets, calendar apps, banking tools, and dedicated bill tracker apps. Find the best way to organize your monthly bills.',
+    publishedDate: 'March 2026',
+    readTime: '6 min read',
+    keyword: 'best way to organize monthly bills',
+    excerpt: 'Spreadsheet vs. app vs. calendar — which is actually the best way to organize monthly bills? We compare every method honestly.',
+    relatedPage: { label: 'Try MyBillPort — Canada\'s bill tracker', href: '/' },
+    content: [
+      { type: 'p', text: "If you've ever Googled 'how to organize monthly bills' you've seen the advice: use a spreadsheet, use your calendar, use your bank app. But which approach actually works in practice? After helping thousands of Canadians get their bills under control, here's our honest comparison." },
+      { type: 'h2', text: 'Method 1: The Spreadsheet' },
+      { type: 'p', text: "Spreadsheets are popular because they're free and flexible. A typical bill-tracking spreadsheet has columns for: bill name, provider, amount due, due date, paid date, and payment method." },
+      { type: 'ul', items: [
+        'Pros: Free, fully customizable, works offline, easy to share',
+        'Cons: Manual to maintain, no reminders, doesn\'t update automatically, easy to forget when life gets busy',
+        'Verdict: Good for people who enjoy spreadsheets and review their finances weekly. Not reliable as a sole system for most people.',
+      ]},
+      { type: 'h2', text: 'Method 2: Calendar App Reminders' },
+      { type: 'p', text: "Setting recurring events in Google Calendar or Apple Calendar for each bill is simple and effective for reminders. The calendar will ping you, which is valuable." },
+      { type: 'ul', items: [
+        'Pros: You already use it, reminders actually go to your phone, visual monthly overview',
+        'Cons: Can\'t track amounts, no payment history, no total spend view, clutters your calendar',
+        'Verdict: Great as a supplement but incomplete as a primary system. Use alongside a tracker, not instead of one.',
+      ]},
+      { type: 'h2', text: 'Method 3: Banking App Bill Pay' },
+      { type: 'p', text: "Canadian banks like TD, RBC, and Scotiabank have built-in bill pay features. You can schedule payments and see upcoming debits." },
+      { type: 'ul', items: [
+        'Pros: Tightly integrated with your money, shows upcoming payments, trusted institutions',
+        'Cons: Only shows bills paid through that account, can\'t track subscriptions on a credit card, no cross-account visibility',
+        'Verdict: Useful for bills paid via that specific bank account, but misses the complete picture.',
+      ]},
+      { type: 'h2', text: 'Method 4: Dedicated Bill Tracker App' },
+      { type: 'p', text: "Apps built specifically for bill tracking — like MyBillPort — address all the gaps in the above methods. They give you a complete, cross-account view of every bill regardless of how you pay." },
+      { type: 'ul', items: [
+        'Pros: Automatic reminders, full payment history, total spend tracking, AI bill scanning, spike alerts, works across all payment methods',
+        'Cons: Requires an account, takes a few minutes to set up initially',
+        'Verdict: The most complete solution for anyone with more than 5–6 bills.',
+      ]},
+      { type: 'h2', text: 'Our Recommendation' },
+      { type: 'p', text: "The best way to organize monthly bills in 2026 is to use a dedicated bill tracker app as your primary system, with auto-pay set up for fixed bills and calendar reminders as a backup for the most important ones. This gives you automation, visibility, and a safety net — without requiring you to manually update anything every month." },
+      { type: 'tip', text: "Start with a bill tracker and import all your bills in one session. Once you've done it once, maintenance takes under 5 minutes per week." },
+    ],
+  },
+  {
+    slug: 'app-that-reminds-you-to-pay-bills',
+    title: 'The Best App That Reminds You to Pay Bills (Canada 2026)',
+    metaDescription: 'Looking for an app that reminds you to pay bills on time? MyBillPort sends push notifications before every due date. Free for Canadians.',
+    publishedDate: 'March 2026',
+    readTime: '5 min read',
+    keyword: 'app that reminds you to pay bills',
+    excerpt: 'A great bill reminder app does more than just ping you. Here\'s what to look for — and why push notifications beat email reminders every time.',
+    relatedPage: { label: 'See all features', href: '/#features' },
+    content: [
+      { type: 'p', text: "The best app that reminds you to pay bills isn't just one that sends a notification — it's one that understands your bills well enough to know when to remind you, how much you owe, and whether anything looks unusual. Here's what matters when choosing a bill reminder app, and how MyBillPort handles each." },
+      { type: 'h2', text: 'What Makes a Great Bill Reminder App?' },
+      { type: 'ul', items: [
+        'Push notifications directly to your phone (not just email)',
+        'Customizable reminder timing (3, 5, or 7 days before due date)',
+        'Tracks the actual amount due, not just the due date',
+        'Works across all billers — not just the ones integrated with your bank',
+        'Flags unusual bill increases so you can review before paying',
+        'Easy to add bills — ideally with AI scanning so you\'re not typing everything manually',
+      ]},
+      { type: 'h2', text: 'Push Notifications vs. Email Reminders' },
+      { type: 'p', text: "Email bill reminders get buried. Most people receive dozens of emails per day, and a reminder buried in your inbox is easy to overlook — especially if it arrives the morning of a busy day. Push notifications, on the other hand, appear on your lock screen and demand attention. For bill reminders specifically, push notifications are significantly more reliable than email." },
+      { type: 'tip', text: "Enable push notifications when you first set up your bill tracker. This is the most important step for preventing missed payments." },
+      { type: 'h2', text: 'How MyBillPort\'s Reminder System Works' },
+      { type: 'p', text: "MyBillPort sends push notifications to your phone before every bill is due. Here's the flow:" },
+      { type: 'ol', items: [
+        'You add a bill (by scanning it with AI or entering details manually)',
+        'MyBillPort tracks the due date automatically',
+        'You receive a push notification on your phone before the due date',
+        'Tap the notification to open the app and pay directly from the dashboard',
+        'Once paid, mark it as done — your history is updated automatically',
+      ]},
+      { type: 'h2', text: 'Beyond Simple Reminders: Spike Alerts' },
+      { type: 'p', text: "A basic reminder tells you a bill is due. A smart reminder tells you something is wrong. MyBillPort goes a step further by alerting you when any bill is significantly higher than usual — for example, if your electricity bill is 25% above your average. This gives you time to review the bill before paying rather than being surprised." },
+      { type: 'h2', text: 'Which Bills Should You Track?' },
+      { type: 'p', text: "Track every recurring bill — not just the large ones. Small subscriptions add up, and a $15 streaming service that you forgot to cancel 6 months ago represents $90 in wasted money. MyBillPort handles all of them equally well, from major utility bills to small monthly subscriptions." },
+    ],
+  },
+  {
+    slug: 'simple-bill-tracker-for-beginners',
+    title: 'Simple Bill Tracker for Beginners: Get Organized in 10 Minutes',
+    metaDescription: 'New to tracking bills? This beginner\'s guide walks you through setting up a simple bill tracker step by step. Free app for Canadians.',
+    publishedDate: 'March 2026',
+    readTime: '5 min read',
+    keyword: 'simple bill tracker for beginners',
+    excerpt: 'Never tracked your bills before? This step-by-step guide gets you set up in under 10 minutes — no spreadsheets, no complexity.',
+    relatedPage: { label: 'The Canadian bill tracker', href: '/bill-tracker-canada' },
+    content: [
+      { type: 'p', text: "If you've never tracked your bills before, the idea can feel overwhelming. How many bills do I have? Where do I start? What information do I need? This guide keeps it simple. You'll have a working bill tracker set up in under 10 minutes — and your finances will feel dramatically more in control." },
+      { type: 'h2', text: 'Step 1: List Every Bill You Pay' },
+      { type: 'p', text: "Before setting up any tracker, take 5 minutes to list every recurring bill you pay. Go through your email (search for 'invoice', 'statement', 'bill'), your bank statements, and your credit card statements. Common categories:" },
+      { type: 'ul', items: [
+        'Utilities: hydro, gas, water',
+        'Telecom: phone, internet, TV/cable',
+        'Insurance: home/tenant, auto, life',
+        'Streaming: Netflix, Crave, Disney+, Spotify, etc.',
+        'Financial: credit card minimum payments, loan payments',
+        'Other: gym, parking, storage, subscriptions',
+      ]},
+      { type: 'tip', text: "Most people are surprised to find they have 12–16 recurring bills when they actually list them out." },
+      { type: 'h2', text: 'Step 2: Gather the Key Information' },
+      { type: 'p', text: "For each bill, you need just four pieces of information: the provider name, the typical amount, the due date, and how you pay it. You don't need to be exact on the amount — an estimate is fine for variable bills like hydro." },
+      { type: 'h2', text: 'Step 3: Set Up Your Bill Tracker' },
+      { type: 'p', text: "Create a free MyBillPort account and add each bill using the AI scanner (just photograph a recent bill) or the manual form. For each bill, the app will track the due date and send you a reminder before it's due." },
+      { type: 'ol', items: [
+        'Sign up free at mybillport.com — takes 30 seconds',
+        'Tap "Add Bill" and scan a bill photo, or enter details manually',
+        'Repeat for each bill on your list — most people finish in 5–8 minutes',
+        'Enable push notifications when prompted',
+        'You\'re done — your dashboard now shows all bills, due dates, and what\'s paid',
+      ]},
+      { type: 'h2', text: 'What Your Dashboard Shows' },
+      { type: 'p', text: "Once your bills are added, your dashboard shows: which bills are overdue or due today (highlighted in red), which are coming up soon (next 7 days), your total amount owing this month, and a savings score based on your payment habits." },
+      { type: 'h2', text: 'Keeping It Simple Long-Term' },
+      { type: 'p', text: "The best bill tracker is one you actually use. MyBillPort is designed to require minimal maintenance — the main habit you need to build is marking bills as paid after you pay them. That's one tap per bill, and it keeps your history accurate." },
+      { type: 'tip', text: "When a bill arrives, add it immediately rather than waiting until closer to the due date. The faster you add it, the more useful your reminders will be." },
+      { type: 'h2', text: 'What to Do If a Bill Is Missing' },
+      { type: 'p', text: "If you can't find information for a specific bill — for example, a utility that bills quarterly — just add an estimate. You can always edit the amount when the actual bill arrives. The goal is to have every recurring obligation in the system so nothing slips through the cracks." },
+    ],
+  },
+  {
+    slug: 'how-to-manage-bills-without-missing-payments',
+    title: 'How to Manage Bills Without Missing Payments (Complete System)',
+    metaDescription: 'Learn how to manage bills without missing payments using a reliable system. Practical advice plus how automation makes it easier.',
+    publishedDate: 'March 2026',
+    readTime: '7 min read',
+    keyword: 'how to manage bills without missing payments',
+    excerpt: 'Missing bill payments costs Canadians hundreds per year in late fees. This complete guide shows you how to build a system that makes missed payments nearly impossible.',
+    relatedPage: { label: 'How to avoid late fees on bills', href: '/avoid-late-fees' },
+    content: [
+      { type: 'p', text: "Managing bills without missing payments isn't about being more disciplined — it's about building a system that works even when life gets busy. The right system makes missed payments structurally difficult, not just something you try harder to avoid." },
+      { type: 'h2', text: 'The Problem With Most People\'s Bill System' },
+      { type: 'p', text: "Most people manage bills reactively: a bill arrives, they pay it, done. The problem is that this relies entirely on the bill arriving at the right time and you noticing it. Bills get buried in email. Paper statements pile up. A busy week turns into a missed payment." },
+      { type: 'p', text: "The alternative is a proactive system: you know exactly what bills are coming, when they're due, and how much they'll be — before they arrive." },
+      { type: 'h2', text: 'The 3-Layer Bill Management System' },
+      { type: 'h3', text: 'Layer 1: Central Tracking (The Foundation)' },
+      { type: 'p', text: "Every bill you have — utilities, telecom, insurance, subscriptions, everything — goes into one place. A bill tracker app like MyBillPort is ideal because it handles the tracking, reminders, and history automatically. The moment you add a bill, the system starts working for you." },
+      { type: 'tip', text: "Don't start paying bills until they're in your tracker. Build the habit: bill arrives → add to tracker → pay from tracker → mark as done." },
+      { type: 'h3', text: 'Layer 2: Automated Reminders (The Safety Net)' },
+      { type: 'p', text: "Once bills are in your tracker, automated reminders fire before each due date. These aren't optional — they're the mechanism that catches you when life gets busy. Enable push notifications and set them to 5–7 days before the due date. This gives you time to review, transfer funds if needed, and pay calmly." },
+      { type: 'h3', text: 'Layer 3: Auto-Pay for Fixed Bills (Set and Forget)' },
+      { type: 'p', text: "For bills with a fixed monthly amount — streaming, gym, insurance with no mid-year adjustments — set up auto-pay and remove them from your active attention. They pay themselves. Keep them in your tracker anyway so you can see the total picture, but you don't need to actively manage them." },
+      { type: 'h2', text: 'Building Your Monthly Bill Routine' },
+      { type: 'p', text: "Even with a great system, a light monthly routine helps catch anything that falls through." },
+      { type: 'ol', items: [
+        'On the 1st of each month: open your bill tracker dashboard and review what\'s due this month',
+        'When a bill arrives (email/mail): add or update it in the tracker immediately',
+        'When reminded before a due date: review the amount, pay the bill, mark as done',
+        'Once a quarter: scan your subscription list for anything you\'re not using',
+      ]},
+      { type: 'h2', text: 'Handling Variable Bills' },
+      { type: 'p', text: "Utilities like hydro, gas, and water are trickier because the amount changes each billing period. The key is to add them to your tracker with an estimated amount, then update when the actual bill arrives. Smart bill trackers like MyBillPort flag when a variable bill is significantly higher than your average — so you're never caught off guard." },
+      { type: 'h2', text: 'What to Do When You Can\'t Pay a Bill on Time' },
+      { type: 'p', text: "If you genuinely can't pay a bill by the due date, contact the provider before the due date passes. Most Canadian utility and telecom providers have hardship programs, payment plans, or will waive a late fee on a first occurrence if you ask. Being proactive — which your bill tracker enables — gives you the advance notice to make that call." },
+    ],
+  },
+];
+
+export function getPostBySlug(slug: string): BlogPost | undefined {
+  return BLOG_POSTS.find(p => p.slug === slug);
+}
