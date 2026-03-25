@@ -1,6 +1,6 @@
 'use client';
 
-import { ShieldCheck, Lock, Globe, Fingerprint } from 'lucide-react';
+import { ShieldCheck, Lock, BanknoteIcon, Fingerprint } from 'lucide-react';
 
 const badges = [
   {
@@ -14,9 +14,9 @@ const badges = [
     description: 'We follow SOC 2 security practices for access control and monitoring.',
   },
   {
-    icon: Globe,
-    title: 'Global Platform',
-    description: 'Built for users worldwide. Supporting billers across multiple countries.',
+    icon: BanknoteIcon,
+    title: 'No Bank Login',
+    description: 'We never connect to your bank or store any payment credentials.',
   },
   {
     icon: Fingerprint,
