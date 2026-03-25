@@ -1,11 +1,11 @@
 'use client';
 
-import { Users, Globe, Receipt, Shield } from 'lucide-react';
+import { Users, Receipt, Shield, Clock } from 'lucide-react';
 
 const stats = [
-  { icon: Globe, value: '15+', label: 'Countries on our roadmap' },
-  { icon: Receipt, value: '120+', label: 'Billers supported' },
-  { icon: Users, value: 'Growing', label: 'Global user base' },
+  { icon: Clock, value: '2 min', label: 'To set up your account' },
+  { icon: Receipt, value: '120+', label: 'Canadian billers supported' },
+  { icon: Users, value: 'Growing', label: 'Active Canadian users' },
   { icon: Shield, value: '0', label: 'Data breaches, ever' },
 ];
 
