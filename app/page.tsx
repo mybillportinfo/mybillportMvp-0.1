@@ -15,8 +15,8 @@ import { FAQJsonLd, SoftwareApplicationJsonLd } from "./components/JsonLd";
 import { WaitlistForm } from "./components/WaitlistForm";
 
 export const metadata: Metadata = {
-  title: "MyBillPort — Bill Management App for Canadians | Free",
-  description: "Canada's bill management app. Track every bill, get AI reminders, pay 120+ Canadian billers with one tap. Free — no bank login.",
+  title: "Never Miss a Bill Again | MyBillPort – Smart Bill Tracker",
+  description: "MyBillPort is the simple Canadian bill tracker that reminds you before due dates, helps you avoid late fees, and organizes all your bills in one place. Free to start.",
   keywords: [
     "bill management app Canada",
     "bill tracker Canada",
@@ -674,15 +674,19 @@ export default function LandingPage() {
               </ul>
             </div>
             <div>
+              <p className="text-sm font-semibold text-white mb-3">Guides</p>
+              <ul className="space-y-2 text-sm text-slate-500">
+                <li><Link href="/how-to-track-bills" className="hover:text-white transition-colors">How to track bills</Link></li>
+                <li><Link href="/avoid-late-fees" className="hover:text-white transition-colors">Avoid late fees</Link></li>
+                <li><Link href="/bill-tracker-canada" className="hover:text-white transition-colors">Bill tracker Canada</Link></li>
+                <li><Link href="/blog" className="hover:text-white transition-colors">Blog</Link></li>
+              </ul>
+            </div>
+            <div>
               <p className="text-sm font-semibold text-white mb-3">Legal</p>
               <ul className="space-y-2 text-sm text-slate-500">
                 <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
                 <li><Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
-              </ul>
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-white mb-3">Support</p>
-              <ul className="space-y-2 text-sm text-slate-500">
                 <li><Link href="/support" className="hover:text-white transition-colors">Help Centre</Link></li>
                 <li><a href="mailto:mybillportinfo@gmail.com" className="hover:text-white transition-colors">Contact Us</a></li>
               </ul>
