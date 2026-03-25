@@ -12,6 +12,7 @@ import { CATEGORIES, getCategoryByValue, getSubcategory } from '../lib/categorie
 import { trackBillPaid, trackBillDeleted, trackBillEdited, trackPaymentRedirect } from '../lib/analyticsService';
 import { detectSpike, calculateAnnualProjections, calculateSavingsScore, SpikeInfo, AnnualProjection, SavingsScore } from '../lib/billAnalytics';
 import { findSavingsOpportunities } from '../lib/providerOffers';
+import { getBillerLogoUrl, getBillerInitials } from '../lib/billerLogos';
 import AIChatWidget from '../components/AIChatWidget';
 import { BillListSkeleton } from '../components/BillCardSkeleton';
 import { usePullToRefresh } from '../hooks/usePullToRefresh';
@@ -75,6 +76,7 @@ export default function Dashboard() {
   const [showInsights, setShowInsights] = useState(false);
   const [insightsModal, setInsightsModal] = useState<{ bill: Bill; loading: boolean; data: any | null; error: string | null } | null>(null);
   const [dismissedOfferIds, setDismissedOfferIds] = useState<Set<string>>(new Set());
+  const [dismissedSpikeIds, setDismissedSpikeIds] = useState<Set<string>>(new Set());
   const { supported: pushSupported, permission: pushPermission, isSubscribed: pushSubscribed, subscribe: subscribePush } = usePushNotifications(user?.uid || null);
   const { containerRef, pullDistance, refreshing } = usePullToRefresh(async () => { await refreshBills(); });
 
@@ -383,7 +385,16 @@ export default function Dashboard() {
     bills
       .filter(b => b.status !== 'paid' && b.category)
       .map(b => ({ id: b.id, companyName: b.companyName, totalAmount: b.totalAmount, category: b.category }))
-  ).filter(op => !dismissedOfferIds.has(op.offer.id)).slice(0, 2);
+  ).filter(op => !dismissedOfferIds.has(op.offer.id)).slice(0, 5);
+
+  const spikeAlerts = useMemo(() => {
+    return bills
+      .filter(b => b.status !== 'paid' && b.id && !dismissedSpikeIds.has(b.id!))
+      .map(b => ({ bill: b, spike: detectSpike(b, bills) }))
+      .filter(({ spike }) => spike.type === 'increase' && spike.percent >= 20)
+      .sort((a, b) => b.spike.percent - a.spike.percent)
+      .slice(0, 3);
+  }, [bills, dismissedSpikeIds]);
 
   return (
     <div ref={containerRef} className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 pb-24 overflow-y-auto">
@@ -460,6 +471,32 @@ export default function Dashboard() {
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-green-600 text-white px-5 py-3 rounded-xl shadow-lg flex items-center gap-2 animate-fade-in">
           <CheckCircle className="w-5 h-5" />
           <span className="text-sm font-medium">{successMessage}</span>
+        </div>
+      )}
+
+      {/* Spike Alert Banners */}
+      {!loading && spikeAlerts.length > 0 && (
+        <div className="px-4 mb-3 space-y-2">
+          {spikeAlerts.map(({ bill, spike }) => (
+            <div key={bill.id} className="flex items-center gap-3 bg-orange-500/10 border border-orange-500/30 rounded-xl px-4 py-3">
+              <TrendingUp className="w-4 h-4 text-orange-400 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <span className="text-orange-300 font-semibold text-sm">
+                  {bill.companyName} up {spike.percent}%
+                </span>
+                <span className="text-orange-200/60 text-xs ml-2">
+                  vs {spike.comparedTo === 'average' ? '3-month avg' : 'last bill'}
+                </span>
+              </div>
+              <button
+                onClick={() => setDismissedSpikeIds(prev => new Set([...prev, bill.id!]))}
+                className="p-1 text-orange-400/50 hover:text-orange-300 transition-colors flex-shrink-0"
+                aria-label="Dismiss"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ))}
         </div>
       )}
 
@@ -544,6 +581,52 @@ export default function Dashboard() {
         </div>
       )}
 
+      {/* Savings Score — prominent card */}
+      {!loading && savingsScore && bills.length > 0 && (
+        <div className="px-4 mb-4">
+          <div className="bg-[#1a2535] border border-white/5 rounded-2xl p-4 flex items-center gap-4">
+            {/* SVG ring gauge */}
+            <div className="relative w-16 h-16 flex-shrink-0">
+              <svg className="w-16 h-16 -rotate-90" viewBox="0 0 36 36">
+                <circle cx="18" cy="18" r="15.9" fill="none" stroke="#1e293b" strokeWidth="3" />
+                <circle
+                  cx="18" cy="18" r="15.9" fill="none"
+                  stroke={savingsScore.score >= 80 ? '#22c55e' : savingsScore.score >= 60 ? '#4D6A9F' : savingsScore.score >= 40 ? '#f59e0b' : '#ef4444'}
+                  strokeWidth="3"
+                  strokeDasharray={`${(savingsScore.score / 100) * 100} 100`}
+                  strokeLinecap="round"
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className={`text-sm font-bold ${savingsScore.color}`}>{savingsScore.score}</span>
+              </div>
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <p className="text-white font-semibold text-sm">Savings Score</p>
+                <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
+                  savingsScore.score >= 80 ? 'bg-green-500/15 text-green-400' :
+                  savingsScore.score >= 60 ? 'bg-[#4D6A9F]/15 text-[#7a9fd4]' :
+                  savingsScore.score >= 40 ? 'bg-amber-500/15 text-amber-400' :
+                  'bg-red-500/15 text-red-400'
+                }`}>{savingsScore.label}</span>
+              </div>
+              <div className="flex flex-wrap gap-1 mt-1.5">
+                {savingsScore.factors.slice(0, 3).map((f, i) => (
+                  <span key={i} className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-medium ${
+                    f.impact === 'positive' ? 'bg-green-500/10 text-green-400' :
+                    f.impact === 'negative' ? 'bg-red-500/10 text-red-400' :
+                    'bg-slate-700 text-slate-400'
+                  }`}>
+                    {f.impact === 'positive' ? '✓' : f.impact === 'negative' ? '!' : '·'} {f.label}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Recurring bills */}
       {(() => {
         const recurringBills = bills.filter(b => b.isRecurring && b.status !== 'paid');
@@ -576,34 +659,67 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Switch & Save recommendations */}
+      {/* Switch & Save — horizontal carousel */}
       {savingsOpportunities.length > 0 && (
-        <div className="px-4 mb-4 space-y-2">
-          <p className="text-slate-400 text-xs font-medium uppercase tracking-wider">Switch & Save</p>
-          {savingsOpportunities.map(({ bill, offer, monthlySavings }) => (
-            <div key={offer.id} className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 bg-emerald-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Zap className="w-4 h-4 text-emerald-400" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-white font-semibold text-sm">Save ${monthlySavings.toFixed(0)}/month on {bill.companyName}</p>
-                  <p className="text-emerald-300/80 text-xs mt-0.5">Switch to {offer.providerName} {offer.planName} at ${offer.monthlyPrice}/mo</p>
-                  {offer.badge && (
-                    <span className="inline-block mt-1 text-[10px] px-1.5 py-0.5 bg-emerald-500/20 text-emerald-300 rounded font-medium">{offer.badge}</span>
-                  )}
-                </div>
-                <div className="flex flex-col gap-1 flex-shrink-0">
-                  <a href={offer.affiliateUrl} target="_blank" rel="noopener noreferrer" className="text-[11px] font-semibold text-emerald-400 hover:text-emerald-300 whitespace-nowrap">
-                    View Deal →
-                  </a>
-                  <button onClick={() => setDismissedOfferIds(prev => new Set([...prev, offer.id]))} className="text-[11px] text-slate-500 hover:text-slate-400">
-                    Dismiss
-                  </button>
-                </div>
-              </div>
+        <div className="mb-4">
+          <div className="px-4 flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <Zap className="w-3.5 h-3.5 text-emerald-400" />
+              <p className="text-slate-300 text-xs font-semibold uppercase tracking-wider">Switch & Save</p>
             </div>
-          ))}
+            <p className="text-[10px] text-slate-500">{savingsOpportunities.length} offer{savingsOpportunities.length !== 1 ? 's' : ''}</p>
+          </div>
+          <div className="flex gap-3 overflow-x-auto px-4 pb-1 scrollbar-hide">
+            {savingsOpportunities.map(({ bill, offer, monthlySavings }) => {
+              const logoUrl = getBillerLogoUrl(offer.providerName);
+              return (
+                <div key={offer.id} className="flex-shrink-0 w-52 bg-[#1a2535] border border-emerald-500/20 rounded-2xl p-4 flex flex-col gap-3">
+                  <div className="flex items-center gap-2">
+                    {logoUrl ? (
+                      <img
+                        src={logoUrl}
+                        alt={offer.providerName}
+                        className="w-8 h-8 rounded-lg object-contain bg-white p-1"
+                        onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                      />
+                    ) : (
+                      <div className="w-8 h-8 bg-emerald-500/20 rounded-lg flex items-center justify-center text-[10px] font-bold text-emerald-400">
+                        {getBillerInitials(offer.providerName)}
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <p className="text-white font-semibold text-sm truncate">{offer.providerName}</p>
+                      <p className="text-slate-400 text-[11px] truncate">{offer.planName}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-emerald-400 font-bold text-lg">${monthlySavings.toFixed(0)}<span className="text-xs font-normal text-slate-400">/mo saved</span></p>
+                    <p className="text-slate-400 text-[11px] mt-0.5">vs {bill.companyName}</p>
+                  </div>
+                  {offer.badge && (
+                    <span className="self-start text-[10px] px-2 py-0.5 bg-emerald-500/15 text-emerald-300 rounded-full font-medium border border-emerald-500/20">{offer.badge}</span>
+                  )}
+                  <div className="flex gap-2 mt-auto">
+                    <a
+                      href={offer.affiliateUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 text-center text-xs font-semibold py-2 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 rounded-lg transition-colors"
+                    >
+                      Switch →
+                    </a>
+                    <button
+                      onClick={() => setDismissedOfferIds(prev => new Set([...prev, offer.id]))}
+                      className="px-2 py-2 text-slate-500 hover:text-slate-300 transition-colors"
+                      aria-label="Dismiss"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 
