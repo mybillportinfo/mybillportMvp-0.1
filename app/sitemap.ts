@@ -53,5 +53,41 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly',
       priority: 0.9,
     },
+    {
+      url: `${baseUrl}/how-to-track-bills`,
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/avoid-late-fees`,
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/bill-tracker-canada`,
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/blog`,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    ...([
+      'how-to-remember-bill-payments',
+      'best-way-to-organize-monthly-bills',
+      'app-that-reminds-you-to-pay-bills',
+      'simple-bill-tracker-for-beginners',
+      'how-to-manage-bills-without-missing-payments',
+    ].map(slug => ({
+      url: `${baseUrl}/blog/${slug}`,
+      lastModified: now,
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+    }))),
   ];
 }
