@@ -14,7 +14,7 @@ const faqs = [
   },
   {
     question: 'What billers are supported?',
-    answer: 'We support 120+ billers and are expanding globally. Our platform covers major providers across telecom, utilities, insurance, streaming, and more — with new billers added regularly.',
+    answer: 'We support 120+ Canadian billers across telecom, utilities, insurance, streaming, and more — with new billers added regularly.',
   },
   {
     question: 'How does AI bill scanning work?',
