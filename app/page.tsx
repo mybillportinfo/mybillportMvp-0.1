@@ -4,7 +4,7 @@ import Link from "next/link";
 import {
   ArrowRight, DollarSign, Mail, CheckCircle,
   Bell, ShieldCheck, TrendingUp, Clock, Eye, Zap,
-  Sparkles, Camera, Globe, Lock, X
+  Sparkles, Camera, Globe, Lock, X, PlusCircle, CreditCard, MapPin
 } from "lucide-react";
 import { LogoFull, LogoIcon } from "./components/Logo";
 import { TrustBadges } from "./components/TrustBadges";
@@ -261,19 +261,19 @@ export default function LandingPage() {
 
             {/* Left — text */}
             <div className="flex-1 space-y-6 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 bg-[#4D6A9F]/10 border border-[#4D6A9F]/20 text-[#4D6A9F] text-xs font-semibold px-4 py-1.5 rounded-full tracking-wide uppercase">
-                <Globe className="w-3.5 h-3.5" />
-                Available worldwide
+              <div className="inline-flex items-center gap-2 bg-[#6BCB77]/10 border border-[#6BCB77]/20 text-[#6BCB77] text-xs font-semibold px-4 py-1.5 rounded-full tracking-wide uppercase">
+                <MapPin className="w-3.5 h-3.5" />
+                Built for Canadians
               </div>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-[1.1] tracking-tight">
-                Never miss a bill again.
+                Never miss a bill.
                 <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#4D6A9F] to-[#FFB347]">
-                  All in one place.
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#4D6A9F] to-[#6BCB77]">
+                  Avoid late fees.
                 </span>
               </h1>
-              <p className="text-lg text-slate-400 leading-relaxed max-w-lg mx-auto lg:mx-0">
-                Canada&apos;s bill management app. Track every bill — hydro, internet, phone, insurance — in one dashboard. AI-powered scanning, smart reminders, and one-tap payment to 120+ Canadian billers. Never pay a late fee again.
+              <p className="text-lg text-slate-400 leading-relaxed max-w-md mx-auto lg:mx-0">
+                Track, get reminders, and pay bills in one place. Supports Rogers, Bell, Enbridge, and 120+ Canadian billers.
               </p>
               <div className="flex flex-wrap justify-center lg:justify-start gap-3 pt-1">
                 <Link href="/login" className="bg-[#4D6A9F] hover:bg-[#3d5a8f] text-white font-bold px-8 py-4 rounded-full transition-colors flex items-center gap-2 text-base shadow-lg shadow-[#4D6A9F]/20">
@@ -324,9 +324,45 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* 3 core actions — immediately below hero */}
+      <div className="max-w-4xl mx-auto px-5 pb-4">
+        <div className="grid sm:grid-cols-3 gap-4">
+          {[
+            {
+              icon: PlusCircle,
+              color: "#4D6A9F",
+              title: "Add a Bill",
+              body: "Snap a photo or type it in. Done in 30 seconds.",
+            },
+            {
+              icon: Bell,
+              color: "#FFB347",
+              title: "Get Reminded",
+              body: "Push notifications before every due date.",
+            },
+            {
+              icon: CreditCard,
+              color: "#6BCB77",
+              title: "Pay It",
+              body: "One tap to your biller's official payment page.",
+            },
+          ].map((a) => (
+            <div key={a.title} className="bg-[#263244] border border-white/5 rounded-2xl p-6 flex items-start gap-4">
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: a.color + "20" }}>
+                <a.icon className="w-6 h-6" style={{ color: a.color }} />
+              </div>
+              <div>
+                <p className="font-bold text-white text-base">{a.title}</p>
+                <p className="text-slate-400 text-sm mt-1 leading-relaxed">{a.body}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div className="border-y border-white/5 bg-white/[0.02] py-5 px-5">
         <div className="max-w-4xl mx-auto flex flex-wrap justify-center gap-6 md:gap-12 text-sm text-slate-500">
-          {["120+ billers supported", "AI-powered bill scanning", "256-bit encryption", "Available worldwide"].map((t) => (
+          {["120+ Canadian billers", "AI-powered bill scanning", "256-bit encryption", "No bank login required"].map((t) => (
             <div key={t} className="flex items-center gap-2">
               <CheckCircle className="w-4 h-4 text-[#6BCB77] flex-shrink-0" />
               <span>{t}</span>
@@ -536,26 +572,6 @@ export default function LandingPage() {
             </div>
             <div className="absolute inset-0 bg-gradient-to-br from-[#4D6A9F]/5 to-[#6BCB77]/5 pointer-events-none" />
           </div>
-          <div className="flex flex-wrap justify-center gap-4 text-sm">
-            <a
-              href="https://www.loom.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-slate-300 hover:text-white transition-colors"
-            >
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" opacity="0.2"/><circle cx="12" cy="12" r="4"/></svg>
-              Record with Loom
-            </a>
-            <a
-              href="https://youtube.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-slate-300 hover:text-white transition-colors"
-            >
-              <svg className="w-4 h-4 text-red-500" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 00.5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.75 15.5v-7l6.5 3.5-6.5 3.5z"/></svg>
-              Upload to YouTube
-            </a>
-          </div>
         </section>
 
         <section id="pricing" className="scroll-mt-20 space-y-12">
@@ -638,7 +654,57 @@ export default function LandingPage() {
       <TrustBadges />
       <Testimonials />
 
-      <div className="max-w-5xl mx-auto px-5" id="faq">
+      {/* Trust signals */}
+      <div className="max-w-5xl mx-auto px-5 py-4">
+        <div className="bg-[#263244] border border-white/5 rounded-3xl px-8 py-10">
+          <div className="text-center mb-8 space-y-2">
+            <div className="inline-flex items-center gap-2 bg-[#6BCB77]/10 border border-[#6BCB77]/20 text-[#6BCB77] text-xs font-semibold px-3 py-1 rounded-full">
+              <Lock className="w-3.5 h-3.5" />
+              Secure by design
+            </div>
+            <h2 className="text-2xl font-bold text-white">Your money stays yours</h2>
+            <p className="text-slate-400 text-sm max-w-sm mx-auto">We redirect you to pay directly on your biller's website. We never touch your payment.</p>
+          </div>
+          <div className="grid sm:grid-cols-3 gap-6">
+            {[
+              {
+                icon: ShieldCheck,
+                color: "#6BCB77",
+                title: "Payments via official biller sites",
+                body: "You pay Rogers, Bell, or Enbridge directly on their own website. MyBillPort just takes you there.",
+              },
+              {
+                icon: Lock,
+                color: "#4D6A9F",
+                title: "We never store your card details",
+                body: "No card numbers, no banking credentials. We don't process payments — we just organize them.",
+              },
+              {
+                icon: Eye,
+                color: "#FFB347",
+                title: "No bank login required",
+                body: "Unlike Mint or other trackers, we never ask for your banking password or connect to your accounts.",
+              },
+            ].map((t) => (
+              <div key={t.title} className="flex flex-col items-center text-center gap-3 p-4">
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: t.color + "15" }}>
+                  <t.icon className="w-6 h-6" style={{ color: t.color }} />
+                </div>
+                <p className="font-semibold text-white text-sm">{t.title}</p>
+                <p className="text-slate-400 text-xs leading-relaxed">{t.body}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-8 pt-6 border-t border-white/5 flex flex-wrap justify-center gap-6 text-xs text-slate-500">
+            <span className="flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5 text-[#6BCB77]" /> 256-bit encryption</span>
+            <span className="flex items-center gap-1.5"><Lock className="w-3.5 h-3.5 text-[#4D6A9F]" /> Firebase secure storage</span>
+            <span className="flex items-center gap-1.5"><CheckCircle className="w-3.5 h-3.5 text-[#6BCB77]" /> SOC 2 practices</span>
+            <span className="flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5 text-[#FFB347]" /> No data sold, ever</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-5xl mx-auto px-5 mt-4" id="faq">
         <FAQ />
       </div>
 
