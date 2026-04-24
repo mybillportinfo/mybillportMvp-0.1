@@ -6,6 +6,7 @@ import {
   Bell, ShieldCheck, TrendingUp, Clock, Eye, Zap,
   Sparkles, Camera, Globe, Lock, X, PlusCircle, CreditCard, MapPin
 } from "lucide-react";
+import { SiInstagram, SiTiktok, SiReddit, SiX, SiLinkedin } from "react-icons/si";
 import { LogoFull, LogoIcon } from "./components/Logo";
 import { TrustBadges } from "./components/TrustBadges";
 import { Testimonials } from "./components/Testimonials";
@@ -723,12 +724,34 @@ export default function LandingPage() {
 
       <footer className="border-t border-white/5">
         <div className="max-w-5xl mx-auto px-5 py-12">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
-            <div className="col-span-2 md:col-span-1">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-8">
+            <div className="col-span-2 md:col-span-2">
               <LogoFull height={28} />
               <p className="text-xs text-slate-500 mt-3 leading-relaxed">
-                Never miss a bill again. The simplest way to manage all your bills in one place.
+                Never miss a bill again. The simplest way to manage all your Canadian bills in one place.
               </p>
+              <div className="flex items-center gap-3 mt-5">
+                {[
+                  { href: "https://www.instagram.com/mybillport?igsh=aWFsdDk5bmdzZDd2&utm_source=qr", Icon: SiInstagram, label: "Instagram", color: "#E1306C", bg: "#E1306C15" },
+                  { href: "https://www.tiktok.com/@mybillport1?_r=1&_t=ZS-95oj7SkG3r5", Icon: SiTiktok, label: "TikTok", color: "#ffffff", bg: "#ffffff10" },
+                  { href: "https://www.reddit.com/u/mybillport/s/gtHdINy5PN", Icon: SiReddit, label: "Reddit", color: "#FF4500", bg: "#FF450015" },
+                  { href: "https://x.com/mybillport?s=21", Icon: SiX, label: "X (Twitter)", color: "#e7e7e7", bg: "#ffffff10" },
+                  { href: "https://www.linkedin.com/in/my-billport-3a5101406", Icon: SiLinkedin, label: "LinkedIn", color: "#0A66C2", bg: "#0A66C215" },
+                ].map(({ href, Icon, label, color, bg }) => (
+                  <a
+                    key={label}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={label}
+                    title={label}
+                    className="w-9 h-9 rounded-xl border border-white/10 flex items-center justify-center hover:border-white/20 transition-all duration-200 hover:scale-110"
+                    style={{ background: bg }}
+                  >
+                    <Icon className="w-4 h-4" style={{ color }} />
+                  </a>
+                ))}
+              </div>
             </div>
             <div>
               <p className="text-sm font-semibold text-white mb-3">Product</p>
