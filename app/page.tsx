@@ -374,6 +374,29 @@ export default function LandingPage() {
 
       <SocialProof />
 
+      {/* Canadian billers showcase */}
+      <div className="max-w-5xl mx-auto px-5 py-10">
+        <div className="text-center mb-6">
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Supports 120+ Canadian billers including</p>
+        </div>
+        <div className="flex flex-wrap justify-center gap-2.5">
+          {[
+            "Rogers","Bell","TELUS","Enbridge","Toronto Hydro","Hydro One",
+            "BC Hydro","Shaw","Videotron","Fido","Koodo","Freedom Mobile",
+            "Union Gas","Alectra","Epcor","Fortis BC","Rogers Wireless",
+            "Netflix","Amazon Prime","Spotify","Rogers Insurance","Intact",
+            "TD Visa","RBC Visa","CIBC Visa","BMO Mastercard","Scotiabank",
+          ].map((b) => (
+            <span key={b} className="text-xs text-slate-400 bg-white/[0.04] border border-white/[0.07] px-3 py-1.5 rounded-full hover:text-white hover:border-white/15 transition-colors">
+              {b}
+            </span>
+          ))}
+          <span className="text-xs text-[#4D6A9F] bg-[#4D6A9F]/10 border border-[#4D6A9F]/20 px-3 py-1.5 rounded-full font-semibold">
+            + 90 more →
+          </span>
+        </div>
+      </div>
+
       <div className="max-w-5xl mx-auto px-5 space-y-28 py-24">
 
         <section id="features" className="scroll-mt-20 space-y-12">
