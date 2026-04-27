@@ -15,7 +15,6 @@ import { toPng } from 'html-to-image';
 import JSZip from 'jszip';
 import { LogoFull, LogoIcon } from '../components/Logo';
 
-const ADMIN_EMAILS = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || '').split(',').map(e => e.trim().toLowerCase());
 
 /* ─── Brand colours ─────────────────────────────────────────── */
 const C = {
@@ -333,12 +332,9 @@ export default function ReelStudio() {
   const [exportProgress, setExportProgress] = useState('');
   const sceneRef = useRef<HTMLDivElement>(null);
 
-  const isAdmin = user && ADMIN_EMAILS.includes(user.email?.toLowerCase() || '');
-
   useEffect(() => {
-    if (user === null) { router.push('/login'); return; }
-    if (user && !isAdmin) { router.push('/dashboard'); }
-  }, [user, isAdmin, router]);
+    if (user === null) { router.push('/login'); }
+  }, [user, router]);
 
   const currentScene = selected.scenes[sceneIdx];
 
@@ -408,10 +404,10 @@ export default function ReelStudio() {
     setSceneIdx(0);
   }, [selected]);
 
-  if (!user || !isAdmin) {
+  if (!user) {
     return (
       <div className="min-h-screen bg-[#0d1829] flex items-center justify-center">
-        <div className="text-slate-400 text-sm">Checking access…</div>
+        <div className="text-slate-400 text-sm">Loading…</div>
       </div>
     );
   }
@@ -428,7 +424,7 @@ export default function ReelStudio() {
             <Film className="w-5 h-5 text-[#4D6A9F]" />
             <span className="font-bold text-lg">Reel Studio</span>
           </div>
-          <span className="text-xs bg-[#4D6A9F]/20 text-[#4D6A9F] px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
+          <span className="text-xs bg-[#6BCB77]/20 text-[#6BCB77] px-2 py-0.5 rounded-full font-semibold">BETA</span>
         </div>
         <button
           onClick={exportZip}
