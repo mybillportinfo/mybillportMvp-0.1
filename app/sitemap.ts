@@ -83,6 +83,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
       'app-that-reminds-you-to-pay-bills',
       'simple-bill-tracker-for-beginners',
       'how-to-manage-bills-without-missing-payments',
+      'best-bill-tracker-app-canada',
+      'reduce-monthly-bills-canada',
+      'rogers-bell-telus-bill-management',
     ].map(slug => ({
       url: `${baseUrl}/blog/${slug}`,
       lastModified: now,
