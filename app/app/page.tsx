@@ -15,6 +15,7 @@ import { findSavingsOpportunities } from '../lib/providerOffers';
 import { getBillerLogoUrl, getBillerInitials } from '../lib/billerLogos';
 import AIChatWidget from '../components/AIChatWidget';
 import { BillListSkeleton } from '../components/BillCardSkeleton';
+import EmptyStateOnboarding from '../components/EmptyStateOnboarding';
 import { usePullToRefresh } from '../hooks/usePullToRefresh';
 import { haptics } from '../lib/haptics';
 
@@ -794,12 +795,7 @@ export default function Dashboard() {
         {loading ? (
           <BillListSkeleton count={4} />
         ) : bills.length === 0 ? (
-          <div className="bg-slate-800/50 rounded-xl p-8 text-center border border-slate-700">
-            <p className="text-slate-400 mb-4">No bills yet</p>
-            <Link href="/add-bill" className="btn-accent px-6 py-2 rounded-lg inline-block">
-              Add Your First Bill
-            </Link>
-          </div>
+          <EmptyStateOnboarding onAddBill={() => router.push('/add-bill')} />
         ) : filteredBills.length === 0 ? (
           <div className="bg-slate-800/50 rounded-xl p-6 text-center border border-slate-700">
             <p className="text-slate-400 mb-2">No bills in this category</p>
