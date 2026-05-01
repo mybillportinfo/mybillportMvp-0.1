@@ -13,8 +13,8 @@ export async function POST(req: NextRequest) {
 
     const secret = process.env.RECAPTCHA_V2_SECRET_KEY;
     if (!secret) {
-      console.warn('[recaptcha-v2] RECAPTCHA_V2_SECRET_KEY not set — skipping verification');
-      return NextResponse.json({ success: true, skipped: true });
+      console.error('[recaptcha-v2] RECAPTCHA_V2_SECRET_KEY is not set — blocking signup to prevent bot access');
+      return NextResponse.json({ success: false, error: 'Server configuration error. Please contact support.' }, { status: 500 });
     }
 
     const response = await fetch('https://www.google.com/recaptcha/api/siteverify', {
