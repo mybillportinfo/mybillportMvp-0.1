@@ -34,7 +34,7 @@ function buildWelcomeEmail(name: string) {
         </div>
         
         <div style="margin: 30px 0; text-align: center;">
-          <a href="https://mybillport.com/app" style="background: #3d5a8f; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 16px;">
+          <a href="https://mybillport.com/dashboard" style="background: #3d5a8f; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 16px;">
             Start Managing Your Bills
           </a>
         </div>
@@ -53,7 +53,7 @@ function buildWelcomeEmail(name: string) {
     </div>
   `;
 
-  const text = `Welcome to MyBillPort!\n\nHi ${name}!\n\nThank you for joining MyBillPort! We're excited to help you take control of your bills.\n\nHere's what you can do:\n- Track all your recurring bills in one place\n- Get reminders before bills are due\n- See your bill overview at a glance\n- Mark bills as paid to stay organized\n- Scan bills with AI to add them instantly\n\nStart managing your bills: https://mybillport.com/app\n\nMyBillPort - Never miss a bill payment\nhttps://mybillport.com`;
+  const text = `Welcome to MyBillPort!\n\nHi ${name}!\n\nThank you for joining MyBillPort! We're excited to help you take control of your bills.\n\nHere's what you can do:\n- Track all your recurring bills in one place\n- Get reminders before bills are due\n- See your bill overview at a glance\n- Mark bills as paid to stay organized\n- Scan bills with AI to add them instantly\n\nStart managing your bills: https://mybillport.com/dashboard\n\nMyBillPort - Never miss a bill payment\nhttps://mybillport.com`;
 
   return { html, text };
 }
