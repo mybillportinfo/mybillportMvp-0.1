@@ -30,7 +30,7 @@ function SignupForm() {
   }, [searchParams]);
 
   useEffect(() => {
-    if (user) router.push('/app');
+    if (user) router.push('/dashboard');
   }, [user, router]);
 
   const passwordChecks = {
@@ -68,15 +68,15 @@ function SignupForm() {
           body: JSON.stringify({ token: recaptchaToken }),
         });
         const result = await res.json();
-        if (!result.success && !result.skipped) {
-          setLocalError('Verification failed. Please tick the checkbox again.');
+        if (!result.success) {
+          setLocalError(result.error || 'Please complete the reCAPTCHA check before continuing.');
           setRecaptchaToken(null);
           setIsSubmitting(false);
           return;
         }
       }
       await signup(email, password, referralCode.trim() || undefined);
-      router.push('/app');
+      router.push('/dashboard');
     } catch {
     } finally {
       setIsSubmitting(false);
