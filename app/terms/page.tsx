@@ -4,16 +4,35 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Terms of Service | MyBillPort",
-  description: "Read MyBillPort's Terms of Service — your rights, responsibilities, and how our Canadian bill management service works.",
+  description: "MyBillPort Terms of Service — your rights, responsibilities, subscription terms, and how our Canadian bill management service works.",
   alternates: { canonical: "https://mybillport.com/terms" },
 };
 
-const LAST_UPDATED = "March 20, 2026";
+const EFFECTIVE_DATE = "June 10, 2026";
 
-export default function Terms() {
+const TOC = [
+  { id: "acceptance",       label: "1. Acceptance of Terms" },
+  { id: "description",      label: "2. Description of Service" },
+  { id: "subscription",     label: "3. Subscription and Payment" },
+  { id: "accounts",         label: "4. User Accounts" },
+  { id: "ai-disclaimer",    label: "5. AI Features Disclaimer" },
+  { id: "redirection",      label: "6. Bill Payment Redirection" },
+  { id: "prohibited",       label: "7. Prohibited Uses" },
+  { id: "ip",               label: "8. Intellectual Property" },
+  { id: "third-party",      label: "9. Third-Party Links & Services" },
+  { id: "warranties",       label: "10. Disclaimer of Warranties" },
+  { id: "liability",        label: "11. Limitation of Liability" },
+  { id: "indemnification",  label: "12. Indemnification" },
+  { id: "termination",      label: "13. Termination" },
+  { id: "governing-law",    label: "14. Governing Law" },
+  { id: "changes",          label: "15. Changes to Terms" },
+  { id: "contact",          label: "16. Contact Us" },
+];
+
+export default function TermsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800">
-      {/* Header */}
+
       <div className="border-b border-slate-700/50 bg-slate-900/80 backdrop-blur sticky top-0 z-10">
         <div className="max-w-3xl mx-auto px-5 py-4 flex items-center gap-4">
           <Link href="/" className="text-slate-400 hover:text-white transition-colors">
@@ -27,36 +46,54 @@ export default function Terms() {
       </div>
 
       <div className="max-w-3xl mx-auto px-5 py-12 pb-24">
+
         <div className="mb-10">
-          <h1 className="text-3xl font-bold text-white mb-3">Terms of Service</h1>
-          <p className="text-slate-400 text-sm">Last updated: {LAST_UPDATED}</p>
+          <h1 className="text-3xl font-bold text-white mb-2">Terms of Service</h1>
+          <p className="text-slate-400 text-sm">Effective date: {EFFECTIVE_DATE} · Governing law: Province of Ontario, Canada</p>
         </div>
 
-        <div className="space-y-10 text-slate-300 text-sm leading-relaxed">
+        {/* Table of Contents */}
+        <nav className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5 mb-12">
+          <p className="text-white font-semibold text-sm mb-3">Table of Contents</p>
+          <ol className="space-y-1.5 columns-2">
+            {TOC.map(item => (
+              <li key={item.id} className="break-inside-avoid">
+                <a href={`#${item.id}`} className="text-[#4D6A9F] hover:text-[#7b9fd4] text-sm transition-colors">
+                  {item.label}
+                </a>
+              </li>
+            ))}
+          </ol>
+        </nav>
 
-          <section>
-            <p>
-              Please read these Terms of Service (&quot;Terms&quot;) carefully before using MyBillPort (&quot;the Service&quot;, &quot;the App&quot;) operated by MyBillPort (&quot;we&quot;, &quot;us&quot;, or &quot;our&quot;). By accessing or using the Service, you agree to be bound by these Terms. If you do not agree, please do not use the Service.
-            </p>
-          </section>
+        <div className="space-y-12 text-slate-300 text-sm leading-relaxed">
 
-          <section>
+          <p>
+            Please read these Terms of Service (&quot;Terms&quot;) carefully before using MyBillPort (&quot;the Service&quot;). By accessing or using the Service, you agree to be bound by these Terms. If you do not agree, please do not use the Service.
+          </p>
+
+          {/* 1. Acceptance */}
+          <section id="acceptance">
             <h2 className="text-lg font-bold text-white mb-4">1. Acceptance of Terms</h2>
-            <p>
-              By creating an account or using MyBillPort, you confirm that you are at least 18 years of age (or the age of majority in your province or territory), that you have the legal capacity to enter into this agreement, and that you agree to these Terms and our{" "}
+            <p className="mb-3">
+              By creating an account or using MyBillPort, you confirm that you are at least 18 years of age, that you have the legal capacity to enter into this agreement, and that you agree to these Terms and our{" "}
               <Link href="/privacy" className="text-[#4D6A9F] hover:underline">Privacy Policy</Link>.
-              If you are using the Service on behalf of an organization, you represent that you have the authority to bind that organization to these Terms.
             </p>
+            <div className="bg-slate-800/50 border border-slate-700/50 rounded-lg p-4 text-sm space-y-1">
+              <p><span className="text-white font-semibold">Effective Date:</span> {EFFECTIVE_DATE}</p>
+              <p><span className="text-white font-semibold">Governing Law:</span> Province of Ontario, Canada</p>
+            </div>
           </section>
 
-          <section>
+          {/* 2. Description */}
+          <section id="description">
             <h2 className="text-lg font-bold text-white mb-4">2. Description of Service</h2>
-            <p className="mb-3">MyBillPort is a personal finance tool that helps you track and manage your bills. Key features include:</p>
+            <p className="mb-3">MyBillPort is a bill tracking and reminder service available at mybillport.com. Key features include:</p>
             <div className="space-y-2 mb-4">
               {[
                 "Bill tracking and due-date management",
-                "AI-powered bill extraction from uploaded images and PDF documents",
-                "Smart reminders and push notifications",
+                "AI-powered bill scanning from uploaded images and PDF documents",
+                "Smart push notifications 7, 3, and 1 day before bills are due",
                 "Redirection to official biller payment portals for 120+ Canadian providers",
                 "Cash flow calendar and financial summaries",
                 "Optional premium subscription with unlimited bill tracking",
@@ -67,21 +104,46 @@ export default function Terms() {
                 </div>
               ))}
             </div>
-            <div className="bg-amber-900/20 border border-amber-700/40 rounded-lg p-3 text-amber-300 text-xs">
-              <strong>Important:</strong> MyBillPort is a bill management and tracking tool only. We do not process payments, hold funds, or access your bank accounts. Payments are made directly through each biller&apos;s official website.
+            <div className="bg-amber-900/20 border border-amber-700/40 rounded-lg p-4 text-amber-300 text-sm space-y-2">
+              <p className="font-semibold">Important — MyBillPort is NOT a bank or payment processor.</p>
+              <p>We do not process bill payments, hold funds, issue credit, or access your bank accounts. All payments are completed directly on each biller&apos;s own website. MyBillPort is a tracking and reminder tool only.</p>
             </div>
           </section>
 
-          <section>
-            <h2 className="text-lg font-bold text-white mb-4">3. User Accounts</h2>
+          {/* 3. Subscription */}
+          <section id="subscription">
+            <h2 className="text-lg font-bold text-white mb-4">3. Subscription and Payment</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
+              <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700/50">
+                <p className="text-white font-semibold mb-2">Free Plan</p>
+                <p className="text-slate-400 text-xs">Track up to 5 bills. No payment required. All core features included.</p>
+              </div>
+              <div className="bg-[#4D6A9F]/10 rounded-lg p-4 border border-[#4D6A9F]/30">
+                <p className="text-white font-semibold mb-2">Premium — $7.00 CAD / month</p>
+                <p className="text-slate-400 text-xs">Unlimited bills, all features. Billed monthly via Stripe. Cancel anytime.</p>
+              </div>
+            </div>
+            <div className="space-y-3">
+              <p><strong className="text-white">Billing:</strong> Premium subscription fees are billed monthly in advance in Canadian dollars (CAD) via Stripe. You authorize MyBillPort to charge your payment method on the billing date each month.</p>
+              <p><strong className="text-white">Cancellation:</strong> You may cancel your subscription at any time from your account settings. Cancellation takes effect at the end of the current billing period. No cancellation fees apply.</p>
+              <p><strong className="text-white">Refunds:</strong> We do not issue refunds for partial billing periods. If you cancel mid-month, you retain premium access until the period ends.</p>
+              <p><strong className="text-white">Failed Payments:</strong> If a payment fails, we will retry up to two additional times. If payment cannot be collected, your account will be downgraded to the Free plan at the end of the billing period. No data will be deleted.</p>
+              <p><strong className="text-white">Price Changes:</strong> We will provide at least 30 days&apos; written notice by email before changing subscription pricing. Continued use of the Service after the notice period constitutes acceptance of the new price.</p>
+            </div>
+          </section>
+
+          {/* 4. Accounts */}
+          <section id="accounts">
+            <h2 className="text-lg font-bold text-white mb-4">4. User Accounts</h2>
             <p className="mb-3">To use MyBillPort, you must create an account. You agree to:</p>
-            <div className="space-y-2">
+            <div className="space-y-2 mb-4">
               {[
-                "Provide accurate, current, and complete information during registration",
-                "Maintain and promptly update your account information",
-                "Keep your password confidential and not share it with anyone",
+                "Be at least 18 years of age",
+                "Provide accurate, current, and complete registration information",
+                "Maintain one account per person — multiple accounts are not permitted",
+                "Keep your password confidential and not share it with others",
                 "Notify us immediately of any unauthorized use of your account",
-                "Be responsible for all activities that occur under your account",
+                "Accept responsibility for all activity that occurs under your account",
               ].map(item => (
                 <div key={item} className="flex items-start gap-2">
                   <span className="text-[#4D6A9F] mt-0.5 flex-shrink-0">•</span>
@@ -89,20 +151,64 @@ export default function Terms() {
                 </div>
               ))}
             </div>
+            <p>We may suspend or terminate accounts that violate these Terms, provide false information, or engage in fraudulent activity.</p>
           </section>
 
-          <section>
-            <h2 className="text-lg font-bold text-white mb-4">4. User Responsibilities</h2>
+          {/* 5. AI Disclaimer */}
+          <section id="ai-disclaimer">
+            <h2 className="text-lg font-bold text-white mb-4">5. AI Features Disclaimer</h2>
+            <p className="mb-3">MyBillPort uses AI (powered by Anthropic Claude) to extract bill information from uploaded images and documents. By using AI features, you acknowledge:</p>
+            <div className="space-y-3">
+              {[
+                { label: "Accuracy Not Guaranteed", desc: "AI bill scanning is provided as-is. We do not guarantee 100% accuracy of extracted vendor names, amounts, due dates, or account numbers." },
+                { label: "Always Verify", desc: "You are responsible for reviewing and verifying all AI-extracted data before saving. Never rely solely on AI output for financial decisions." },
+                { label: "No Financial Advice", desc: "AI-generated negotiation scripts, switch recommendations, and savings estimates are for informational purposes only and do not constitute financial, legal, or professional advice." },
+                { label: "No Liability for AI Errors", desc: "MyBillPort is not liable for any financial loss, missed payments, or late fees resulting from inaccurate AI-extracted information." },
+              ].map(({ label, desc }) => (
+                <div key={label} className="bg-slate-800/50 rounded-lg p-4 border border-slate-700/50">
+                  <p className="text-white font-semibold text-sm mb-1">{label}</p>
+                  <p className="text-slate-400 text-sm">{desc}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* 6. Redirection */}
+          <section id="redirection">
+            <h2 className="text-lg font-bold text-white mb-4">6. Bill Payment Redirection</h2>
+            <p className="mb-3">
+              When you tap &quot;Pay&quot; on a bill in MyBillPort, you are redirected to the biller&apos;s official external website to complete payment. By using this feature, you acknowledge:
+            </p>
+            <div className="space-y-2">
+              {[
+                "MyBillPort does not process, facilitate, or receive any payments on your behalf",
+                "All transactions occur solely between you and the external biller on their own website",
+                "MyBillPort is not responsible for errors, failures, double-charges, or disputes arising from payments made on external biller websites",
+                "External biller websites have their own terms of service and privacy policies",
+                "Payment URLs are provided in good faith but MyBillPort does not guarantee they are current — always verify you are on the correct official website",
+              ].map(item => (
+                <div key={item} className="flex items-start gap-2">
+                  <span className="text-slate-500 mt-0.5 flex-shrink-0">•</span>
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* 7. Prohibited Uses */}
+          <section id="prohibited">
+            <h2 className="text-lg font-bold text-white mb-4">7. Prohibited Uses</h2>
             <p className="mb-3">You agree not to use MyBillPort to:</p>
             <div className="space-y-2">
               {[
-                "Upload or process documents you do not have the right to use",
-                "Violate any applicable federal, provincial, or local laws or regulations",
-                "Engage in any fraudulent, misleading, or deceptive activity",
-                "Attempt to reverse engineer, hack, or disrupt the Service",
-                "Use the Service for any commercial purpose without our written consent",
-                "Upload malware, viruses, or any harmful code",
+                "Automatically scrape, crawl, or harvest data from the platform",
+                "Share your account credentials with any other person",
+                "Upload malicious files, viruses, or harmful code",
+                "Use the Service for any illegal, fraudulent, or deceptive purpose",
+                "Attempt to reverse engineer, decompile, or hack the Service",
                 "Impersonate any person or entity",
+                "Upload documents you do not have the right to process",
+                "Use the Service for commercial purposes without written consent from MyBillPort",
               ].map(item => (
                 <div key={item} className="flex items-start gap-2">
                   <span className="text-red-400/80 mt-0.5 flex-shrink-0">✗</span>
@@ -112,65 +218,35 @@ export default function Terms() {
             </div>
           </section>
 
-          <section>
-            <h2 className="text-lg font-bold text-white mb-4">5. Subscription & Payment Terms</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-              <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700/50">
-                <p className="text-white font-semibold mb-2">Free Plan</p>
-                <p className="text-slate-400 text-xs">Track up to 5 bills. No payment required. Core features included.</p>
-              </div>
-              <div className="bg-[#4D6A9F]/10 rounded-lg p-4 border border-[#4D6A9F]/30">
-                <p className="text-white font-semibold mb-2">Premium — $7/month CAD</p>
-                <p className="text-slate-400 text-xs">Unlimited bills, all features. Billed monthly via Stripe. Cancel anytime.</p>
-              </div>
-            </div>
-            <div className="space-y-3">
-              <p>Subscription fees are billed in advance on a monthly basis in Canadian dollars (CAD). You authorize us to charge the payment method on file for recurring fees.</p>
-              <p><strong className="text-white">Cancellation:</strong> Cancel anytime from your account settings. Cancellation takes effect at the end of the current billing period. No refunds for partial periods.</p>
-              <p><strong className="text-white">Price Changes:</strong> We will provide at least 30 days&apos; written notice before changing subscription pricing. Continued use after the notice period constitutes acceptance.</p>
-            </div>
-          </section>
-
-          <section>
-            <h2 className="text-lg font-bold text-white mb-4">6. AI-Powered Features</h2>
-            <p className="mb-3">MyBillPort uses AI (powered by Anthropic Claude) to extract bill information from uploaded images and documents. By using AI features, you acknowledge that:</p>
-            <div className="space-y-2">
-              {[
-                "AI extraction may not be 100% accurate — always review and verify extracted information before saving",
-                "You are responsible for the accuracy of bill information stored in your account",
-                "Uploaded documents are processed in memory and are not permanently stored on our servers",
-                "AI-generated negotiation scripts and recommendations are for informational purposes only and do not constitute financial advice",
-              ].map(item => (
-                <div key={item} className="flex items-start gap-2">
-                  <span className="text-[#6BCB77] mt-0.5 flex-shrink-0">•</span>
-                  <span>{item}</span>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section>
-            <h2 className="text-lg font-bold text-white mb-4">7. Intellectual Property</h2>
+          {/* 8. IP */}
+          <section id="ip">
+            <h2 className="text-lg font-bold text-white mb-4">8. Intellectual Property</h2>
+            <p className="mb-3">
+              The MyBillPort Service — including its software, design, branding, logos, and written content — is owned by MyBillPort and protected by Canadian and international copyright, trademark, and intellectual property laws. You are granted a limited, non-exclusive, non-transferable, revocable licence to use the Service for personal, non-commercial purposes only.
+            </p>
             <p>
-              The Service, including its software, design, logos, text, and content, is owned by MyBillPort and is protected by Canadian and international copyright, trademark, and other intellectual property laws. You are granted a limited, non-exclusive, non-transferable, revocable license to use the Service for your personal, non-commercial purposes. Your bill data remains your own — we do not claim ownership of information you upload or enter.
+              Your bill data and uploaded documents remain your property. You grant MyBillPort a limited licence to process your data solely to provide the Service features you use (AI extraction, reminders, analytics). We do not claim ownership of your content.
             </p>
           </section>
 
-          <section>
-            <h2 className="text-lg font-bold text-white mb-4">8. Third-Party Links & Services</h2>
+          {/* 9. Third Party */}
+          <section id="third-party">
+            <h2 className="text-lg font-bold text-white mb-4">9. Third-Party Links &amp; Services</h2>
             <p>
-              MyBillPort provides links and redirects to third-party biller websites to facilitate your bill payments. We are not responsible for the content, privacy practices, or security of third-party websites. Your interactions with third-party sites, including any payments you make, are governed solely by their own terms and policies.
+              MyBillPort provides links and redirects to third-party biller websites to facilitate your bill payments. We are not responsible for the content, accuracy, privacy practices, or security of any third-party website. Your use of and any payments made on third-party sites are governed solely by their own terms and policies. We also integrate with third-party providers including Stripe (payments), Firebase (database), and Anthropic (AI) — each governed by their own terms.
             </p>
           </section>
 
-          <section>
-            <h2 className="text-lg font-bold text-white mb-4">9. Disclaimer of Warranties</h2>
-            <p className="mb-3">The Service is provided on an &quot;as is&quot; and &quot;as available&quot; basis without warranties of any kind, either express or implied, including but not limited to:</p>
+          {/* 10. Warranties */}
+          <section id="warranties">
+            <h2 className="text-lg font-bold text-white mb-4">10. Disclaimer of Warranties</h2>
+            <p className="mb-3">The Service is provided on an &quot;as is&quot; and &quot;as available&quot; basis without warranties of any kind, either express or implied, including but not limited to warranties of:</p>
             <div className="space-y-2">
               {[
                 "Merchantability or fitness for a particular purpose",
-                "Uninterrupted, error-free, or secure access to the Service",
+                "Uninterrupted, timely, or error-free access to the Service",
                 "Accuracy, completeness, or reliability of AI-extracted bill information",
+                "Delivery of push notifications on any specific schedule",
                 "The Service being free from viruses or other harmful components",
               ].map(item => (
                 <div key={item} className="flex items-start gap-2">
@@ -181,16 +257,18 @@ export default function Terms() {
             </div>
           </section>
 
-          <section>
-            <h2 className="text-lg font-bold text-white mb-4">10. Limitation of Liability</h2>
+          {/* 11. Liability */}
+          <section id="liability">
+            <h2 className="text-lg font-bold text-white mb-4">11. Limitation of Liability</h2>
             <div className="bg-slate-800/60 border border-slate-600/50 rounded-lg p-4 space-y-3">
-              <p>To the maximum extent permitted by applicable law, MyBillPort and its officers, directors, employees, and agents shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to:</p>
+              <p>To the maximum extent permitted by applicable law, MyBillPort and its officers, directors, employees, and agents shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including:</p>
               <div className="space-y-2">
                 {[
                   "Loss of data, profits, revenue, or business opportunities",
-                  "Missed bill payments or resulting late fees arising from inaccurate notifications",
-                  "Unauthorized access to your account or data",
-                  "Any errors or omissions in AI-extracted bill information",
+                  "Missed bill payments or late fees arising from inaccurate notifications or AI extraction errors",
+                  "Unauthorized access to your account or personal data",
+                  "Errors or omissions in AI-extracted bill information",
+                  "Transactions on external biller websites",
                 ].map(item => (
                   <div key={item} className="flex items-start gap-2">
                     <span className="text-slate-500 mt-0.5 flex-shrink-0">•</span>
@@ -198,61 +276,59 @@ export default function Terms() {
                   </div>
                 ))}
               </div>
-              <p>Our aggregate liability to you for any claim arising from the use of the Service shall not exceed the total fees you paid to us in the 12 months preceding the claim, or $100 CAD, whichever is greater.</p>
+              <p>Our aggregate liability to you for any claim arising from use of the Service shall not exceed the total fees you paid to us in the 12 months preceding the claim, or $100 CAD, whichever is greater.</p>
             </div>
           </section>
 
-          <section>
-            <h2 className="text-lg font-bold text-white mb-4">11. Indemnification</h2>
+          {/* 12. Indemnification */}
+          <section id="indemnification">
+            <h2 className="text-lg font-bold text-white mb-4">12. Indemnification</h2>
             <p>
               You agree to indemnify, defend, and hold harmless MyBillPort and its officers, directors, employees, and agents from and against any claims, liabilities, damages, losses, and expenses (including reasonable legal fees) arising from: (a) your use of the Service in violation of these Terms; (b) your violation of any applicable law or third-party rights; or (c) any content or data you submit through the Service.
             </p>
           </section>
 
-          <section>
-            <h2 className="text-lg font-bold text-white mb-4">12. Termination</h2>
+          {/* 13. Termination */}
+          <section id="termination">
+            <h2 className="text-lg font-bold text-white mb-4">13. Termination</h2>
             <div className="space-y-3">
-              <p><strong className="text-white">By You:</strong> You may delete your account at any time from your account settings. Deletion terminates your access and triggers data deletion within 30 days.</p>
-              <p><strong className="text-white">By Us:</strong> We may suspend or terminate your account immediately, without prior notice, if we determine you have violated these Terms or engaged in fraudulent activity. We may also discontinue the Service with reasonable notice.</p>
-              <p>Sections that by their nature should survive termination (including intellectual property, disclaimers, and limitation of liability) shall survive termination.</p>
+              <p><strong className="text-white">By You:</strong> You may delete your account at any time from your account settings. Deletion terminates your access and triggers removal of your personal data within 30 days.</p>
+              <p><strong className="text-white">By Us:</strong> We may suspend or terminate your account immediately, without prior notice, if we determine you have violated these Terms or engaged in fraudulent activity. We may also discontinue the Service with reasonable advance notice.</p>
+              <p>Sections that by their nature should survive termination — including intellectual property, disclaimers, limitation of liability, and indemnification — shall remain in force.</p>
             </div>
           </section>
 
-          <section>
-            <h2 className="text-lg font-bold text-white mb-4">13. Governing Law & Dispute Resolution</h2>
+          {/* 14. Governing Law */}
+          <section id="governing-law">
+            <h2 className="text-lg font-bold text-white mb-4">14. Governing Law &amp; Dispute Resolution</h2>
             <div className="space-y-3">
-              <p>These Terms shall be governed by and construed in accordance with the laws of the Province of Ontario and the federal laws of Canada applicable therein, without regard to conflict of law principles.</p>
-              <p>Any disputes arising from or relating to these Terms or the Service shall be resolved through good-faith negotiation first. If negotiation fails, disputes shall be submitted to binding arbitration in Ontario, Canada. Either party may seek injunctive or other equitable relief in any court of competent jurisdiction.</p>
+              <p>These Terms are governed by and construed in accordance with the laws of the Province of Ontario and the federal laws of Canada applicable therein, without regard to conflict of law principles.</p>
+              <p>Any disputes arising from or relating to these Terms or the Service shall first be addressed through good-faith negotiation. If negotiation fails within 30 days, disputes shall be submitted to binding arbitration in Ontario, Canada. Either party may seek injunctive or equitable relief in any court of competent jurisdiction.</p>
             </div>
           </section>
 
-          <section>
-            <h2 className="text-lg font-bold text-white mb-4">14. Changes to Terms</h2>
+          {/* 15. Changes */}
+          <section id="changes">
+            <h2 className="text-lg font-bold text-white mb-4">15. Changes to Terms</h2>
             <p>
-              We may update these Terms from time to time. We will notify you of material changes by posting the updated Terms on this page and updating the &quot;Last updated&quot; date. For significant changes, we may also notify you by email. Continued use of the Service after changes become effective constitutes acceptance of the revised Terms.
+              We may update these Terms from time to time. We will notify you of material changes by posting the updated Terms on this page and updating the effective date. For significant changes, we will also notify you by email. Continued use of the Service after changes become effective constitutes acceptance of the revised Terms.
             </p>
           </section>
 
-          <section>
-            <h2 className="text-lg font-bold text-white mb-4">15. Miscellaneous</h2>
-            <div className="space-y-2">
-              <p><strong className="text-white">Entire Agreement:</strong> These Terms, together with our Privacy Policy, constitute the entire agreement between you and MyBillPort regarding the Service.</p>
-              <p><strong className="text-white">Severability:</strong> If any provision of these Terms is held to be invalid or unenforceable, the remaining provisions shall remain in full force and effect.</p>
-              <p><strong className="text-white">No Waiver:</strong> Our failure to enforce any provision of these Terms shall not constitute a waiver of our right to enforce such provision in the future.</p>
-            </div>
-          </section>
-
-          <section>
+          {/* 16. Contact */}
+          <section id="contact">
             <h2 className="text-lg font-bold text-white mb-4">16. Contact Us</h2>
             <div className="bg-slate-800/50 rounded-xl p-5 border border-slate-700/50">
-              <p className="mb-3">If you have questions about these Terms, please contact us:</p>
-              <div className="space-y-1">
+              <p className="mb-4">If you have questions about these Terms, please contact us:</p>
+              <div className="space-y-1.5 text-sm">
                 <p className="text-white font-semibold">MyBillPort</p>
-                <p className="text-slate-400">Email: <a href="mailto:mybillportinfo@gmail.com" className="text-[#4D6A9F] hover:underline">mybillportinfo@gmail.com</a></p>
+                <p className="text-slate-400">Email: <a href="mailto:privacy@mybillport.com" className="text-[#4D6A9F] hover:underline">privacy@mybillport.com</a></p>
+                <p className="text-slate-400">Address: Niagara Falls, Ontario, Canada</p>
                 <p className="text-slate-400">Website: <a href="https://mybillport.com" className="text-[#4D6A9F] hover:underline">mybillport.com</a></p>
               </div>
             </div>
           </section>
+
         </div>
 
         <div className="mt-12 pt-8 border-t border-slate-700/50 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -263,7 +339,7 @@ export default function Terms() {
           </div>
         </div>
 
-        <p className="mt-6 text-center text-sm text-slate-600">&copy; 2026 MyBillPort. All rights reserved.</p>
+        <p className="mt-6 text-center text-sm text-slate-600">&copy; 2026 MyBillPort. All rights reserved. · Niagara Falls, Ontario, Canada</p>
       </div>
     </div>
   );
