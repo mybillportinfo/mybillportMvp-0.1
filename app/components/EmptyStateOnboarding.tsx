@@ -57,7 +57,7 @@ export default function EmptyStateOnboarding({ onAddBill }: EmptyStateOnboarding
           </button>
 
           <Link
-            href="/scan-bill"
+            href="/add-bill"
             className="flex items-center justify-center gap-1.5 text-slate-400 hover:text-white text-sm transition-colors py-2"
           >
             <Bot className="w-4 h-4" />
