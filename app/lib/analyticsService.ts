@@ -84,3 +84,28 @@ export function trackFeedbackSubmitted(category: string) {
     timestamp: Date.now(),
   });
 }
+
+export function trackScanUsed(fileType: string, success: boolean, confidenceLevel?: string) {
+  safeLogEvent('scan_used', {
+    file_type: fileType,
+    success,
+    confidence_level: confidenceLevel || 'unknown',
+    timestamp: Date.now(),
+  });
+}
+
+export function trackPaymentClicked(billerName: string, urlFound: boolean) {
+  safeLogEvent('payment_clicked', {
+    biller: billerName,
+    url_found: urlFound,
+    timestamp: Date.now(),
+  });
+}
+
+export function trackSubscriptionStarted(plan: string, priceCAD: number) {
+  safeLogEvent('subscription_started', {
+    plan,
+    price_cad: priceCAD,
+    timestamp: Date.now(),
+  });
+}
