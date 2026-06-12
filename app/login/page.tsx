@@ -1,12 +1,15 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Mail, Lock, Loader2, Receipt, DollarSign, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Mail, Lock, Loader2, Receipt, DollarSign, ShieldCheck, AlertTriangle } from "lucide-react";
 import { useAuth } from '../contexts/AuthContext';
 import GoogleSignInButton from '../components/GoogleSignInButton';
 import { RecaptchaCheckbox } from '../components/RecaptchaCheckbox';
+
+const MAX_FAILED_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -15,6 +18,10 @@ export default function Login() {
   const [googleError, setGoogleError] = useState<string | null>(null);
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const [captchaLoaded, setCaptchaLoaded] = useState(false);
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [lockedUntil, setLockedUntil] = useState<number | null>(null);
+  const [lockoutRemaining, setLockoutRemaining] = useState(0);
+  const lockoutTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const { user, login, error, clearError } = useAuth();
   const router = useRouter();
@@ -36,8 +43,28 @@ export default function Login() {
   }, []);
 
   useEffect(() => {
-    if (user) router.push('/app');
+    if (user) router.push('/dashboard');
   }, [user, router]);
+
+  // Lockout countdown timer
+  useEffect(() => {
+    if (lockedUntil) {
+      const tick = () => {
+        const remaining = Math.max(0, Math.ceil((lockedUntil - Date.now()) / 1000));
+        setLockoutRemaining(remaining);
+        if (remaining === 0) {
+          setLockedUntil(null);
+          setFailedAttempts(0);
+          if (lockoutTimerRef.current) clearInterval(lockoutTimerRef.current);
+        }
+      };
+      tick();
+      lockoutTimerRef.current = setInterval(tick, 1000);
+    }
+    return () => {
+      if (lockoutTimerRef.current) clearInterval(lockoutTimerRef.current);
+    };
+  }, [lockedUntil]);
 
   const handleVerify = useCallback((token: string) => {
     setRecaptchaToken(token);
@@ -51,6 +78,11 @@ export default function Login() {
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) return;
+
+    if (lockedUntil && Date.now() < lockedUntil) {
+      setGoogleError(`Too many failed attempts. Please wait ${lockoutRemaining} seconds before trying again.`);
+      return;
+    }
 
     if (captchaLoaded && !recaptchaToken) {
       setGoogleError('Please tick the "I\'m not a robot" box first.');
@@ -76,15 +108,24 @@ export default function Login() {
         }
       }
       await login(email, password);
-      router.push('/app');
+      setFailedAttempts(0);
+      router.push('/dashboard');
     } catch {
+      const newCount = failedAttempts + 1;
+      setFailedAttempts(newCount);
+      if (newCount >= MAX_FAILED_ATTEMPTS) {
+        const until = Date.now() + LOCKOUT_DURATION_MS;
+        setLockedUntil(until);
+        setGoogleError(`Account temporarily locked after ${MAX_FAILED_ATTEMPTS} failed attempts. Please wait 15 minutes or reset your password.`);
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const isLockedOut = lockedUntil !== null && Date.now() < lockedUntil;
   const displayError = googleError || error;
-  const buttonDisabled = isSubmitting || (captchaLoaded && !recaptchaToken);
+  const buttonDisabled = isSubmitting || (captchaLoaded && !recaptchaToken) || isLockedOut;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 flex items-center justify-center px-4">
