@@ -22,7 +22,7 @@ import { resolveProvider } from '../lib/providerRegistry';
 import ProviderAutocomplete from '../components/ProviderAutocomplete';
 import type { BillExtractionResult } from '../lib/billExtraction';
 import { checkForDuplicate, type DuplicateCheckResult } from '../lib/extractionGuards';
-import { trackBillCreated, trackBillScanAttempt } from '../lib/analyticsService';
+import { trackBillCreated, trackBillScanAttempt, trackScanUsed } from '../lib/analyticsService';
 import { trackBillCreation, trackFailedScan } from '../lib/securityMonitor';
 
 const FREE_PLAN_LIMIT = 5;
@@ -197,6 +197,8 @@ export default function AddBillPage() {
       }
 
       trackBillScanAttempt(true, isPdf ? 'pdf' : 'image');
+      const confidenceLevel = result.confidence >= 0.9 ? 'high' : result.confidence >= 0.7 ? 'medium' : 'low';
+      trackScanUsed(isPdf ? 'pdf' : 'image', true, confidenceLevel);
 
       if (result.validation?.warnings?.length > 0) {
         setValidationWarnings(result.validation.warnings);
