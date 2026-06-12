@@ -9,7 +9,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
 import { deleteBill, sortBills, Bill, markBillAsPaid, getPaymentHistory, BillPaymentRecord, PaymentMethod, updateBill, BillingCycle, applyRecurringDetection, persistRecurringFlags, detectRecurringPatterns, dismissAmountAlert, RecurringFrequency } from '../lib/firebase';
 import { CATEGORIES, getCategoryByValue, getSubcategory } from '../lib/categories';
-import { trackBillPaid, trackBillDeleted, trackBillEdited, trackPaymentRedirect } from '../lib/analyticsService';
+import { trackBillPaid, trackBillDeleted, trackBillEdited, trackPaymentRedirect, trackPaymentClicked, trackSubscriptionStarted } from '../lib/analyticsService';
 import { detectSpike, calculateAnnualProjections, calculateSavingsScore, SpikeInfo, AnnualProjection, SavingsScore } from '../lib/billAnalytics';
 import { findSavingsOpportunities } from '../lib/providerOffers';
 import { getBillerLogoUrl, getBillerInitials } from '../lib/billerLogos';
@@ -527,7 +527,7 @@ export default function Dashboard() {
                     </div>
                     <Link
                       href={`/payment?biller=${encodeURIComponent(bill.companyName)}&amount=${(bill.totalAmount - (bill.paidAmount || 0)).toFixed(2)}&billId=${bill.id || ''}&dueDate=${encodeURIComponent(bill.dueDate ? new Date(bill.dueDate).toISOString().split('T')[0] : '')}`}
-                      onClick={() => trackPaymentRedirect(bill.companyName, true)}
+                      onClick={() => { trackPaymentRedirect(bill.companyName, true); trackPaymentClicked(bill.companyName, true); }}
                       className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-red-500 text-white rounded-lg text-xs font-semibold hover:bg-red-600 transition-colors"
                     >
                       Pay Now <ExternalLink className="w-3 h-3" />
@@ -900,7 +900,7 @@ export default function Dashboard() {
                     <div className="flex items-center gap-2">
                       <Link
                         href={`/payment?biller=${encodeURIComponent(bill.companyName)}&amount=${remaining.toFixed(2)}&billId=${bill.id || ''}&dueDate=${encodeURIComponent(bill.dueDate ? new Date(bill.dueDate).toISOString().split('T')[0] : '')}`}
-                        onClick={() => { haptics.medium(); trackPaymentRedirect(bill.companyName, true); }}
+                        onClick={() => { haptics.medium(); trackPaymentRedirect(bill.companyName, true); trackPaymentClicked(bill.companyName, true); }}
                         className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-semibold rounded-lg bg-[#4D6A9F] text-white hover:bg-[#3d5a8f] transition-colors min-h-[44px]"
                       >
                         <ExternalLink className="w-4 h-4" />
