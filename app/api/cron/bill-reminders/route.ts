@@ -33,8 +33,15 @@ async function sendPush(subscription: any, title: string, body: string, url: str
 
 export async function GET(req: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
-  if (cronSecret) {
-    const auth = req.headers.get('authorization');
+  const auth = req.headers.get('authorization');
+
+  if (!cronSecret) {
+    if (process.env.NODE_ENV === 'production') {
+      console.error('[cron/bill-reminders] CRON_SECRET is not set in production — blocking request for security');
+      return NextResponse.json({ error: 'Cron endpoint not configured. Set CRON_SECRET in environment variables.' }, { status: 500 });
+    }
+    console.warn('[cron/bill-reminders] CRON_SECRET not set — running without auth (development only)');
+  } else {
     if (auth !== `Bearer ${cronSecret}`) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -94,7 +101,7 @@ export async function GET(req: NextRequest) {
       if (!uid) continue;
 
       if (!userNotifications.has(uid)) userNotifications.set(uid, []);
-      userNotifications.get(uid)!.push({ title, body, url: '/app' });
+      userNotifications.get(uid)!.push({ title, body, url: 'https://mybillport.com/dashboard' });
     }
 
     for (const [uid, notifications] of userNotifications) {
