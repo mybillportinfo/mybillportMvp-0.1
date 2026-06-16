@@ -99,15 +99,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
       } catch {}
       try {
-        fetch('/api/automation/new-user', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email,
-            displayName: newUser.displayName || '',
-            uid: newUser.uid,
-            signupDate: new Date().toISOString(),
-          }),
+        newUser.getIdToken().then(token => {
+          fetch('/api/automation/new-user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({
+              email,
+              displayName: newUser.displayName || '',
+              uid: newUser.uid,
+              signupDate: new Date().toISOString(),
+            }),
+          }).catch(() => {});
         }).catch(() => {});
       } catch {}
       try {
