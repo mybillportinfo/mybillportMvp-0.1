@@ -58,6 +58,6 @@ Return only the script text, no additional commentary.`;
     return NextResponse.json({ script });
   } catch (err: any) {
     console.error('[negotiate]', err.message);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
