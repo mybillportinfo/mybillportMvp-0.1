@@ -126,6 +126,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ received: true, created: true });
   } catch (err: any) {
     console.error('[email-forward] Error:', err.message, err.stack);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
