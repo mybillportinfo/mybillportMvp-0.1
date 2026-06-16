@@ -1,16 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { verifyFirebaseToken } from '../../lib/authVerify';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
+  const auth = await verifyFirebaseToken(req.headers.get('authorization'));
+  if (!auth.valid || !auth.uid) {
+    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const body = await req.json();
     const { email, displayName, uid, signupDate } = body;
 
+    if (uid && uid !== auth.uid) {
+      return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 403 });
+    }
+
     const payload = {
       email: email || '',
       displayName: displayName || '',
-      uid: uid || '',
+      uid: auth.uid,
       signupDate: signupDate || new Date().toISOString(),
       source: 'mybillport',
     };
@@ -52,6 +62,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, results });
   } catch (err: any) {
     console.error('[automation/new-user]', err);
-    return NextResponse.json({ ok: false, error: err.message }, { status: 500 });
+    return NextResponse.json({ ok: false, error: 'Internal server error' }, { status: 500 });
   }
 }
