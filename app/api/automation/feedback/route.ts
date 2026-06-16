@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyFirebaseToken } from '../../lib/authVerify';
+import { verifyFirebaseToken } from '../../../lib/authVerify';
 
 export const dynamic = 'force-dynamic';
 
