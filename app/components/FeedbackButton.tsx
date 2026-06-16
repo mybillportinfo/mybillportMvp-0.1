@@ -83,17 +83,19 @@ export default function FeedbackButton() {
         typeof window !== 'undefined' ? window.location.pathname : '/',
         typeof navigator !== 'undefined' ? navigator.userAgent : ''
       );
-      fetch('/api/automation/feedback', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: user.email || 'anonymous',
-          category,
-          message,
-          page: typeof window !== 'undefined' ? window.location.pathname : '/',
-          userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
-          submittedAt: new Date().toISOString(),
-        }),
+      user.getIdToken().then(token => {
+        fetch('/api/automation/feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({
+            email: user.email || 'anonymous',
+            category,
+            message,
+            page: typeof window !== 'undefined' ? window.location.pathname : '/',
+            userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
+            submittedAt: new Date().toISOString(),
+          }),
+        }).catch(() => {});
       }).catch(() => {});
       toast.success('Feedback submitted — thank you!');
       closeModal();
