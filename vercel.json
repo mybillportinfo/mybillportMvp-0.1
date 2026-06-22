@@ -3,6 +3,12 @@
   "installCommand": "npm install",
   "buildCommand": "next build",
   "outputDirectory": ".next",
+  "rewrites": [
+    {
+      "source": "/__/auth/action",
+      "destination": "/auth/action"
+    }
+  ],
   "crons": [
     {
       "path": "/api/cron/bill-reminders",
