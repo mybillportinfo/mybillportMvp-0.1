@@ -3,11 +3,11 @@
 import { useEffect, useState, useMemo } from 'react';
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
-import { Home, Plus, Settings, CalendarDays, Loader2, Trash2, AlertTriangle, Bell, BellOff, DollarSign, CheckCircle, ExternalLink, Check, X, Clock, ChevronDown, ChevronUp, Pencil, Receipt, TrendingUp, TrendingDown, Minus, Sparkles, BarChart3, Target, ArrowUpRight, ArrowDownRight, Smartphone, Zap, Copy, CheckCheck, Inbox } from "lucide-react";
+import { Home, Plus, Settings, CalendarDays, Loader2, Trash2, AlertTriangle, Bell, BellOff, DollarSign, CheckCircle, ExternalLink, Check, X, Clock, ChevronDown, ChevronUp, Pencil, Receipt, TrendingUp, TrendingDown, Minus, Sparkles, BarChart3, Target, ArrowUpRight, ArrowDownRight, Smartphone, Zap, Copy, CheckCheck, Inbox, Mail } from "lucide-react";
 import { usePushNotifications } from '../hooks/usePushNotifications';
 import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
-import { deleteBill, sortBills, Bill, markBillAsPaid, getPaymentHistory, BillPaymentRecord, PaymentMethod, updateBill, BillingCycle, applyRecurringDetection, persistRecurringFlags, detectRecurringPatterns, dismissAmountAlert, RecurringFrequency } from '../lib/firebase';
+import { deleteBill, sortBills, Bill, markBillAsPaid, getPaymentHistory, BillPaymentRecord, PaymentMethod, updateBill, BillingCycle, applyRecurringDetection, persistRecurringFlags, detectRecurringPatterns, dismissAmountAlert, RecurringFrequency, resendVerificationEmail } from '../lib/firebase';
 import { CATEGORIES, getCategoryByValue, getSubcategory } from '../lib/categories';
 import { trackBillPaid, trackBillDeleted, trackBillEdited, trackPaymentRedirect, trackPaymentClicked, trackSubscriptionStarted } from '../lib/analyticsService';
 import { detectSpike, calculateAnnualProjections, calculateSavingsScore, SpikeInfo, AnnualProjection, SavingsScore } from '../lib/billAnalytics';
@@ -78,6 +78,20 @@ export default function Dashboard() {
   const [insightsModal, setInsightsModal] = useState<{ bill: Bill; loading: boolean; data: any | null; error: string | null } | null>(null);
   const [dismissedOfferIds, setDismissedOfferIds] = useState<Set<string>>(new Set());
   const [dismissedSpikeIds, setDismissedSpikeIds] = useState<Set<string>>(new Set());
+  const [verificationSent, setVerificationSent] = useState(false);
+  const [verificationDismissed, setVerificationDismissed] = useState(false);
+
+  const isEmailPasswordUser = user?.providerData?.[0]?.providerId === 'password';
+  const showVerifyBanner = !!(user && !user.emailVerified && isEmailPasswordUser && !verificationDismissed);
+
+  const handleResendVerification = async () => {
+    try {
+      await resendVerificationEmail();
+      setVerificationSent(true);
+    } catch {
+      setVerificationSent(false);
+    }
+  };
   const { supported: pushSupported, permission: pushPermission, isSubscribed: pushSubscribed, subscribe: subscribePush } = usePushNotifications(user?.uid || null);
   const { containerRef, pullDistance, refreshing } = usePullToRefresh(async () => { await refreshBills(); });
 
@@ -413,6 +427,23 @@ export default function Dashboard() {
           </div>
         )}
       </div>
+      {/* Email verification banner */}
+      {showVerifyBanner && (
+        <div className="mx-4 mt-4 bg-amber-500/10 border border-amber-500/30 rounded-xl px-4 py-3 flex items-start gap-3">
+          <Mail className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-amber-300 text-sm font-semibold">Verify your email address</p>
+            {verificationSent
+              ? <p className="text-amber-400/80 text-xs mt-0.5">Email sent — check your inbox and click the link.</p>
+              : <p className="text-amber-400/80 text-xs mt-0.5">Check your inbox for a verification link, or <button onClick={handleResendVerification} className="underline hover:text-amber-300 transition-colors">resend the email</button>.</p>
+            }
+          </div>
+          <button onClick={() => setVerificationDismissed(true)} className="text-amber-500/60 hover:text-amber-400 transition-colors shrink-0">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="px-5 pt-12 pb-6">
         <div className="flex items-center justify-between mb-4">
