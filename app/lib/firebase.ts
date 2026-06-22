@@ -37,6 +37,7 @@ import {
   signInWithRedirect,
   getRedirectResult,
   sendPasswordResetEmail,
+  sendEmailVerification,
   getAdditionalUserInfo,
 } from "firebase/auth";
 import { initializeAppCheck, ReCaptchaV3Provider, AppCheck, getToken } from "firebase/app-check";
@@ -258,7 +259,22 @@ export interface UserProfile {
 export function registerUser(email: string, password: string) {
   const auth = getFirebaseAuth();
   if (!auth) return Promise.reject(new Error('Firebase not available'));
-  return createUserWithEmailAndPassword(auth, email, password).then(r => r.user);
+  return createUserWithEmailAndPassword(auth, email, password).then(r => {
+    sendEmailVerification(r.user, {
+      url: 'https://www.mybillport.com/dashboard',
+      handleCodeInApp: false,
+    }).catch(() => {});
+    return r.user;
+  });
+}
+
+export function resendVerificationEmail() {
+  const auth = getFirebaseAuth();
+  if (!auth?.currentUser) return Promise.reject(new Error('No user signed in'));
+  return sendEmailVerification(auth.currentUser, {
+    url: 'https://www.mybillport.com/dashboard',
+    handleCodeInApp: false,
+  });
 }
 
 export function loginUser(email: string, password: string) {
