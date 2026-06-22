@@ -74,6 +74,17 @@ const nextConfig = {
       },
     ];
   },
+  async rewrites() {
+    return [
+      {
+        // Firebase email action links (verify email, reset password) arrive at
+        // /__/auth/action?mode=...&oobCode=... — Next.js can't serve __-prefixed
+        // paths as routes, so we rewrite them to /auth/action transparently.
+        source: '/__/auth/action',
+        destination: '/auth/action',
+      },
+    ];
+  },
   async redirects() {
     return [
       {
