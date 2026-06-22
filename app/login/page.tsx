@@ -26,6 +26,16 @@ export default function Login() {
   const { user, login, error, clearError } = useAuth();
   const router = useRouter();
 
+  const [unverifiedBanner, setUnverifiedBanner] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('unverified') === '1') {
+      setUnverifiedBanner(true);
+      window.history.replaceState({}, '', '/login');
+    }
+  }, []);
+
   useEffect(() => {
     const urlError = new URLSearchParams(window.location.search).get('error');
     if (urlError) {
@@ -150,6 +160,13 @@ export default function Login() {
               <p className="text-slate-400 text-sm">Sign in to My<span className="text-[#4D6A9F]">BillPort</span></p>
             </div>
           </div>
+
+          {unverifiedBanner && (
+            <div className="bg-amber-500/10 border border-amber-500/30 text-amber-300 px-4 py-3 rounded-lg mb-4 text-sm">
+              <p className="font-semibold">Please verify your email first</p>
+              <p className="text-amber-400/80 text-xs mt-1">Check your inbox for the verification link we sent when you signed up. Sign in below once you've verified.</p>
+            </div>
+          )}
 
           {displayError && (
             <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg mb-6 text-sm">
